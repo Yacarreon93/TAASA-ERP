@@ -1293,7 +1293,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 			$datedelivery = (! empty($objectsrc->date_livraison) ? $objectsrc->date_livraison : '');
 
 			$note_private = (! empty($objectsrc->note_private) ? $objectsrc->note_private : (! empty($objectsrc->note_private) ? $objectsrc->note_private : ''));
-			$note_public = (! empty($objectsrc->note_public) ? $objectsrc->note_public : '');
+			$note_public = (! empty($objectsrc->note_public) ? $objectsrc->note_public : '');			
 
 			// Object source contacts list
 			$srccontactslist = $objectsrc->liste_contact(- 1, 'external', 1);
@@ -1311,6 +1311,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 		$remise_absolue     = 0;
 		$dateorder          = empty($conf->global->MAIN_AUTOFILL_DATE_ORDER)?-1:'';
 		$projectid          = 0;
+		$vendor 			= $soc->array_options['options_vendor'];
 	}
 	$absolute_discount=$soc->getAvailableDiscounts();
 
@@ -1453,6 +1454,9 @@ if ($action == 'create' && $user->rights->commande->creer)
         print $form->select_incoterms((!empty($objectsrc->fk_incoterms) ? $objectsrc->fk_incoterms : ''), (!empty($objectsrc->location_incoterms)?$objectsrc->location_incoterms:''));
 		print '</td></tr>';
 	}
+
+	// Set vendor from client
+	$object->array_options['options_vendor'] = $vendor;
 
 	// Other attributes
 	$parameters = array('objectsrc' => $objectsrc, 'colspan' => ' colspan="3"', 'socid'=>$socid);
