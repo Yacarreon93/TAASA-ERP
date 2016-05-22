@@ -2459,5 +2459,35 @@ if ($action == 'create' && $user->rights->commande->creer)
 	}
 }
 
+?>
+
+<script type="text/javascript" language="javascript">
+
+	$("#socid").change(function()
+	{
+		var socid = document.getElementById("socid").value;
+	    var client = $("#socid option:selected").text();
+
+	    var params = {  "socid" : socid };
+
+	    $.ajax(
+	    {
+	        data: params,
+	        url: "../../scripts/commande/getClientData.php",
+	        type: "post",
+	        dataType: "json",
+	        success:  function (data) 
+	        {
+	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+	            document.getElementById("selectmode_reglement_id").value = data.mode;
+	            document.getElementById("options_vendor").value = data.vendor;
+	        }
+	    });
+	});
+
+</script>
+
+<?php
+
 llxFooter();
 $db->close();
