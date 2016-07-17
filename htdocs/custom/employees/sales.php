@@ -1217,7 +1217,7 @@ else
         if ($action == 'delete')
         {
             print $form->formconfirm("card.php?id=$object->id",$langs->trans("DeleteAUser"),$langs->trans("ConfirmDeleteUser",$object->login),"confirm_delete", '', 0, 1);
-        }
+        }  
 
         /*
          * Fiche en mode visu
@@ -1337,8 +1337,6 @@ else
 			//print $sql;
             //die();
 
-
-
 			$resql = $db->query($sql);
 			if ($resql)
 			{
@@ -1364,6 +1362,24 @@ else
 
 			    $i = 0;
 			    print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">'."\n";
+
+                echo "<input type='hidden' name='id' value='".$id."'>";
+
+                echo '<div style="margin-bottom: 10px">';
+                echo '<input type="radio" name="range" value="all" style="margin-right: 3px" checked>Todas las facturas';
+                echo '<input type="radio" id="monthly" name="range" value="monthly" style="margin-left:10px; margin-right: 3px">Facturas por mes';
+                echo '<div style="display:inline-block">';
+                echo '<input class="flat" type="text" size="1" maxlength="2" name="month" value="'.$month.'" style="margin-left:10px;">';
+                $formother->select_year($year?$year:-1,'year',1, 20, 5);
+                echo '<input type="submit" class="button" value="Buscar">';
+                echo '</div>';
+                echo '</div>';
+
+                echo    '<script>
+                            $(document).ready(function(){
+                            });
+                        </script>';
+
 			    print '<table class="liste" width="100%">';
 
 			 	// If the user can view prospects other than his'
