@@ -126,6 +126,27 @@ function user_prepare_head($object)
 	return $head;
 }
 
+function user_prepare_head_for_vendors($object)
+{
+    global $langs, $conf, $user;
+
+    $langs->load("users");
+    $h = 0;
+    $head = array();
+
+    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/card.php?id='.$object->id;
+    $head[$h][1] = "Ficha vendedor";
+    $head[$h][2] = 'user';
+    $h++;
+
+    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/sales.php?id='.$object->id;
+    $head[$h][1] = "Ventas";
+    $head[$h][2] = 'sales';
+    $h++;
+
+    return $head;
+}
+
 /**
  * Prepare array with list of tabs
  *

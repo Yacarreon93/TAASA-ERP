@@ -1,191 +1,279 @@
 <?php
-// Change this following line to use the correct relative path (../, ../../, etc)
-$res=0;
-if (! $res && file_exists("../main.inc.php")) $res=@include '../main.inc.php';					// to work if your module directory is into dolibarr root htdocs directory
-if (! $res && file_exists("../../main.inc.php")) $res=@include '../../main.inc.php';			// to work if your module directory is into a subdir of root htdocs directory
-if (! $res && file_exists("../../../dolibarr/htdocs/main.inc.php")) $res=@include '../../../dolibarr/htdocs/main.inc.php';     // Used on dev env only
-if (! $res && file_exists("../../../../dolibarr/htdocs/main.inc.php")) $res=@include '../../../../dolibarr/htdocs/main.inc.php';   // Used on dev env only
-if (! $res) die("Include of main fails");
-// Change this following line to use the correct relative path from htdocs
-include_once(DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php');
-dol_include_once('/employees/class/skeleton_class.class.php');
+/* Copyright (C) 2002-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
+ * Copyright (C) 2004-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
+ * Copyright (C) 2015      Alexandre Spangaro   <aspangaro.dolibarr@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// Load traductions files requiredby by page
+/**
+ *      \file       htdocs/user/index.php
+ *      \ingroup    core
+ *      \brief      Page of users
+ */
+
+require '../../main.inc.php';
+if (! empty($conf->multicompany->enabled))
+    dol_include_once('/multicompany/class/actions_multicompany.class.php', 'ActionsMulticompany');
+
+
+if (! $user->rights->user->user->lire && ! $user->admin)
+    accessforbidden();
+
+$langs->load("users");
 $langs->load("companies");
-$langs->load("other");
 
-// Get parameters
-$id			= GETPOST('id','int');
-$action		= GETPOST('action','alpha');
-$backtopage = GETPOST('backtopage');
-$myparam	= GETPOST('myparam','alpha');
-
-$search_field1=GETPOST("search_field1");
-$search_field2=GETPOST("search_field2");
-
-if($action == "") $action = "list";
-
-// Protection if external user
+// Security check (for external users)
+$socid=0;
 if ($user->societe_id > 0)
+    $socid = $user->societe_id;
+
+$sall=GETPOST('sall','alpha');
+$search_user=GETPOST('search_user','alpha');
+$search_login=GETPOST('search_login','alpha');
+$search_lastname=GETPOST('search_lastname','alpha');
+$search_firstname=GETPOST('search_firstname','alpha');
+$search_statut=GETPOST('search_statut','alpha');
+$search_thirdparty=GETPOST('search_thirdparty','alpha');
+
+if ($search_statut == '') $search_statut='1';
+
+$sortfield = GETPOST('sortfield','alpha');
+$sortorder = GETPOST('sortorder','alpha');
+$page = GETPOST('page','int');
+if ($page == -1) { $page = 0; }
+$offset = $conf->liste_limit * $page;
+$pageprev = $page - 1;
+$pagenext = $page + 1;
+$limit = $conf->liste_limit;
+if (! $sortfield) $sortfield="u.login";
+if (! $sortorder) $sortorder="ASC";
+
+$userstatic=new User($db);
+$companystatic = new Societe($db);
+$form = new Form($db);
+
+if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both test are required to be compatible with all browsers
 {
-	//accessforbidden();
+    $search_user="";
+    $search_login="";
+    $search_lastname="";
+    $search_firstname="";
+    $search_statut="";
+    $search_thirdparty="";
 }
 
-if (empty($action) && empty($id) && empty($ref)) $action='list';
 
-// Load object if id or ref is provided as parameter
 /*
-$object=new User($db);
-if (($id > 0 || ! empty($ref)) && $action != 'add')
+ * View
+ */
+
+llxHeader('',$langs->trans("ListOfUsers"));
+
+$buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($search_statut != '' && $search_statut >= 0) ? '?search_statut='.$search_statut : '').'" method="POST"><input type="submit" class="button" style="width:120px" name="viewcal" value="'.dol_escape_htmltag($langs->trans("HierarchicView")).'"></form>';
+
+print_fiche_titre("Lista de Vendedores", $buttonviewhierarchy);
+
+$sql = "SELECT u.rowid, u.lastname, u.firstname, u.admin, u.fk_soc, u.login, u.email, u.gender,";
+$sql.= " u.datec,";
+$sql.= " u.tms as datem,";
+$sql.= " u.datelastlogin,";
+$sql.= " u.ldap_sid, u.statut, u.entity,";
+$sql.= " u2.login as login2, u2.firstname as firstname2, u2.lastname as lastname2,";
+$sql.= " s.nom as name, s.canvas";
+$sql.= " FROM ".MAIN_DB_PREFIX."user as u";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON u.fk_soc = s.rowid";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."user as u2 ON u.fk_user = u2.rowid";
+$sql.= " JOIN ".MAIN_DB_PREFIX."user_extrafields as ef ON ef.fk_object = u.rowid";
+if(! empty($conf->multicompany->enabled) && $conf->entity == 1 && (! empty($conf->multicompany->transverse_mode) || (! empty($user->admin) && empty($user->entity))))
 {
-	$result=$object->fetch($id,$ref);
-	if ($result < 0) dol_print_error($db);
+    $sql.= " WHERE u.entity IS NOT NULL";
 }
-*/
-
-// Initialize technical object to manage hooks of modules. Note that conf->hooks_modules contains array array
-$hookmanager->initHooks(array('skeleton'));
-$extrafields = new ExtraFields($db);
-
-/*******************************************************************
-* ACTIONS
-*
-* Put here all code to do according to value of "action" parameter
-********************************************************************/
-
-/***************************************************
-* VIEW
-*
-* Put here all code to build page
-****************************************************/
-
-llxHeader('','Vendedores','');
-
-
-// Part to show a list
-if ($action == 'list')
+else
 {
-	// Put here content of your page
-	print load_fiche_titre('PageTitle');
-    
-	$sql = "SELECT";
-    $sql.= " u.rowid,";
-    $sql.= " u.lastname,";
-    $sql.= " u.firstname";
-	// Add fields for extrafields
-	foreach ($extrafields->attribute_list as $key => $val) $sql.=",ef.".$key.' as options_'.$key;
-	// Add fields from hooks
-	$parameters=array();
-	$reshook=$hookmanager->executeHooks('printFieldListSelect',$parameters);    // Note that $action and $object may have been modified by hook
-	$sql.=$hookmanager->resPrint;
-    $sql.= " FROM ".MAIN_DB_PREFIX."user as u";
-    $sql.= " JOIN ".MAIN_DB_PREFIX."user_extrafields as ef ON ef.fk_object = u.rowid";
-    $sql.= " WHERE ef.rol = 1";
+    $sql.= " WHERE u.entity IN (".getEntity('user',1).")";
+}
+if ($socid > 0) $sql.= " AND u.fk_soc = ".$socid;
+if ($search_user != '') $sql.=natural_search(array('u.login', 'u.lastname', 'u.firstname'), $search_user);
+if ($search_thirdparty != '') $sql.=natural_search(array('s.nom'), $search_thirdparty);
+if ($search_login != '') $sql.= natural_search("u.login", $search_login);
+if ($search_lastname != '') $sql.= natural_search("u.lastname", $search_lastname);
+if ($search_firstname != '') $sql.= natural_search("u.firstname", $search_firstname);
+if ($search_statut != '' && $search_statut >= 0) $sql.= " AND (u.statut=".$search_statut.")";
+if ($sall) $sql.= natural_search(array('u.login', 'u.lastname', 'u.firstname', 'u.email', 'u.note'), $sall);
 
-    // if ($search_field1) $sql.= natural_search("field1",$search_field1);
-    // if ($search_field2) $sql.= natural_search("field2",$search_field2);
-    
-	// Add where from hooks
-	$parameters=array();
-	$reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
-	$sql.=$hookmanager->resPrint;
+$sql.= " AND ef.rol = 1";
 
-    // Count total nb of records
-    $nbtotalofrecords = 0;
-    if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
+$sql.=$db->order($sortfield,$sortorder);
+
+$result = $db->query($sql);
+if ($result)
+{
+    $num = $db->num_rows($result);
+    $i = 0;
+
+    print '<form method="POST" id="searchFormList" action="'.$_SERVER["PHP_SELF"].'">'."\n";
+
+    $param="search_user=".$search_user."&sall=".$sall;
+    $param.="&search_statut=".$search_statut;
+
+    print '<table class="noborder" width="100%">';
+    print '<tr class="liste_titre">';
+    print_liste_field_titre($langs->trans("Login"),$_SERVER['PHP_SELF'],"u.login",$param,"","",$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("LastName"),$_SERVER['PHP_SELF'],"u.lastname",$param,"","",$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("FirstName"),$_SERVER['PHP_SELF'],"u.firstname",$param,"","",$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("Company"),$_SERVER['PHP_SELF'],"u.fk_soc",$param,"","",$sortfield,$sortorder);
+    if (! empty($conf->multicompany->enabled) && empty($conf->multicompany->transverse_mode))
     {
-    	$result = $db->query($sql);
-    	$nbtotalofrecords = $db->num_rows($result);
-    }	
-	
-    $sql.= $db->order($sortfield, $sortorder);
-	$sql.= $db->plimit($conf->liste_limit+1, $offset);
-    
+        print_liste_field_titre($langs->trans("Entity"),$_SERVER['PHP_SELF'],"u.entity",$param,"","",$sortfield,$sortorder);
+    }
+    print_liste_field_titre($langs->trans("DateCreation"),$_SERVER['PHP_SELF'],"u.datec",$param,"",'align="center"',$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("LastConnexion"),$_SERVER['PHP_SELF'],"u.datelastlogin",$param,"",'align="center"',$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("HierarchicalResponsible"),$_SERVER['PHP_SELF'],"u2.login",$param,"",'align="center"',$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("Status"),$_SERVER['PHP_SELF'],"u.statut",$param,"",'align="right"',$sortfield,$sortorder);
+    print_liste_field_titre('',$_SERVER["PHP_SELF"],"",'','','',$sortfield,$sortorder,'maxwidthsearch ');
+    print "</tr>\n";
 
-    dol_syslog($script_file, LOG_DEBUG);
-    $resql=$db->query($sql);
-    if ($resql)
+    // Search bar
+    $colspan=3;
+    if (! empty($conf->multicompany->enabled) && empty($conf->multicompany->transverse_mode)) $colspan++;
+    print '<tr class="liste_titre">';
+    print '<td><input type="text" name="search_login" size="6" value="'.$search_login.'"></td>';
+    print '<td><input type="text" name="search_lastname" size="6" value="'.$search_lastname.'"></td>';
+    print '<td><input type="text" name="search_firstname" size="6" value="'.$search_firstname.'"></td>';
+    print '<td><input type="text" name="search_thirdparty" size="6" value="'.$search_thirdparty.'"></td>';
+    print '<td colspan="'.$colspan.'">&nbsp;</td>';
+
+    // Status
+    print '<td align="right">';
+    print $form->selectarray('search_statut', array('-1'=>'','0'=>$langs->trans('Disabled'),'1'=>$langs->trans('Enabled')),$search_statut);
+    print '</td>';
+
+    print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
+    print '<input type="image" class="liste_titre" name="button_removefilter" src="'.img_picto($langs->trans("Search"),'searchclear.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'" title="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'">';
+    print '</td>';
+
+    print "</tr>\n";
+
+    $user2=new User($db);
+
+    $var=True;
+    while ($i < $num)
     {
-        $num = $db->num_rows($resql);
-        
-        $params='';
-    	$params.= '&amp;search_field1='.urlencode($search_field1);
-    	$params.= '&amp;search_field2='.urlencode($search_field2);
-        
-        print_barre_liste($title, $page, $_SERVER["PHP_SELF"],$params,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_companies');
-        
-    
-    	print '<form method="GET" id="searchFormList" action="'.$_SERVER["PHP_SELF"].'">';
-    
-    	if (! empty($moreforfilter))
-    	{
-    		print '<div class="liste_titre">';
-    		print $moreforfilter;
-        	$parameters=array();
-        	$reshook=$hookmanager->executeHooks('printFieldPreListTitle',$parameters);    // Note that $action and $object may have been modified by hook
-    	    print $hookmanager->resPrint;
-    	    print '</div>';
-    	}
-    
-    	print '<table class="noborder">'."\n";
-    
-        // Fields title
-        print '<tr class="liste_titre">';
-        print_liste_field_titre($langs->trans('Nombre'),$_SERVER['PHP_SELF'],'t.field1','',$param,'',$sortfield,$sortorder);
-        print_liste_field_titre($langs->trans('Apellido'),$_SERVER['PHP_SELF'],'t.field2','',$param,'',$sortfield,$sortorder);
-        $parameters=array();
-        $reshook=$hookmanager->executeHooks('printFieldListTitle',$parameters);    // Note that $action and $object may have been modified by hook
-        print $hookmanager->resPrint;
-        print '</tr>'."\n";
-    
-        // Fields title search
-    	print '<tr class="liste_titre">';
-    	print '<td class="liste_titre"><input type="text" class="flat" name="search_field1" value="'.$search_field1.'" size="10"></td>';
-    	print '<td class="liste_titre"><input type="text" class="flat" name="search_field2" value="'.$search_field2.'" size="10"></td>';
-        $parameters=array();
-        $reshook=$hookmanager->executeHooks('printFieldListOption',$parameters);    // Note that $action and $object may have been modified by hook
-        print $hookmanager->resPrint;
-        print '</tr>'."\n";
-            
-        
-        $i = 0;
-        while ($i < $num)
+        $obj = $db->fetch_object($result);
+        $var=!$var;
+
+        $userstatic->id=$obj->rowid;
+        $userstatic->ref=$obj->label;
+        $userstatic->login=$obj->login;
+        $userstatic->statut=$obj->statut;
+        $userstatic->email=$obj->email;
+        $userstatic->gender=$obj->gender;
+        $userstatic->societe_id=$obj->fk_soc;
+        $userstatic->firstname='';
+        $userstatic->lastname=$obj->login;
+
+        $li=$userstatic->getNomUrlForVendors(1,'',0,0,24,1);
+
+        print "<tr ".$bc[$var].">";
+        print '<td>';
+        print $li;
+        if (! empty($conf->multicompany->enabled) && $obj->admin && ! $obj->entity)
         {
-            $obj = $db->fetch_object($resql);
-            if ($obj)
-            {
-
-                $user = new User($db);
-                $user->fetch($obj->rowid);                        
-                // You can use here results
-                print '<tr>';
-                print '<td>'.$user->getNomUrl(1).'</td>';
-                print '<td>'.$user->lastname.'</td>';
-		        $parameters=array('obj' => $obj);
-        		$reshook=$hookmanager->executeHooks('printFieldListValue',$parameters);    // Note that $action and $object may have been modified by hook
-                print $hookmanager->resPrint;
-        		print '</tr>';
-            }
-            $i++;
+            print img_picto($langs->trans("SuperAdministrator"),'redstar');
         }
-        
-        $db->free($resql);
-    
-    	$parameters=array('sql' => $sql);
-    	$reshook=$hookmanager->executeHooks('printFieldListFooter',$parameters);    // Note that $action and $object may have been modified by hook
-    	print $hookmanager->resPrint;
-    
-    	print "</table>\n";
-    	print "</form>\n";
-        
+        else if ($obj->admin)
+        {
+            print img_picto($langs->trans("Administrator"),'star');
+        }
+        print '</td>';
+        print '<td>'.ucfirst($obj->lastname).'</td>';
+        print '<td>'.ucfirst($obj->firstname).'</td>';
+        print "<td>";
+        if ($obj->fk_soc)
+        {
+            $companystatic->id=$obj->fk_soc;
+            $companystatic->name=$obj->name;
+            $companystatic->canvas=$obj->canvas;
+            print $companystatic->getNomUrlForVendors(1);
+        }
+        else if ($obj->ldap_sid)
+        {
+            print $langs->trans("DomainUser");
+        }
+        else
+       {
+            print $langs->trans("InternalUser");
+        }
+        print '</td>';
+
+        // Multicompany enabled
+        if (! empty($conf->multicompany->enabled) && empty($conf->multicompany->transverse_mode))
+        {
+            print '<td>';
+            if (! $obj->entity)
+            {
+                print $langs->trans("AllEntities");
+            }
+            else
+            {
+                // $mc is defined in conf.class.php if multicompany enabled.
+                if (is_object($mc))
+                {
+                    $mc->getInfo($obj->entity);
+                    print $mc->label;
+                }
+            }
+            print '</td>';
+        }
+
+        // Date creation
+        print '<td class="nowrap" align="center">'.dol_print_date($db->jdate($obj->datec),"dayhour").'</td>';
+
+        // Date last login
+        print '<td class="nowrap" align="center">'.dol_print_date($db->jdate($obj->datelastlogin),"dayhour").'</td>';
+
+        // Resp
+        print '<td class="nowrap" align="center">';
+        if ($obj->login2)
+        {
+            $user2->login=$obj->login2;
+            //$user2->lastname=$obj->lastname2;
+            //$user2->firstname=$obj->firstname2;
+            $user2->lastname=$user2->login;
+            $user2->firstname='';
+            print $user2->getNomUrlForVendors(1);
+        }
+        print '</td>';
+
+        // Statut
+        $userstatic->statut=$obj->statut;
+        print '<td align="right">'.$userstatic->getLibStatut(5).'</td>';
+        print '<td>&nbsp;</td>';
+        print "</tr>\n";
+        $i++;
     }
-    else
-	{
-        $error++;
-        dol_print_error($db);
-    }
+    print "</table>";
+    print "</form>\n";
+    $db->free($result);
+}
+else
+{
+    dol_print_error($db);
 }
 
-// End of page
 llxFooter();
+
 $db->close();
