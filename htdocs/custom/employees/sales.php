@@ -1252,7 +1252,7 @@ else
 			    $sql.=", ".MAIN_DB_PREFIX."element_contact as ec";
 			    $sql.=", ".MAIN_DB_PREFIX."c_type_contact as tc";
 			}
-			$sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as ef ON ef.fk_object = '.$id;
+			$sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as ef ON ef.fk_object = f.rowid';
 			$sql.= ' WHERE f.fk_soc = s.rowid';
 			$sql.= ' AND ef.vendor = '.$id;
 			$sql.= " AND f.entity = ".$conf->entity;
@@ -1335,6 +1335,9 @@ else
 
 			$sql.= $db->plimit($limit+1,$offset);
 			//print $sql;
+            //die();
+
+
 
 			$resql = $db->query($sql);
 			if ($resql)
@@ -1357,7 +1360,7 @@ else
 			    if ($search_user > 0)    $param.='&search_user=' .$search_user;
 			    if ($search_montant_ht != '')  $param.='&search_montant_ht='.$search_montant_ht;
 			    if ($search_montant_ttc != '') $param.='&search_montant_ttc='.$search_montant_ttc;
-			    print_barre_liste($langs->trans('BillsCustomers').' '.($socid?' '.$soc->name:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_accountancy.png');
+			    print_barre_liste("Facturas a clientes".' '.($socid?' '.$soc->name:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_accountancy.png');
 
 			    $i = 0;
 			    print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">'."\n";
@@ -1365,32 +1368,7 @@ else
 
 			 	// If the user can view prospects other than his'
 			    $moreforfilter='';
-			 	if ($user->rights->societe->client->voir || $socid)
-			 	{
-			 		$langs->load("commercial");
-			 		$moreforfilter.='<div class="divsearchfield">';
-			 		$moreforfilter.=$langs->trans('ThirdPartiesOfSaleRepresentative'). ': ';
-					$moreforfilter.=$formother->select_salesrepresentatives($search_sale, 'search_sale', $user, 0, 1, 'maxwidth300');
-				 	$moreforfilter.='</div>';
-			 	}
-			    // If the user can view prospects other than his'
-			    if ($user->rights->societe->client->voir || $socid)
-			    {
-					$moreforfilter.='<div class="divsearchfield">';
-			    	$moreforfilter.=$langs->trans('LinkedToSpecificUsers'). ': ';
-			        $moreforfilter.=$form->select_dolusers($search_user, 'search_user', 1, '', 0, '', '', 0, 0, 0, '', 0, '', 'maxwidth300');
-				 	$moreforfilter.='</div>';
-			    }
-				// If the user can view prospects other than his'
-				if ($conf->categorie->enabled && $user->rights->produit->lire)
-				{
-					include_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
-					$moreforfilter.='<div class="divsearchfield">';
-					$moreforfilter.=$langs->trans('IncludingProductWithTag'). ': ';
-					$cate_arbo = $form->select_all_categories(Categorie::TYPE_PRODUCT, null, 'parent', null, null, 1);
-					$moreforfilter.=$form->selectarray('search_product_category', $cate_arbo, $search_product_category, 1, 0, 0, '', 0, 0, 0, 0, '', 1);
-					$moreforfilter.='</div>';
-				}
+			 	
 
 			    if ($moreforfilter)
 			    {
