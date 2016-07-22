@@ -1259,6 +1259,7 @@ else
 			$sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as ef ON ef.fk_object = f.rowid';
 			$sql.= ' WHERE f.fk_soc = s.rowid';
 			$sql.= ' AND ef.vendor = '.$id;
+            $sql.= ' AND f.fk_statut = 1';
 			$sql.= " AND f.entity = ".$conf->entity;
 			if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
 			if ($search_product_category > 0) $sql.=" AND cp.fk_categorie = ".$search_product_category;
