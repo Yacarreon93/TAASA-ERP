@@ -1393,6 +1393,13 @@ else
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
+                echo '<input type="radio" id="weekly" name="range" value="weekly" style="margin-left:10px; margin-right: 3px">Facturas por semana';
+                echo '<div style="display:inline-block">';
+                echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
+                echo '<input class="flat" type="text" size="1" maxlength="2" name="week_general" value="'.$week.'">';
+                $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
+                echo '<input type="submit" class="button" value="Buscar">';
+                echo '</div>';
                 echo '</div>';
 
                 echo    '<script>
