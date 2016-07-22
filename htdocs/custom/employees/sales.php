@@ -1374,15 +1374,32 @@ else
                 echo '<input type="radio" name="range" value="all" style="margin-right: 3px" checked>Todas las facturas';
                 echo '<input type="radio" id="monthly" name="range" value="monthly" style="margin-left:10px; margin-right: 3px">Facturas por mes';
                 echo '<div style="display:inline-block">';
-                echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
+                echo '<select id="selectMonth" onchange="setMonthValue()">
+                      <option value="1">Enero</option>
+                      <option value="2">Febrero</option>
+                      <option value="3">Marzo</option>
+                      <option value="4">Abril</option>
+                      <option value="5">Mayo</option>
+                      <option value="6">Junio</option>
+                      <option value="7">Julio</option>
+                      <option value="8">Agosto</option>
+                      <option value="9">Septiembre</option>
+                      <option value="10">Octubre</option>
+                      <option value="11">Noviembre</option>
+                      <option value="12">Diciembre</option>
+                      </select>';
+                echo '<input type="hidden" value="1" name="month_general" id="month_general">';
+                //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
                 echo '</div>';
 
                 echo    '<script>
-                            $(document).ready(function(){
-                            });
+                            function setMonthValue() {
+                            var x = document.getElementById("selectMonth").value;
+                            document.getElementById("month_general").value = x;
+                            };
                         </script>';
 
 			    print '<table class="liste" width="100%">';
