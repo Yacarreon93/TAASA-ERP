@@ -84,6 +84,7 @@ $month	= GETPOST('month','int');
 $year	= GETPOST('year','int');
 $month_general  = GETPOST('month_general','int');
 $year_general   = GETPOST('year_general','int');
+$monthSelected =  GETPOST('monthSelected','int');
 if($month_general != '') $month = $month_general;
 if($year_general != '') $year = $year_general;
 $day_lim    = GETPOST('day_lim','int');
@@ -1410,7 +1411,8 @@ else
                       <option value="12">Diciembre</option>
                       </select>';
                 echo '<input type="hidden" value="1" name="month_week" id="month_week">';
-                echo '<input class="flat" type="text" size="1" maxlength="2" name="week" value="'.$week.'">';
+                echo '<input class="flat" type="text" size="1" maxlength="2" name="week" id="testW" value="'.$week.'">';
+                //$monsthSelected=cal_days_in_month(CAL_GREGORIAN,10,2005);
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
@@ -1426,6 +1428,14 @@ else
                             document.getElementById("month_week").value = x;
                             };
                         </script>';
+
+                    echo    '<script>
+                                jQuery("#selectMonthWeek").change(function(){
+                           jQuery.post("sales.php", {monthSelected: jQuery("#selectMonthWeek").val()}, function(){
+                               jQuery("testW").value = '.$monthSelected. ';   
+                           })
+                        });
+                            </script>';   
 
 			    print '<table class="liste" width="100%">';
 
