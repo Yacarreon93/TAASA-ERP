@@ -1611,6 +1611,22 @@ else
 
 			    print "</table>\n";
 			    print "</form>\n";
+
+                if($_POST) {
+
+?>
+                <form action="sales_report.php" method="post">
+                    <?php foreach( $_GET as $key => $val ): ?>
+                        <input type="hidden" name="<?= htmlspecialchars($key, ENT_COMPAT, 'UTF-8') ?>" value="<?= htmlspecialchars($val, ENT_COMPAT, 'UTF-8') ?>">
+                    <?php endforeach; ?>
+                </form>
+<?php
+                } else {
+
+                    print '<a class="butAction" href="sales_report.php?id='.$id.'">' . "Generar reporte" . '</a>';
+
+                }
+
 			    $db->free($resql);
 			}
 			else
