@@ -1411,8 +1411,37 @@ else
                       <option value="12">Diciembre</option>
                       </select>';
                 echo '<input type="hidden" value="1" name="month_week" id="month_week">';
-                echo '<input class="flat" type="text" size="1" maxlength="2" name="week" id="testW" value="'.$week.'">';
-                //$monsthSelected=cal_days_in_month(CAL_GREGORIAN,10,2005);
+                echo '<select id="weekSelector">';
+                echo '</select>';
+
+                //Obtaining weeks of selected month
+                $monthSelectedTest = 9;
+                $yearSelectedTest = 2016;
+                $arrayThursday = array();
+                $numberOfDays=cal_days_in_month(CAL_GREGORIAN,$monthSelectedTest,2016);
+                for($i = 1; $i < $numberOfDays; $i++) {
+                    $dayOfTheWeek = jddayofweek ( cal_to_jd(CAL_GREGORIAN, $monthSelectedTest, $i, $yearSelectedTest), 0); //returns the day in an int from 0 to 7
+                    if($dayOfTheWeek == 4) {
+                        array_push($arrayThursday, $i);
+                    }
+                }
+                $tempDayIterator = 1;
+                if($tempDayIterator == $arrayThursday[0]) {
+                    $tempDayIterator++;
+                    unset($arrayThursday[0]);
+                }
+                $arrayWeekSelector = array();
+                foreach ($arrayThursday as $helpIterator) {
+                    $weekString = 'Del '.$tempDayIterator. 'al '.$helpIterator;
+                    array_push($arrayWeekSelector,$weekString);
+                    //echo 'Del '.$tempDayIterator. 'al '.$helpIterator;
+                    $tempDayIterator = $helpIterator + 1;
+                }
+                if(end($arrayThursday) < $numberOfDays) {
+                    $weekString = 'Del '.$tempDayIterator. 'al '.$helpIterator;
+                    array_push($arrayWeekSelector,$weekString);
+                    //echo 'Del '.$tempDayIterator. 'al '.$numberOfDays;
+                }
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
@@ -1429,13 +1458,26 @@ else
                             };
                         </script>';
 
-                    echo    '<script>
-                                jQuery("#selectMonthWeek").change(function(){
-                           jQuery.post("sales.php", {monthSelected: jQuery("#selectMonthWeek").val()}, function(){
-                               jQuery("testW").value = '.$monthSelected. ';   
-                           })
-                        });
-                            </script>';   
+                //Filling week selector
+                        $k = 0;
+                foreach ($arrayWeekSelector as $helpIterator) {
+                    $k++;
+                    echo    '<script>  
+                           $("#weekSelector").append($("<option>", {
+                            value: '.$k.',
+                            text: "' . $helpIterator .' "
+                        }));
+                        </script>';
+                }
+                
+
+                    // echo    '<script>
+                    //             jQuery("#selectMonthWeek").change(function(){
+                    //        jQuery.post("sales.php", {monthSelected: jQuery("#selectMonthWeek").val()}, function(){
+                    //            jQuery("testW").value = '.$monthSelected. ';   
+                    //        })
+                    //     });
+                    //         </script>';   
 
 			    print '<table class="liste" width="100%">';
 
