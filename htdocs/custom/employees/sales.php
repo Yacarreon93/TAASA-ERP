@@ -91,6 +91,8 @@ $day_lim    = GETPOST('day_lim','int');
 $month_lim	= GETPOST('month_lim','int');
 $year_lim	= GETPOST('year_lim','int');
 $filtre	= GETPOST('filtre');
+$fromDate = GETPOST('fromDate');
+$toDate = GETPOST('toDate');
 
 // Define value to know what current user can do on users
 $canadduser=(! empty($user->admin) || $user->rights->user->user->creer);
@@ -1285,7 +1287,10 @@ else
 			if ($search_montant_ht != '') $sql.= natural_search('f.total', $search_montant_ht, 1);
 			if ($search_montant_ttc != '') $sql.= natural_search('f.total_ttc', $search_montant_ttc, 1);
 			if ($search_status != '' && $search_status >= 0) $sql.= " AND f.fk_statut = ".$db->escape($search_status);
-			if ($month > 0)
+            if ($fromDate && $toDate) {
+                $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
+            }
+			else if ($month > 0)
 			{
 			    if ($year > 0 && empty($day))
 			    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
@@ -1340,8 +1345,6 @@ else
 			}
 
 			$sql.= $db->plimit($limit+1,$offset);
-			//print $sql;
-            //die();
 
 			$resql = $db->query($sql);
 			if ($resql)
@@ -1376,7 +1379,8 @@ else
                 echo '<input type="radio" id="monthly" name="range" value="monthly" style="margin-left:10px; margin-right: 3px">Facturas por mes';
                 echo '<div style="display:inline-block">';
                 echo '<select id="selectMonth" onchange="setMonthValue()">
-                      <option value="1">Enero</option>
+                    <option value="0"></option>
+                      <option value="">Enero</option>
                       <option value="2">Febrero</option>
                       <option value="3">Marzo</option>
                       <option value="4">Abril</option>
@@ -1389,7 +1393,7 @@ else
                       <option value="11">Noviembre</option>
                       <option value="12">Diciembre</option>
                       </select>';
-                echo '<input type="hidden" value="1" name="month_general" id="month_general">';
+                echo '<input type="hidden" value="" name="month_general" id="month_general">';
                 //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
@@ -1397,6 +1401,7 @@ else
                 echo '<input type="radio" id="weekly" name="range" value="weekly" style="margin-left:10px; margin-right: 3px">Facturas por semana';
                 echo '<div style="display:inline-block">';
                 echo '<select id="selectMonthWeek" onchange="setMonthValueWeek()">
+                      <option value=""></option>
                       <option value="1">Enero</option>
                       <option value="2">Febrero</option>
                       <option value="3">Marzo</option>
@@ -1413,6 +1418,8 @@ else
                 echo '<input type="hidden" value="1" name="month_week" id="month_week">';
                 echo '<select id="weekSelector">';
                 echo '</select>';
+                echo '<div id="theHidden">';
+                echo '</div>';
 
                 
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
@@ -1448,11 +1455,51 @@ else
 
                 echo '<script>
                         jQuery("#selectMonthWeek").change(function(){
-                        jQuery.post("ajax/getRanges.php", {month: jQuery("#selectMonthWeek").val(), year: jQuery("#year_week").val() }, function (data) {
-                            var obj = JSON.parse(data);
-                            alert(obj[1].from);
-                        });
-                     });
+                            jQuery.post("ajax/getRanges.php", {month: jQuery("#selectMonthWeek").val(), year: jQuery("#year_week").val() }, function (data) {
+                                var obj = JSON.parse(data);
+                                $("#weekSelector").empty();
+                                $("#weekSelector").append($("<option>", {
+                                value: 0,
+                                text: ""
+                            }));
+                                obj.forEach(myFunction);
+                            });
+                         });
+
+                        var contador = 0;
+
+                        function myFunction(item) {
+                            
+                            $("#weekSelector").append($("<option>", {
+                                value: item.from+"/"+item.to,
+                                text: "del "+item.from+" al "+item.to
+                            }));
+                         }
+
+                         jQuery("#weekSelector").change(function(){
+                            dates = $(this).val().split("/");
+
+                            $("#theHidden").empty();
+
+                            $("#theHidden").append($("<input>", {
+                                type: "hidden",
+                                name: "fromDate",
+                                value: dates[0]
+                            }));
+
+                            $("#theHidden").append($("<input>", {
+                                type: "hidden",
+                                name: "toDate",
+                                value: dates[1]
+                            }));
+
+                         });
+
+                         $("#theHidden").append($("<input>", {
+                                type: "hidden",
+                                value: dates[0]
+                            }));
+
                         </script>';   
 
 			    print '<table class="liste" width="100%">';
