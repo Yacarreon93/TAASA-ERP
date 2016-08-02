@@ -1449,7 +1449,8 @@ else
                 echo '<script>
                         jQuery("#selectMonthWeek").change(function(){
                         jQuery.post("ajax/getRanges.php", {month: jQuery("#selectMonthWeek").val(), year: jQuery("#year_week").val() }, function (data) {
-                            alert(data.1.from);
+                            var obj = JSON.parse(data);
+                            alert(obj[1].from);
                         });
                      });
                         </script>';   
