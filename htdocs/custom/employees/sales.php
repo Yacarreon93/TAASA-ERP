@@ -82,17 +82,36 @@ $search_sale = GETPOST('search_sale','int');
 $day	= GETPOST('day','int');
 $month	= GETPOST('month','int');
 $year	= GETPOST('year','int');
+$search_type = GETPOST('range','int');
 $month_general  = GETPOST('month_general','int');
 $year_general   = GETPOST('year_general','int');
 $monthSelected =  GETPOST('monthSelected','int');
-if($month_general != '') $month = $month_general;
-if($year_general != '') $year = $year_general;
+$fromDate = GETPOST('fromDate');
+$toDate = GETPOST('toDate');
+if($search_type == 1) { //Search type refers to the date selected range (general, montlhy, weekly)
+    $year = 2016;
+    $month = "";
+}
+else if($search_type == 2) {
+    if($month_general != '') $month = $month_general;
+    if($year_general != '') $year = $year_general;
+}
+
+else if($search_type == 3) {
+    if($month_week != '') $month = $month_week;
+    if($year_week != '') $year = $year_week;
+    $fromDate = $fromDate[6] . $fromDate[7] . $fromDate[8] . $fromDate[9] . $fromDate[3] . $fromDate[4] . $fromDate[0] . $fromDate[1] . "000000";
+    $toDate = $toDate[6] . $toDate[7] . $toDate[8] . $toDate[9] . $toDate[3] . $toDate[4] . $toDate[0] . $toDate[1] . "000000";
+}
+else {
+    $fromDate = "";
+    $toDate = "";
+}
+
 $day_lim    = GETPOST('day_lim','int');
 $month_lim	= GETPOST('month_lim','int');
 $year_lim	= GETPOST('year_lim','int');
 $filtre	= GETPOST('filtre');
-$fromDate = GETPOST('fromDate');
-$toDate = GETPOST('toDate');
 
 // Define value to know what current user can do on users
 $canadduser=(! empty($user->admin) || $user->rights->user->user->creer);
@@ -1338,6 +1357,7 @@ else
 			$sql.= ' f.rowid DESC ';
 
 			$nbtotalofrecords = 0;
+
 			if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 			{
 				$result = $db->query($sql);
@@ -1347,6 +1367,7 @@ else
 			$sql.= $db->plimit($limit+1,$offset);
 
 			$resql = $db->query($sql);
+
 			if ($resql)
 			{
 			    $num = $db->num_rows($resql);
@@ -1356,6 +1377,8 @@ else
 			        $soc = new Societe($db);
 			        $soc->fetch($socid);
 			    }
+                //print_r($sql);
+                //die();
 
 			    $param='&socid='.$socid;
 			    if ($month)              $param.='&month='.$month;
@@ -1375,8 +1398,8 @@ else
                 echo "<input type='hidden' name='id' value='".$id."'>";
 
                 echo '<div style="margin-bottom: 10px">';
-                echo '<input type="radio" name="range" value="all" style="margin-right: 3px" checked>Todas las facturas';
-                echo '<input type="radio" id="monthly" name="range" value="monthly" style="margin-left:10px; margin-right: 3px">Facturas por mes';
+                echo '<input type="radio" name="range" value="1" style="margin-right: 3px" checked>Todas las facturas';
+                echo '<input type="radio" id="monthly_radio" name="range" value="2" style="margin-left:10px; margin-right: 3px">Facturas por mes';
                 echo '<div style="display:inline-block">';
                 echo '<select id="selectMonth" onchange="setMonthValue()">
                     <option value="0"></option>
@@ -1398,7 +1421,7 @@ else
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
                 echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
-                echo '<input type="radio" id="weekly" name="range" value="weekly" style="margin-left:10px; margin-right: 3px">Facturas por semana';
+                echo '<input type="radio" id="weekly_radio" name="range" value="3" style="margin-left:10px; margin-right: 3px">Facturas por semana';
                 echo '<div style="display:inline-block">';
                 echo '<select id="selectMonthWeek" onchange="setMonthValueWeek()">
                       <option value=""></option>
@@ -1415,7 +1438,7 @@ else
                       <option value="11">Noviembre</option>
                       <option value="12">Diciembre</option>
                       </select>';
-                echo '<input type="hidden" value="1" name="month_week" id="month_week">';
+                echo '<input type="hidden" value="" name="month_week" id="month_week">';
                 echo '<select id="weekSelector">';
                 echo '</select>';
                 echo '<div id="theHidden">';
@@ -1431,10 +1454,12 @@ else
                             function setMonthValue() {
                             var x = document.getElementById("selectMonth").value;
                             document.getElementById("month_general").value = x;
+                            document.getElementById("monthly_radio").checked = true;
                             };
                             function setMonthValueWeek() {
                             var x = document.getElementById("selectMonthWeek").value;
                             document.getElementById("month_week").value = x;
+                            document.getElementById("weekly_radio").checked = true;
                             };
                         </script>';
 
