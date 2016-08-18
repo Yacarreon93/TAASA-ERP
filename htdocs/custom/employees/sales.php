@@ -97,7 +97,7 @@ else if($search_type == 2) {
     if($year_general != '') $year = $year_general;
 }
 
-else if($search_type == 3) {
+else if($search_type == 3) { //Seting dates to correct sql format
     if($month_week != '') $month = $month_week;
     if($year_week != '') $year = $year_week;
     $fromDate = $fromDate[6] . $fromDate[7] . $fromDate[8] . $fromDate[9] . $fromDate[3] . $fromDate[4] . $fromDate[0] . $fromDate[1] . "000000";
@@ -1397,10 +1397,10 @@ else
 
                 echo "<input type='hidden' name='id' value='".$id."'>";
 
-                echo '<div style="margin-bottom: 10px">';
+                echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:10px;">';
                 echo '<input type="radio" name="range" value="1" style="margin-right: 3px" checked>Todas las facturas';
-                echo '<input type="radio" id="monthly_radio" name="range" value="2" style="margin-left:10px; margin-right: 3px">Facturas por mes';
-                echo '<div style="display:inline-block">';
+                echo '<input type="radio" id="monthly_radio" name="range" value="2" style="margin-left:10px; margin-right: 3px;">Facturas por mes';
+                echo '<div style="display:inline-block;">';
                 echo '<select id="selectMonth" onchange="setMonthValue()">
                     <option value="0"></option>
                       <option value="">Enero</option>
@@ -1419,10 +1419,9 @@ else
                 echo '<input type="hidden" value="" name="month_general" id="month_general">';
                 //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
-                echo '<input type="submit" class="button" value="Buscar">';
                 echo '</div>';
                 echo '<input type="radio" id="weekly_radio" name="range" value="3" style="margin-left:10px; margin-right: 3px">Facturas por semana';
-                echo '<div style="display:inline-block">';
+                echo '<div style="display:inline">';
                 echo '<select id="selectMonthWeek" onchange="setMonthValueWeek()">
                       <option value=""></option>
                       <option value="1">Enero</option>
@@ -1438,15 +1437,14 @@ else
                       <option value="11">Noviembre</option>
                       <option value="12">Diciembre</option>
                       </select>';
-                echo '<input type="hidden" value="" name="month_week" id="month_week">';
-                echo '<select id="weekSelector">';
+                echo '<select id="weekSelector" class="flat" style="width:100px">';
                 echo '</select>';
-                echo '<div id="theHidden">';
-                echo '</div>';
-
+                echo '<input type="hidden" value="" name="month_week" id="month_week">';
                 
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
-                echo '<input type="submit" class="button" value="Buscar">';
+                echo '<div id="theHidden" style="position:absolute">';
+                echo '</div>';
+                echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px;">';
                 echo '</div>';
                 echo '</div>';
 
@@ -1461,6 +1459,13 @@ else
                             document.getElementById("month_week").value = x;
                             document.getElementById("weekly_radio").checked = true;
                             };
+                            function setActualDate() {
+                            var today = new Date();
+                            var yyyy = today.getFullYear();
+                            document.getElementById("year_week").value = yyyy;
+                            document.getElementById("year_general").value = yyyy;
+                            }
+                            window.onload = setActualDate;
                         </script>';
 
                 //Filling week selector
