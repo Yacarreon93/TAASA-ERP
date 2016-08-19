@@ -144,6 +144,11 @@ function user_prepare_head_for_vendors($object)
     $head[$h][2] = 'sales';
     $h++;
 
+    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/commission.php?id='.$object->id;
+    $head[$h][1] = "Comisión";
+    $head[$h][2] = 'comiission';
+    $h++;
+
     return $head;
 }
 

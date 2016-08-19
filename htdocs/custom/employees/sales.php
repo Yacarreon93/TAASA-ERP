@@ -1250,7 +1250,7 @@ else
          */
         if ($action != 'edit')
         {
-			dol_fiche_head($head, 'user', $title, 0, 'user');
+			dol_fiche_head($head, 'sales', $title, 0, 'user');
 
             $form = new Form($db);
 			$formother = new FormOther($db);
