@@ -7,8 +7,9 @@
     if (! $res && file_exists("../../../../dolibarr/htdocs/main.inc.php")) $res=@include '../../../../dolibarr/htdocs/main.inc.php';   // Used on dev env only
     if (! $res) die("Include of main fails");
     // Change this following line to use the correct relative path from htdocs
-    include_once(DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php');
+    include_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+    require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
     $id         = GETPOST('id','int');
     $action     = GETPOST('action','alpha');
