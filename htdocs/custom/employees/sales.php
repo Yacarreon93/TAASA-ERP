@@ -316,8 +316,6 @@ llxHeader('',$langs->trans("UserCard"));
 			foreach ($listfield as $key => $value) $sql.= $listfield[$key].' '.$sortorder.',';
 			$sql.= ' f.rowid DESC ';
 
-            echo $sql;
-
 			$nbtotalofrecords = 0;
 
 			if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))

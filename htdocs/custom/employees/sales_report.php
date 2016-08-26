@@ -33,6 +33,7 @@
 
     $search_user = GETPOST('search_user','int');
     $search_sale = GETPOST('search_sale','int');
+    $search_type = GETPOST('range','int');
     $day    = GETPOST('day','int');
     $month  = GETPOST('month','int');
     $year   = GETPOST('year','int');
@@ -62,6 +63,7 @@ else {
     $fromDate = "";
     $toDate = "";
 }
+
     $day_lim    = GETPOST('day_lim','int');
     $month_lim  = GETPOST('month_lim','int');
     $year_lim   = GETPOST('year_lim','int');
@@ -174,8 +176,6 @@ else {
             $listfield=explode(',',$sortfield);
             foreach ($listfield as $key => $value) $sql.= $listfield[$key].' '.$sortorder.',';
             $sql.= ' f.rowid DESC ';
-
-    echo $sql; die;
 
     $res = $db->query($sql) or die('ERROR en la consulta: '.$sql); 
     $rows = $db->num_rows($res);
