@@ -363,7 +363,7 @@ llxHeader('',$langs->trans("UserCard"));
                 echo '<div style="display:inline-block;">';
                 echo '<select id="selectMonth" onchange="setMonthValue()">
                     <option value="0"></option>
-                      <option value="">Enero</option>
+                      <option value="1">Enero</option>
                       <option value="2">Febrero</option>
                       <option value="3">Marzo</option>
                       <option value="4">Abril</option>

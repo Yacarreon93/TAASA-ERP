@@ -17,6 +17,7 @@ require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/invoice.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/accountancy/class/accountingaccount.class.php';  //Importing class accounting; this is required in this file
 if (! empty($conf->commande->enabled)) require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 if (! empty($conf->projet->enabled))
 {
@@ -181,6 +182,7 @@ if ($id > 0)
 		    if ($userid == -1) $sql.=' AND f.fk_user_author IS NULL';
 		    else $sql.=' AND f.fk_user_author = '.$userid;
 		}
+
 		if ($filtre)
 		{
 		    $aFilter = explode(',', $filtre);
@@ -253,8 +255,10 @@ if ($id > 0)
 			$nbtotalofrecords = $db->num_rows($result);
 		}
 
+
 		$sql.= $db->plimit($limit+1,$offset);
 
+/// first print sql test
 		$resql = $db->query($sql);
 		if ($resql)
 		{
@@ -328,12 +332,14 @@ if ($id > 0)
                 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON p.rowid = pf.fk_paiement";
                 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON pf.fk_facture = f.rowid";
                 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON f.fk_soc = s.rowid";
+                $sql.= " JOIN ".MAIN_DB_PREFIX."facture_extrafields as ef ON ef.fk_object = f.rowid"; //Added extrafields to locate vendor
                 if (!$user->rights->societe->client->voir && !$socid)
                 {
                     $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_commerciaux as sc ON s.rowid = sc.fk_soc";
                 }
                 $sql.= " WHERE p.fk_paiement = c.id";
                 $sql.= " AND p.entity = ".$conf->entity;
+                $sql.= ' AND ef.vendor = '.$id; //Searching specific vendor
                 if (! $user->rights->societe->client->voir && ! $socid)
                 {
                     $sql.= " AND sc.fk_user = " .$user->id;
@@ -384,8 +390,51 @@ if ($id > 0)
                 $paramlist.=($search_ref?"&search_ref=".$search_ref:"");
                 $paramlist.=($search_company?"&search_company=".$search_company:"");
                 $paramlist.=($search_amount?"&search_amount=".$search_amount:"");
-
+                if ($month)              $paramlist.='&month='.$month;
+			    if ($year)               $paramlist.='&year=' .$year;
                 print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:10px;">';
+                echo '<p>Seleccionar Mes</p>';
+                echo '<div style="display:inline-block;">';
+                echo '<select id="selectMonth" onchange="setMonthValue()" name="month">
+                      <option value="0"></option>
+                      <option value="1">Enero</option>
+                      <option value="2">Febrero</option>
+                      <option value="3">Marzo</option>
+                      <option value="4">Abril</option>
+                      <option value="5">Mayo</option>
+                      <option value="6">Junio</option>
+                      <option value="7">Julio</option>
+                      <option value="8">Agosto</option>
+                      <option value="9">Septiembre</option>
+                      <option value="10">Octubre</option>
+                      <option value="11">Noviembre</option>
+                      <option value="12">Diciembre</option>
+                      </select>';
+                //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
+                $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
+                echo '</div>';
+                echo '</div>';
+                //Script to auto fill date search filter
+				echo '<script>
+							function setMonthValue() {
+                            var x = document.getElementById("selectMonth").value;
+                            document.getElementById("month_general").value = x;
+                            };
+                            function setActualDate() {
+                            var today = new Date();
+                            var mm = today.getMonth()+1;
+                            var yyyy = today.getFullYear();
+                            document.getElementById("selectMonth").value = mm;
+                            document.getElementById("year_general").value = yyyy;
+                            };
+                            window.onload = setActualDate;
+                        </script>';
+
                 print '<table class="noborder" width="100%">';
                 print '<tr class="liste_titre">';
                 print_liste_field_titre($langs->trans("RefPayment"),$_SERVER["PHP_SELF"],"p.rowid","",$paramlist,"",$sortfield,$sortorder);
@@ -437,6 +486,9 @@ if ($id > 0)
                 print "</tr>\n";
 
                 $var=true;
+                $companystatic = new Client($db);
+                $paymentstatic = new Paiement($db);
+                $accountstatic=new AccountingAccount($db);
                 while ($i < min($num,$limit))
                 {
                     $objp = $db->fetch_object($resql);
@@ -457,7 +509,7 @@ if ($id > 0)
                     {
                         $companystatic->id=$objp->socid;
                         $companystatic->name=$objp->name;
-                        print $companystatic->getNomUrl(1,'',24);
+                        print $companystatic->getNomUrl(1,'',24); 
                     }
                     else print '&nbsp;';
                     print '</td>';
@@ -468,7 +520,7 @@ if ($id > 0)
                     {
                         $accountstatic->id=$objp->bid;
                         $accountstatic->label=$objp->label;
-                        print $accountstatic->getNomUrl(1);
+                        print $accountstatic->getNomUrl(1); 
                     }
                     else print '&nbsp;';
                     print '</td>';
