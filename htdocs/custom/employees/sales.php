@@ -404,7 +404,7 @@ llxHeader('',$langs->trans("UserCard"));
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
                 echo '<div id="theHidden" style="position:absolute">';
                 echo '</div>';
-                echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px;">';
+                echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
                 echo '</div>';
                 echo '</div>';
 
