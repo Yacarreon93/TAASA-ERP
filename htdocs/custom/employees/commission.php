@@ -258,7 +258,6 @@ if ($id > 0)
 
 		$sql.= $db->plimit($limit+1,$offset);
 
-/// first print sql test
 		$resql = $db->query($sql);
 		if ($resql)
 		{
@@ -313,8 +312,19 @@ if ($id > 0)
                 $reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
                 $sql.=$hookmanager->resPrint;
             }
-            else
+            else  //Begins the query displayed in the page
             {
+               $now = new \DateTime('now');
+			   $actual_month = $now->format('m');
+			   $actual_year = $now->format('Y');
+
+			   if (!$month ) {
+			   		$month = $actual_month;
+			   }
+			   if (!$year) {
+			   		$year = $actual_year;
+			   }
+
                 $sql = "SELECT DISTINCT p.rowid, p.datep as dp, p.amount,"; // DISTINCT is to avoid duplicate when there is a link to sales representatives
                 $sql.= " p.statut, p.num_paiement,";
                 $sql.= " c.code as paiement_code,";
@@ -377,9 +387,7 @@ if ($id > 0)
             $sql.= $db->order($sortfield,$sortorder);
             $sql.= $db->plimit($limit+1, $offset);
             //print "$sql";
-
             $resql = $db->query($sql);
-
             if ($resql)
             {
                 $num = $db->num_rows($resql);
@@ -393,14 +401,14 @@ if ($id > 0)
                 if ($month)              $paramlist.='&month='.$month;
 			    if ($year)               $paramlist.='&year=' .$year;
                 print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">';
+                echo "<input type='hidden' name='id' value='".$id."'>";
                 echo '<br>';
                 echo '<br>';
                 echo '<br>';
-                echo '<br>';
-                echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:10px;">';
-                echo '<p>Seleccionar Mes</p>';
+                echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
+                echo '<p style="margin:0">Seleccionar Mes</p>';
                 echo '<div style="display:inline-block;">';
-                echo '<select id="selectMonth" onchange="setMonthValue()" name="month">
+                echo '<select id="selectMonth" name="month_general">
                       <option value="0"></option>
                       <option value="1">Enero</option>
                       <option value="2">Febrero</option>
@@ -417,19 +425,16 @@ if ($id > 0)
                       </select>';
                 //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
+                echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px;">';
                 echo '</div>';
                 echo '</div>';
                 //Script to auto fill date search filter
 				echo '<script>
-							function setMonthValue() {
-                            var x = document.getElementById("selectMonth").value;
-                            document.getElementById("month_general").value = x;
-                            };
                             function setActualDate() {
                             var today = new Date();
                             var mm = today.getMonth()+1;
                             var yyyy = today.getFullYear();
-                            document.getElementById("selectMonth").value = mm;
+                            document.getElementById("selectMonth").value =' . $month . '
                             document.getElementById("year_general").value = yyyy;
                             };
                             window.onload = setActualDate;
@@ -488,7 +493,8 @@ if ($id > 0)
                 $var=true;
                 $companystatic = new Client($db);
                 $paymentstatic = new Paiement($db);
-                $accountstatic=new AccountingAccount($db);
+                $accountstatic= new AccountingAccount($db);
+                $total_amount = 0;
                 while ($i < min($num,$limit))
                 {
                     $objp = $db->fetch_object($resql);
@@ -525,6 +531,7 @@ if ($id > 0)
                     else print '&nbsp;';
                     print '</td>';
                     print '<td align="right">'.price($objp->amount).'</td>';
+                    $total_amount += price($objp->amount);
 
                     if (! empty($conf->global->BILL_ADD_PAYMENT_VALIDATION))
                     {
@@ -540,9 +547,30 @@ if ($id > 0)
 
                     $i++;
                 }
+
+                if (($offset + $num) <= $limit)
+		        {
+		            // Print total
+		            print '<tr class="liste_total">';
+		            print '<td class="liste_total" colspan="5" align="left">'.$langs->trans('Total').'</td>';
+		            print '<td class="liste_total" align="right">'.number_format($total_amount,2).'</td>';
+		            print '<td class="liste_total"></td>';
+		            print '<td class="liste_total"></td>';
+		            print '</tr>';
+		        }
+
                 print "</table>\n";
                 print "</form>\n";
+
+                echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
+                echo '<p style="margin:0">Comisión Total</p>';
+                echo '<div style="display:inline-block;">';
+                echo '</div>';
+                echo '</div>';
+                echo '<p style="margin-left:5px;">'.number_format(($total_amount * ($object->array_options['options_commission'])/ 100),2).'</p>';
             }
+
+
             else
             {
                 dol_print_error($db);
