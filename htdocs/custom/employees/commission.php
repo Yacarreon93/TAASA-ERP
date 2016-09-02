@@ -425,7 +425,7 @@ if ($id > 0)
                       </select>';
                 //echo '<input class="flat" type="text" size="1" maxlength="2" name="month_general" value="'.$month.'" style="margin-left:10px;">';
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
-                echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
+                print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
                 echo '</div>';
                 echo '</div>';
                 //Script to auto fill date search filter
