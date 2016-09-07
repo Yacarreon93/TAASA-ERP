@@ -533,7 +533,6 @@ if ($id > 0)
                     print '<td align="right">'.price($objp->amount).'</td>';
                     $temp1 = str_replace(".","",price($objp->amount));
                     $formatedPrice = str_replace(",",".",$temp1);
-                    print $formatedPrice;
                     $total_amount += $formatedPrice;
 
                     if (! empty($conf->global->BILL_ADD_PAYMENT_VALIDATION))
