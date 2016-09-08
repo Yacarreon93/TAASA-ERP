@@ -280,7 +280,7 @@ class modVendors extends DolibarrModules
 
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
-									'titre'=>'Reporte 1',
+									'titre'=>'Reporte por agente',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_report1',
 									'url'=>'/vendors/reports/report1.php',
@@ -294,7 +294,7 @@ class modVendors extends DolibarrModules
 
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
-									'titre'=>'Reporte 2',
+									'titre'=>'Reporte por zona',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_report2',
 									'url'=>'/vendors/reports/report2.php',
