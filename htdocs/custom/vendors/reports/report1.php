@@ -125,62 +125,59 @@ if($action == 'report') {
 			$var=true;
 			while ($vendor = $db->fetch_object($resql_vendors)) {
 
-				if($vendor->rowid > 0) {
+				$sales = 0;
+				$amount = 0;
+				$debit = 0;
 
-					$sales = 0;
-					$amount = 0;
-					$debit = 0;
+				$sql_fac =  " SELECT * FROM ".MAIN_DB_PREFIX."facture f";
+				$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
+				$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
 
-					$sql_fac =  " SELECT * FROM ".MAIN_DB_PREFIX."facture f";
-					$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
-					$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
+				$resql_fac = $db->query($sql_fac);
+				if($sql_fac) {
+					while($invoice = $db->fetch_object($resql_fac)) {
 
-					$resql_fac = $db->query($sql_fac);
-					if($sql_fac) {
-						while($invoice = $db->fetch_object($resql_fac)) {
+						$sales += $invoice->total_ttc;
 
-							$sales += $invoice->total_ttc;
+						$sql =  " SELECT * FROM ".MAIN_DB_PREFIX."paiement p ";
+						$sql .= " JOIN ".MAIN_DB_PREFIX."paiement_facture pf ON pf.fk_paiement = p.rowid ";
+						$sql .= " WHERE pf.fk_facture = ".$invoice->rowid;
+						if ($fromDate && $toDate) {
+			                $sql.= " AND p.datep BETWEEN '".$fromDate."' AND '".$toDate."'";
+			            }
 
-							$sql =  " SELECT * FROM ".MAIN_DB_PREFIX."paiement p ";
-							$sql .= " JOIN ".MAIN_DB_PREFIX."paiement_facture pf ON pf.fk_paiement = p.rowid ";
-							$sql .= " WHERE pf.fk_facture = ".$invoice->rowid;
-							if ($fromDate && $toDate) {
-				                $sql.= " AND p.datep BETWEEN '".$fromDate."' AND '".$toDate."'";
-				            }
-
-							$resql = $db->query($sql);
-							if($resql) {									
-								while($payment = $db->fetch_object($sql)) {
-									$amount += $payment->amount;
-								}
+						$resql = $db->query($sql);
+						if($resql) {									
+							while($payment = $db->fetch_object($sql)) {
+								$amount += $payment->amount;
 							}
 						}
-					}	
+					}
+				}	
 
-					$debit = $sales - $amount;
+				$debit = $sales - $amount;
 
-					$user = new User($db);
-			        $user->fetch($vendor->rowid);
+				$user = new User($db);
+		        $user->fetch($vendor->rowid);
 
-					$var=!$var;
-					print "<tr ".$bc[$var].">";
-					print '<td>';	        
-			        print $user->getNomUrl(1);
-			        print '</td>';
-			        print '<td>';
-			        print $sales;
-			        print '</td>';
-			        print '<td>';
-			        print $amount;
-			        print '</td>';
-			        print '<td>';
-			        print $debit;
-			        print '</td>';
-			        print '<td>';
-			        print $unknown;
-			        print '</td>';
-
-		    	}					
+				$var=!$var;
+				print "<tr ".$bc[$var].">";
+				print '<td>';	        
+		        print $user->getNomUrl(1);
+		        print '</td>';
+		        print '<td>';
+		        print $sales;
+		        print '</td>';
+		        print '<td>';
+		        print $amount;
+		        print '</td>';
+		        print '<td>';
+		        print $debit;
+		        print '</td>';
+		        print '<td>';
+		        print $unknown;
+		        print '</td>';
+					
 			}
 		}
 
@@ -194,7 +191,7 @@ if($action == 'report') {
         	print '<input type="hidden" name="'.htmlspecialchars($key, ENT_COMPAT, 'UTF-8').'" ';
         	print 'value="'.htmlspecialchars($val, ENT_COMPAT, 'UTF-8').'">';  
         }                     
-        print '<input type="submit" value="Generar reporte" style="float:right">';
+        print '<input type="submit" class="button" value="Generar reporte" style="float:right">';
         print '</form>';
 
 	}
