@@ -47,7 +47,19 @@ print ' <div id="theHidden"></div> ';
 print '</form>';
 
 echo '<script>';
-echo ' 	jQuery("#remonth").change(function() {
+echo '	jQuery(document).ready(function(){
+			jQuery.post("../ajax/getRanges.php", {month: jQuery("#remonth").val(), year: jQuery("#reyear").val() }, function (data) {
+		        var obj = JSON.parse(data);
+		        $("#reperiod").empty();
+		        $("#reperiod").append($("<option>", {
+		        value: 0,
+		        text: ""
+		    	}));
+		        obj.forEach(fillDateRanges);
+		    });
+		});
+
+		jQuery("#remonth").change(function() {
 		    jQuery.post("../ajax/getRanges.php", {month: jQuery("#remonth").val(), year: jQuery("#reyear").val() }, function (data) {
 		        var obj = JSON.parse(data);
 		        $("#reperiod").empty();
