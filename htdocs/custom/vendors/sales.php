@@ -1,5 +1,4 @@
 <?php
-
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
@@ -405,7 +404,6 @@ llxHeader('',$langs->trans("UserCard"));
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
                 echo '<div id="theHidden" style="position:absolute">';
                 echo '</div>';
-                //echo '<input type="image" class="liste_titre" name="button_search" src="/Taasa-ERP/TAASA-ERP/htdocs/theme/eldy/img/search.png" value="Buscar" title="Buscar" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
                 print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
                 echo '</div>';
                 echo '</div>';
