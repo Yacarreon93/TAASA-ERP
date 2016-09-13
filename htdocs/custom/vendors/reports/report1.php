@@ -153,31 +153,31 @@ if($action == 'report') {
 							}
 						}
 					}
-				}	
-
-				$debit = $sales - $amount;
-
-				$user = new User($db);
-		        $user->fetch($vendor->rowid);
-
-				$var=!$var;
-				print "<tr ".$bc[$var].">";
-				print '<td>';	        
-		        print $user->getNomUrl(1);
-		        print '</td>';
-		        print '<td>';
-		        print $sales;
-		        print '</td>';
-		        print '<td>';
-		        print $amount;
-		        print '</td>';
-		        print '<td>';
-		        print $debit;
-		        print '</td>';
-		        print '<td>';
-		        print $unknown;
-		        print '</td>';
 					
+					$debit = $sales - $amount;
+
+					$user = new User($db);
+			        $user->fetch($vendor->rowid);
+
+					$var=!$var;
+					print "<tr ".$bc[$var].">";
+					print '<td>';	        
+			        print $user->getNomUrl(1);
+			        print '</td>';
+			        print '<td>';
+			        print $sales;
+			        print '</td>';
+			        print '<td>';
+			        print $amount;
+			        print '</td>';
+			        print '<td>';
+			        print $debit;
+			        print '</td>';
+			        print '<td>';
+			        print $unknown;
+			        print '</td>';
+
+				}						
 			}
 		}
 
