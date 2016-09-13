@@ -18,20 +18,20 @@
  */
 
 /**
- * 	\defgroup   employees     Module Employees
+ * 	\defgroup   vendors     Module Vendors
  *  \brief      Example of a module descriptor.
- *				Such a file must be copied into htdocs/employees/core/modules directory.
- *  \file       htdocs/employees/core/modules/modEmployees.class.php
- *  \ingroup    employees
- *  \brief      Description and activation file for module Employees
+ *				Such a file must be copied into htdocs/vendors/core/modules directory.
+ *  \file       htdocs/vendors/core/modules/modVendors.class.php
+ *  \ingroup    vendors
+ *  \brief      Description and activation file for module Vendors
  */
 include_once DOL_DOCUMENT_ROOT .'/core/modules/DolibarrModules.class.php';
 
 
 /**
- *  Description and activation class for module Employees
+ *  Description and activation class for module Vendors
  */
-class modEmployees extends DolibarrModules
+class modVendors extends DolibarrModules
 {
 	/**
 	 * Constructor. Define names, constants, directories, boxes, permissions
@@ -48,19 +48,19 @@ class modEmployees extends DolibarrModules
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
 		$this->numero = 100000;
 		// Key text used to identify module (for permissions, menus, etc...)
-		$this->rights_class = 'employees';
+		$this->rights_class = 'vendors';
 
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
-		$this->family = "other";
+		$this->family = "Personalizados (TAASA)";
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
-		$this->name = preg_replace('/^mod/i','',get_class($this));
+		$this->name = "Vendedores";
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
-		$this->description = "Description of module Employees";
+		$this->description = "Description of module Vendors";
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or 'dolibarr_deprecated' or version
 		$this->version = '1.0';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
-		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
+		$this->const_name = 'MAIN_MODULE_'.strtoupper(preg_replace('/^mod/i','',get_class($this)));
 		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
 		$this->special = 0;
 		// Name of image file used for this module.
@@ -69,9 +69,9 @@ class modEmployees extends DolibarrModules
 		$this->picto='generic';
 
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
-		// for default path (eg: /employees/core/xxxxx) (0=disable, 1=enable)
-		// for specific path of parts (eg: /employees/core/modules/barcode)
-		// for specific css file (eg: /employees/css/employees.css.php)
+		// for default path (eg: /vendors/core/xxxxx) (0=disable, 1=enable)
+		// for specific path of parts (eg: /vendors/core/modules/barcode)
+		// for specific css file (eg: /vendors/css/vendors.css.php)
 		//$this->module_parts = array(
 		//                        	'triggers' => 0,                                 	// Set this to 1 if module has its own trigger directory (core/triggers)
 		//							'login' => 0,                                    	// Set this to 1 if module has its own login method directory (core/login)
@@ -81,20 +81,20 @@ class modEmployees extends DolibarrModules
 		//                        	'tpl' => 0,                                      	// Set this to 1 if module overwrite template dir (core/tpl)
 		//							'barcode' => 0,                                  	// Set this to 1 if module has its own barcode directory (core/modules/barcode)
 		//							'models' => 0,                                   	// Set this to 1 if module has its own models directory (core/modules/xxx)
-		//							'css' => array('/employees/css/employees.css.php'),	// Set this to relative path of css file if module has its own css file
-	 	//							'js' => array('/employees/js/employees.js'),          // Set this to relative path of js file if module must load a js on all pages
+		//							'css' => array('/vendors/css/vendors.css.php'),	// Set this to relative path of css file if module has its own css file
+	 	//							'js' => array('/vendors/js/vendors.js'),          // Set this to relative path of js file if module must load a js on all pages
 		//							'hooks' => array('hookcontext1','hookcontext2')  	// Set here all hooks context managed by module
 		//							'dir' => array('output' => 'othermodulename'),      // To force the default directories names
-		//							'workflow' => array('WORKFLOW_MODULE1_YOURACTIONTYPE_MODULE2'=>array('enabled'=>'! empty($conf->module1->enabled) && ! empty($conf->module2->enabled)', 'picto'=>'yourpicto@employees')) // Set here all workflow context managed by module
+		//							'workflow' => array('WORKFLOW_MODULE1_YOURACTIONTYPE_MODULE2'=>array('enabled'=>'! empty($conf->module1->enabled) && ! empty($conf->module2->enabled)', 'picto'=>'yourpicto@vendors')) // Set here all workflow context managed by module
 		//                        );
 		$this->module_parts = array();
 
 		// Data directories to create when module is enabled.
-		// Example: this->dirs = array("/employees/temp");
+		// Example: this->dirs = array("/vendors/temp");
 		$this->dirs = array();
 
-		// Config pages. Put here list of php page, stored into employees/admin directory, to use to setup module.
-		$this->config_page_url = array("mysetuppage.php@employees");
+		// Config pages. Put here list of php page, stored into vendors/admin directory, to use to setup module.
+		$this->config_page_url = array("mysetuppage.php@vendors");
 
 		// Dependencies
 		$this->hidden = false;			// A condition to hide module
@@ -103,7 +103,7 @@ class modEmployees extends DolibarrModules
 		$this->conflictwith = array();	// List of modules id this module is in conflict with
 		$this->phpmin = array(5,0);					// Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3,0);	// Minimum version of Dolibarr required by module
-		$this->langfiles = array("mylangfile@employees");
+		$this->langfiles = array("mylangfile@vendors");
 
 		// Constants
 		// List of particular constants to add when module is enabled (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
@@ -113,8 +113,8 @@ class modEmployees extends DolibarrModules
 		$this->const = array();
 
 		// Array to add new pages in new tabs
-		// Example: $this->tabs = array('objecttype:+tabname1:Title1:mylangfile@employees:$user->rights->employees->read:/employees/mynewtab1.php?id=__ID__',  					// To add a new tab identified by code tabname1
-        //                              'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@employees:$user->rights->othermodule->read:/employees/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
+		// Example: $this->tabs = array('objecttype:+tabname1:Title1:mylangfile@vendors:$user->rights->vendors->read:/vendors/mynewtab1.php?id=__ID__',  					// To add a new tab identified by code tabname1
+        //                              'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@vendors:$user->rights->othermodule->read:/vendors/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
         //                              'objecttype:-tabname:NU:conditiontoremove');                                                     										// To remove an existing tab identified by code tabname
 		// where objecttype can be
 		// 'categories_x'	  to add a tab in category view (replace 'x' by type of category (0=product, 1=supplier, 2=customer, 3=member)
@@ -139,16 +139,16 @@ class modEmployees extends DolibarrModules
         $this->tabs = array();
 
         // Dictionaries
-	    if (! isset($conf->employees->enabled))
+	    if (! isset($conf->vendors->enabled))
         {
-        	$conf->employees=new stdClass();
-        	$conf->employees->enabled=0;
+        	$conf->vendors=new stdClass();
+        	$conf->vendors->enabled=0;
         }
 		$this->dictionaries=array();
         /* Example:
-        if (! isset($conf->employees->enabled)) $conf->employees->enabled=0;	// This is to avoid warnings
+        if (! isset($conf->vendors->enabled)) $conf->vendors->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
-            'langs'=>'mylangfile@employees',
+            'langs'=>'mylangfile@vendors',
             'tabname'=>array(MAIN_DB_PREFIX."table1",MAIN_DB_PREFIX."table2",MAIN_DB_PREFIX."table3"),		// List of tables we want to see into dictonnary editor
             'tablib'=>array("Table1","Table2","Table3"),													// Label of tables
             'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table1 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table2 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table3 as f'),	// Request to select fields
@@ -157,7 +157,7 @@ class modEmployees extends DolibarrModules
             'tabfieldvalue'=>array("code,label","code,label","code,label"),																				// List of fields (list of fields to edit a record)
             'tabfieldinsert'=>array("code,label","code,label","code,label"),																			// List of fields (list of fields for insert)
             'tabrowid'=>array("rowid","rowid","rowid"),																									// Name of columns with primary key (try to always name it 'rowid')
-            'tabcond'=>array($conf->employees->enabled,$conf->employees->enabled,$conf->employees->enabled)												// Condition to show each dictionary
+            'tabcond'=>array($conf->vendors->enabled,$conf->vendors->enabled,$conf->vendors->enabled)												// Condition to show each dictionary
         );
         */
 
@@ -198,26 +198,26 @@ class modEmployees extends DolibarrModules
 									'titre'=>'Vendedores',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_left',
-									'url'=>'/employees/index.php',
+									'url'=>'/vendors/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>100,
-									'enabled'=>'$conf->employees->enabled',	// Define condition to show or hide menu entry. Use '$conf->employees->enabled' if entry must be visible if module is enabled.
-									'perms'=>'1',			                // Use 'perms'=>'$user->rights->employees->level1->level2' if you want your menu with a permission rules
+									'enabled'=>'$conf->vendors->enabled',	// Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
-		//
+	
 		// Example to declare a Left Menu entry into an existing Top menu entry:
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>'Vendedores',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_main',
-									'url'=>'/employees/pagelevel2.php',
+									'url'=>'/vendors/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>101,
-									'enabled'=>'$conf->employees->enabled',  // Define condition to show or hide menu entry. Use '$conf->employees->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-									'perms'=>'1',			                // Use 'perms'=>'$user->rights->employees->level1->level2' if you want your menu with a permission rules
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
@@ -227,25 +227,94 @@ class modEmployees extends DolibarrModules
 									'titre'=>'Nuevo vendedor',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_new',
-									'url'=>'/employees/pagelevel2.php',
+									'url'=>'/vendors/vendor.php?action=create',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>102,
-									'enabled'=>'$conf->employees->enabled',  // Define condition to show or hide menu entry. Use '$conf->employees->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-									'perms'=>'1',			                // Use 'perms'=>'$user->rights->employees->level1->level2' if you want your menu with a permission rules
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Listado',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_list',
+									'url'=>'/vendors/vendor.php?action=list',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>103,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Estadísticas',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_stats',
+									'url'=>'/vendors/stats/index.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>104,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Reportes',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_reports',
+									'url'=>'/vendors/reports/index.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>105,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Reporte por agente',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_report1',
+									'url'=>'/vendors/reports/report1.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>106,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Reporte por zona',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_report2',
+									'url'=>'/vendors/reports/report2.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>107,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
 
 		// Exports
 		$r=1;
 
 		// Example:
 		// $this->export_code[$r]=$this->rights_class.'_'.$r;
-		// $this->export_label[$r]='Employees';	// Translation key (used only if key ExportDataset_xxx_z not found)
+		// $this->export_label[$r]='Vendors';	// Translation key (used only if key ExportDataset_xxx_z not found)
         // $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
-        // $this->export_icon[$r]='generic:Employees';
-		// $this->export_permission[$r]=array(array("employees","level1","level2"));
+        // $this->export_icon[$r]='generic:Vendors';
+		// $this->export_permission[$r]=array(array("vendors","level1","level2"));
 		// $this->export_fields_array[$r]=array('s.rowid'=>"IdCompany",'s.nom'=>'CompanyName','s.address'=>'Address','s.zip'=>'Zip','s.town'=>'Town','s.fk_pays'=>'Country','s.phone'=>'Phone','s.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountancyCode','s.code_compta_fournisseur'=>'SupplierAccountancyCode','f.rowid'=>"InvoiceId",'f.facnumber'=>"InvoiceRef",'f.datec'=>"InvoiceDateCreation",'f.datef'=>"DateInvoice",'f.total'=>"TotalHT",'f.total_ttc'=>"TotalTTC",'f.tva'=>"TotalVAT",'f.paye'=>"InvoicePaid",'f.fk_statut'=>'InvoiceStatus','f.note'=>"InvoiceNote",'fd.rowid'=>'LineId','fd.description'=>"LineDescription",'fd.price'=>"LineUnitPrice",'fd.tva_tx'=>"LineVATRate",'fd.qty'=>"LineQty",'fd.total_ht'=>"LineTotalHT",'fd.total_tva'=>"LineTotalTVA",'fd.total_ttc'=>"LineTotalTTC",'fd.date_start'=>"DateStart",'fd.date_end'=>"DateEnd",'fd.fk_product'=>'ProductId','p.ref'=>'ProductRef');
 		// $this->export_TypeFields_array[$r]=array('t.date'=>'Date', 't.qte'=>'Numeric', 't.poids'=>'Numeric', 't.fad'=>'Numeric', 't.paq'=>'Numeric', 't.stockage'=>'Numeric', 't.fadparliv'=>'Numeric', 't.livau100'=>'Numeric', 't.forfait'=>'Numeric', 's.nom'=>'Text','s.address'=>'Text','s.zip'=>'Text','s.town'=>'Text','c.code'=>'Text','s.phone'=>'Text','s.siren'=>'Text','s.siret'=>'Text','s.ape'=>'Text','s.idprof4'=>'Text','s.code_compta'=>'Text','s.code_compta_fournisseur'=>'Text','s.tva_intra'=>'Text','f.facnumber'=>"Text",'f.datec'=>"Date",'f.datef'=>"Date",'f.date_lim_reglement'=>"Date",'f.total'=>"Numeric",'f.total_ttc'=>"Numeric",'f.tva'=>"Numeric",'f.paye'=>"Boolean",'f.fk_statut'=>'Status','f.note_private'=>"Text",'f.note_public'=>"Text",'fd.description'=>"Text",'fd.subprice'=>"Numeric",'fd.tva_tx'=>"Numeric",'fd.qty'=>"Numeric",'fd.total_ht'=>"Numeric",'fd.total_tva'=>"Numeric",'fd.total_ttc'=>"Numeric",'fd.date_start'=>"Date",'fd.date_end'=>"Date",'fd.special_code'=>'Numeric','fd.product_type'=>"Numeric",'fd.fk_product'=>'List:product:label','p.ref'=>'Text','p.label'=>'Text','p.accountancy_code_sell'=>'Text');
 		// $this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>'company','s.address'=>'company','s.zip'=>'company','s.town'=>'company','s.fk_pays'=>'company','s.phone'=>'company','s.siren'=>'company','s.siret'=>'company','s.ape'=>'company','s.idprof4'=>'company','s.code_compta'=>'company','s.code_compta_fournisseur'=>'company','f.rowid'=>"invoice",'f.facnumber'=>"invoice",'f.datec'=>"invoice",'f.datef'=>"invoice",'f.total'=>"invoice",'f.total_ttc'=>"invoice",'f.tva'=>"invoice",'f.paye'=>"invoice",'f.fk_statut'=>'invoice','f.note'=>"invoice",'fd.rowid'=>'invoice_line','fd.description'=>"invoice_line",'fd.price'=>"invoice_line",'fd.total_ht'=>"invoice_line",'fd.total_tva'=>"invoice_line",'fd.total_ttc'=>"invoice_line",'fd.tva_tx'=>"invoice_line",'fd.qty'=>"invoice_line",'fd.date_start'=>"invoice_line",'fd.date_end'=>"invoice_line",'fd.fk_product'=>'product','p.ref'=>'product');
@@ -270,7 +339,7 @@ class modEmployees extends DolibarrModules
 	{
 		$sql = array();
 
-		//$this->_load_tables('/employees/sql/');
+		//$this->_load_tables('/vendors/sql/');
 
 		return $this->_init($sql, $options);
 	}
