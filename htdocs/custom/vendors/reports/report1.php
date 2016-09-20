@@ -37,7 +37,11 @@ print '<input type="hidden" name="action" value="report">';
 $syear = GETPOST("reyear")?GETPOST("reyear"):date("Y", time());
 $cmonth = GETPOST("remonth")?GETPOST("remonth"):date("n", time());
 $fromDate = GETPOST("fromDate")?GETPOST("fromDate"):'';
+	$fromDate = strtotime($fromDate);
+	$fromDate = date("Y-m-d", $fromDate);
 $toDate = GETPOST("toDate")?GETPOST("toDate"):'';
+	$toDate = strtotime($toDate);
+	$toDate = date("Y-m-d", $toDate);
 
 print $formother->select_year($syear,'reyear');
 print $formother->select_month($cmonth,'remonth');
@@ -102,6 +106,8 @@ print '<br>';
 
 clearstatcache();
 
+if($fromDate && $toDate) echo "<div class='titre' style='margin-bottom:10px'>Periodo: del ".$fromDate." al ".$toDate."</div>";
+
 // List of payments
 if($action == 'report') {
 
@@ -127,57 +133,103 @@ if($action == 'report') {
 
 				$sales = 0;
 				$amount = 0;
-				$debit = 0;
+				$balance = 0;
+				$due_balance = 0;
+
+				// Colum 1
 
 				$sql_fac =  " SELECT * FROM ".MAIN_DB_PREFIX."facture f";
 				$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
 				$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
+				if ($fromDate && $toDate) {
+	                $sql_fac.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
+	            }
 
 				$resql_fac = $db->query($sql_fac);
-				if($sql_fac) {
+				if($resql_fac) {
 					while($invoice = $db->fetch_object($resql_fac)) {
-
-						$sales += $invoice->total_ttc;
-
-						$sql =  " SELECT * FROM ".MAIN_DB_PREFIX."paiement p ";
-						$sql .= " JOIN ".MAIN_DB_PREFIX."paiement_facture pf ON pf.fk_paiement = p.rowid ";
-						$sql .= " WHERE pf.fk_facture = ".$invoice->rowid;
-						if ($fromDate && $toDate) {
-			                $sql.= " AND p.datep BETWEEN '".$fromDate."' AND '".$toDate."'";
-			            }
-
-						$resql = $db->query($sql);
-						if($resql) {									
-							while($payment = $db->fetch_object($sql)) {
-								$amount += $payment->amount;
-							}
-						}
+						$sales += $invoice->total_ttc;				
 					}
-					
-					$debit = $sales - $amount;
+				}
 
-					$user = new User($db);
-			        $user->fetch($vendor->rowid);
+				// Column 2
 
-					$var=!$var;
-					print "<tr ".$bc[$var].">";
-					print '<td>';	        
-			        print $user->getNomUrl(1);
-			        print '</td>';
-			        print '<td>';
-			        print $sales;
-			        print '</td>';
-			        print '<td>';
-			        print $amount;
-			        print '</td>';
-			        print '<td>';
-			        print $debit;
-			        print '</td>';
-			        print '<td>';
-			        print $unknown;
-			        print '</td>';
+				$sql_pay  = " SELECT * FROM ".MAIN_DB_PREFIX."paiement p ";
+				$sql_pay .= " JOIN ".MAIN_DB_PREFIX."paiement_facture pf ON pf.fk_paiement = p.rowid ";
+				$sql_pay .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = pf.fk_facture ";
+				$sql_pay .= " WHERE fe.vendor = ".$vendor->rowid;
+				if ($fromDate && $toDate) {
+	                $sql_pay.= " AND p.datep BETWEEN '".$fromDate."' AND '".$toDate."'";
+	            }
 
-				}						
+	            $resql_pay = $db->query($sql_pay);
+				if($resql_pay) {									
+					while($payment = $db->fetch_object($resql_pay)) {
+						$amount += $payment->amount;
+					}
+				}				
+
+				// Column 3
+
+				$sql_fac =  " SELECT DISTINCT f.fk_soc FROM ".MAIN_DB_PREFIX."facture f";
+				$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
+				$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
+				if ($fromDate && $toDate) {
+	                $sql_fac.= " AND f.datef <= '".$toDate."'";
+	            }     
+
+				$resql_fac = $db->query($sql_fac);
+				if($resql_fac) {
+					while($invoice = $db->fetch_object($resql_fac)) {
+						$soc = new Societe($db);
+						if ($invoice->fk_soc > 0)
+							$res = $soc->fetch($invoice->fk_soc);
+						if($res)
+							$balance += $soc->get_OutstandingBill();			
+					}
+				}
+
+				// Column 4
+
+				$sql_fac =  " SELECT DISTINCT f.fk_soc FROM ".MAIN_DB_PREFIX."facture f";
+				$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
+				$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
+				if ($fromDate && $toDate) {
+	                $sql_fac.= " AND f.date_lim_reglement < '".$toDate."'";
+	            }
+
+				$resql_fac = $db->query($sql_fac);
+				if($resql_fac) {
+					while($invoice = $db->fetch_object($resql_fac)) {
+						$soc = new Societe($db);
+						if ($invoice->fk_soc > 0)
+							$res = $soc->fetch($invoice->fk_soc);
+						if($res)
+							$due_balance += $soc->get_OutstandingBill();			
+					}
+				}
+
+				$user = new User($db);
+		        $user->fetch($vendor->rowid);
+
+				$var=!$var;
+				print "<tr ".$bc[$var].">";
+				print '<td>';	        
+		        print $user->getNomUrl(1);
+		        print '</td>';
+		        print '<td>';
+		        print $sales;
+		        print '</td>';
+		        print '<td>';
+		        print $amount;
+		        print '</td>';
+		        print '<td>';
+		        print $balance;
+		        print '</td>';
+		        print '<td>';
+		        print $due_balance;
+		        print '</td>';
+												
 			}
 		}
 
