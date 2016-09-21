@@ -106,10 +106,10 @@ print '<br>';
 
 clearstatcache();
 
-if($fromDate && $toDate) echo "<div class='titre' style='margin-bottom:10px'>Periodo: del ".$fromDate." al ".$toDate."</div>";
-
 // List of payments
 if($action == 'report') {
+
+	echo "<div class='titre' style='margin-bottom:10px'>Periodo: del ".$fromDate." al ".$toDate."</div>";
 
 	if($fromDate && $toDate) {
 
@@ -127,7 +127,7 @@ if($action == 'report') {
 		$sql_vendors .= " WHERE ue.rol = 1";
 
 		$resql_vendors = $db->query($sql_vendors);
-		if($sql_vendors) {
+		if($resql_vendors) {
 			$var=true;
 			while ($vendor = $db->fetch_object($resql_vendors)) {
 
