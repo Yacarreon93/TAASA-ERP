@@ -185,7 +185,7 @@ if($action == 'report') {
 						if ($invoice->fk_soc > 0)
 							$res = $soc->fetch($invoice->fk_soc);
 						if($res)
-							$balance += $soc->get_OutstandingBill();			
+							$balance += $soc->get_OutstandingBill($toDate);			
 					}
 				}
 
@@ -205,7 +205,7 @@ if($action == 'report') {
 						if ($invoice->fk_soc > 0)
 							$res = $soc->fetch($invoice->fk_soc);
 						if($res)
-							$due_balance += $soc->get_OutstandingBill();			
+							$due_balance += $soc->get_OutstandingBill($toDate);			
 					}
 				}
 

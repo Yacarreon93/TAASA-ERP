@@ -3300,7 +3300,7 @@ class Societe extends CommonObject
 		//$sql .= " AND (fk_statut <> 3 OR close_code <> 'abandon')";		// Not abandonned for undefined reason
 		$sql .= " AND fk_statut <> 3";		// Not abandonned
 		$sql .= " AND fk_statut <> 2";		// Not clasified as paid
-        if($date_limit != '') $sql .= "AND datef < '".$date_limit."'";        
+        if($date_limit != '') $sql .= " AND datef < '".$date_limit."'";       
 
 		dol_syslog("get_OutstandingBill", LOG_DEBUG);
 		$resql=$this->db->query($sql);
