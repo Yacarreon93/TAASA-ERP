@@ -349,6 +349,8 @@ if ($id > 0)
                 }
                 $sql.= " WHERE p.fk_paiement = c.id";
                 $sql.= " AND p.entity = ".$conf->entity;
+                //$sql.= " AND f.date_lim_reglement > NOW()";
+                $sql.= " AND f.paye = 1";
                 $sql.= ' AND ef.vendor = '.$id; //Searching specific vendor
                 if (! $user->rights->societe->client->voir && ! $socid)
                 {
