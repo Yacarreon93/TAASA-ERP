@@ -540,7 +540,7 @@ if ($id > 0)
 			        {
 			            $objp = $db->fetch_object($resql);
 			            $var=!$var;
-
+			            //die(get_class($db)); 
 			            $datelimit=$db->jdate($objp->datelimite);
 
 			            print '<tr '.$bc[$var].'>';
@@ -551,7 +551,14 @@ if ($id > 0)
 			            $facturestatic->type=$objp->type;
 			            $notetoshow=dol_string_nohtmltag(($user->societe_id>0?$objp->note_public:$objp->note),1);
 			            $paiement = $facturestatic->getSommePaiement();
-
+			            $lastPayment = $facturestatic->getLastPaiement(); //function added to get last payment
+			            $lastPayment = explode(' ',$lastPayment)[0];
+			            //die(var_dump($lastPayment , $objp->datelimite));
+			            if ($lastPayment > $objp->datelimite) {
+			            	//print 'ultimo pago '.$lastPayment. ' es mayor que la fecha limite '.$objp->datelimite; 
+			            	$i++;
+			            	continue;
+			            }
 			            print '<table class="nobordernopadding"><tr class="nocellnopadd">';
 
 			            print '<td class="nobordernopadding nowrap">';

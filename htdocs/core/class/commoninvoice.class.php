@@ -122,6 +122,32 @@ abstract class CommonInvoice extends CommonObject
 		}
 	}
 
+	function getLastPaiement()  //Added function to get last payment
+    {
+        $sql = "SELECT p.datep";
+        $sql.= " FROM ".MAIN_DB_PREFIX."facture AS fi";
+        $sql.= " JOIN ";
+        $sql.= MAIN_DB_PREFIX."paiement_facture AS pf ON fi.rowid = pf.fk_facture";
+        $sql.= " JOIN ";
+        $sql.= MAIN_DB_PREFIX."paiement AS p ON pf.fk_paiement = p.rowid";
+        $sql.= ' WHERE fi.rowid = '.$this->id;
+        $sql.= ' ORDER BY p.datep DESC LIMIT 1';
+
+        $resql=$this->db->query($sql);
+        if ($resql)
+        {
+            $obj = $this->db->fetch_object($resql);
+            if ($obj) $dateLastPaiement=$obj->datep;
+
+            $this->db->free($resql);
+            return $dateLastPaiement;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
 	/**
 	 *	Renvoie tableau des ids de facture avoir issus de la facture
 	 *
