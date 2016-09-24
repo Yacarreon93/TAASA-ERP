@@ -268,7 +268,7 @@ if($action == 'report') {
 			$var=!$var;
 			print "<tr ".$bc[$var].">";
 			print '<td>';	        
-	        print $user->getNomUrl(1);
+	        print $user->getNomUrlForVendors(1);
 	        print '</td>';
 	        print '<td>';
 	        print $sales;
