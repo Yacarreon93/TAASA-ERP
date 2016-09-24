@@ -171,7 +171,10 @@ if($action == 'report') {
 
 			$sql_fac =  " SELECT * FROM ".MAIN_DB_PREFIX."facture f";
 			$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
-			$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
+			$sql_fac .= " WHERE ";
+			$sql_fac .= " f.fk_statut <> 0";	// Not a draft
+			$sql_fac .= " AND f.fk_statut <> 3";	// Not abandonned
+			$sql_fac .= " AND fe.vendor = ".$vendor->rowid;
 			if ($fromDate && $toDate) {
                 $sql_fac.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
             } else if($cmonth && $syear) {
@@ -237,7 +240,7 @@ if($action == 'report') {
 			$sql_fac .= " WHERE ";
 			$sql_fac .= " f.paye = 0";
 			$sql_fac .= " AND f.fk_statut <> 0";	// Not a draft
-			$sql_fac .= " AND f.fk_statut <> 3";		// Not abandonned
+			$sql_fac .= " AND f.fk_statut <> 3";	// Not abandonned
 			$sql_fac .= " AND f.fk_statut <> 2";
 			$sql_fac .= " AND fe.vendor = ".$vendor->rowid;
 			if ($toDate) {
