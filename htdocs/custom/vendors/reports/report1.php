@@ -144,8 +144,6 @@ if($action == 'report') {
 
 	}
 
-	
-
     print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">';
     print '<table class="noborder" width="100%">';
     print '<tr class="liste_titre">';
@@ -204,17 +202,20 @@ if($action == 'report') {
 				while($payment = $db->fetch_object($resql_pay)) {
 					$amount += $payment->amount;
 				}
-			}				
+			}	
+
+			if(!$toDate) {
+				$toDate = $syear.'-'.$cmonth.'-01';
+				$toDate = date("Y-m-t", strtotime($toDate));
+			}			
 
 			// Column 3
-
+				
 			$sql_fac =  " SELECT DISTINCT f.fk_soc FROM ".MAIN_DB_PREFIX."facture f";
 			$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
 			$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
-			if ($fromDate && $toDate) {
+			if ($toDate) {
                 $sql_fac.= " AND f.datef <= '".$toDate."'";
-            } else if($cmonth && $syear) {
-            	$sql_fac.= " AND YEAR(f.datef) = ".$syear." AND MONTH(f.datef) = ".$cmonth;
             }
 
 			$resql_fac = $db->query($sql_fac);
@@ -223,30 +224,38 @@ if($action == 'report') {
 					$soc = new Societe($db);
 					if ($invoice->fk_soc > 0)
 						$res = $soc->fetch($invoice->fk_soc);
-					if($res)
+					if($res) {									
 						$balance += $soc->get_OutstandingBill($toDate);			
+					}
 				}
 			}
 
 			// Column 4
 
-			$sql_fac =  " SELECT DISTINCT f.fk_soc FROM ".MAIN_DB_PREFIX."facture f";
+			$sql_fac  = "SELECT f.rowid, f.total_ttc FROM ".MAIN_DB_PREFIX."facture as f";
 			$sql_fac .= " JOIN ".MAIN_DB_PREFIX."facture_extrafields fe ON fe.fk_object = f.rowid ";
-			$sql_fac .= " WHERE fe.vendor = ".$vendor->rowid;
-			if ($fromDate && $toDate) {
+			$sql_fac .= " WHERE ";
+			$sql_fac .= " f.paye = 0";
+			$sql_fac .= " AND f.fk_statut <> 0";	// Not a draft
+			$sql_fac .= " AND f.fk_statut <> 3";		// Not abandonned
+			$sql_fac .= " AND f.fk_statut <> 2";
+			$sql_fac .= " AND fe.vendor = ".$vendor->rowid;
+			if ($toDate) {
                 $sql_fac.= " AND f.date_lim_reglement < '".$toDate."'";
-            } else if($cmonth && $syear) {
-            	$sql_fac.= " AND YEAR(f.datef) = ".$syear." AND MONTH(f.datef) = ".$cmonth;
-            }
+            }			
 
 			$resql_fac = $db->query($sql_fac);
 			if($resql_fac) {
+				
+				require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+				$facturestatic = new Facture($db);
+
 				while($invoice = $db->fetch_object($resql_fac)) {
-					$soc = new Societe($db);
-					if ($invoice->fk_soc > 0)
-						$res = $soc->fetch($invoice->fk_soc);
-					if($res)
-						$due_balance += $soc->get_OutstandingBill($toDate);			
+
+					$facturestatic->id = $invoice->rowid;
+					$paiement = $facturestatic->getSommePaiement($toDate);
+
+					$due_balance += $invoice->total_ttc - $paiement;					
 				}
 			}
 
