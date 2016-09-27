@@ -325,9 +325,10 @@ if ($id > 0)
 				$sql.= ' f.rowid as facid, f.facnumber, f.ref_client, f.type, f.note_private, f.increment, f.total as total_ht, f.tva as total_tva, f.total_ttc,';
 				$sql.= ' f.datef as df, f.date_lim_reglement as datelimite,';
 				$sql.= ' f.paye as paye, f.fk_statut,';
-				$sql.= ' s.nom as name, s.rowid as socid, s.code_client, s.client ';
+				$sql.= ' s.nom as name, s.rowid as socid, s.code_client, s.client, se.commission as com';
 				if (! $sall) $sql.= ', SUM(pf.amount) as am';   // To be able to sort on status
 				$sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
+				$sql.= ' JOIN '.MAIN_DB_PREFIX.'societe_extrafields AS se ON se.fk_object = s.rowid';
 				$sql.= ', '.MAIN_DB_PREFIX.'facture as f';
 				if (! $sall) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture as pf ON pf.fk_facture = f.rowid';
 				else $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facturedet as fd ON fd.fk_facture = f.rowid';
@@ -535,9 +536,11 @@ if ($id > 0)
 			        $total_tva=0;
 			        $total_ttc=0;
 			        $totalrecu=0;
+			        $total_commission=0;
 
 			        while ($i < min($num,$limit))
 			        {
+			        	$special_commission = -1;
 			            $objp = $db->fetch_object($resql);
 			            $var=!$var;
 			            //die(get_class($db)); 
@@ -554,8 +557,7 @@ if ($id > 0)
 			            $lastPayment = $facturestatic->getLastPaiement(); //function added to get last payment
 			            $lastPayment = explode(' ',$lastPayment)[0];
 			            //die(var_dump($lastPayment , $objp->datelimite));
-			            if ($lastPayment > $objp->datelimite) {
-			            	//print 'ultimo pago '.$lastPayment. ' es mayor que la fecha limite '.$objp->datelimite; 
+			            if ($lastPayment > $objp->datelimite) { //If last payment was done before limit day, it counts
 			            	$i++;
 			            	continue;
 			            }
@@ -626,6 +628,13 @@ if ($id > 0)
 			            $total_tva+=$objp->total_tva;
 			            $total_ttc+=$objp->total_ttc;
 			            $totalrecu+=$paiement;
+			            $special_commission=$objp->com; //Check for special client commission
+			            if($special_commission > 0) {
+		                	$total_commission += ($paiement * ($special_commission)/ 100);
+		                }
+		                else {
+		                	$total_commission += ($paiement * ($object->array_options['options_commission'])/ 100);
+		                }
 			            $i++;
 			        }
 
@@ -653,7 +662,7 @@ if ($id > 0)
                 echo '<div style="display:inline-block;">';
                 echo '</div>';
                 echo '</div>';
-                echo '<p style="margin-left:5px;">'.number_format(($totalrecu * ($object->array_options['options_commission'])/ 100),2).'</p>';
+                echo '<p style="margin-left:5px;">'.number_format($total_commission,2).'</p>';
             }
 
 
