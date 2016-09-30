@@ -225,10 +225,7 @@ if($action == 'report') {
 
 						$due_balance += $invoice->total_ttc - $paiement;					
 					}
-				}				
-				
-				$user = new User($db);
-		        $user->fetch($vendor->rowid);
+				}							
 
 				$var=!$var;
 				print "<tr ".$bc[$var].">";
