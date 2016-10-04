@@ -282,9 +282,6 @@ if ($id > 0)
 
 		    print_barre_liste("Comisión".' '.($socid?' '.$soc->name:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_accountancy.png');
 
-            print '<p class="to-left input-height no-mar-top">Porcentaje de comisión asginado</p>';
-
-            print '<input type="text" class="to-left" name="commission" value="'.$object->array_options['options_commission'].'" readonly>';
 
 		    $form=new Form($db);
             $formother=new FormOther($db);
@@ -497,6 +494,8 @@ if ($id > 0)
 			    print_liste_field_titre($langs->trans('AmountVAT'),$_SERVER['PHP_SELF'],'f.tva','',$param,'align="right"',$sortfield,$sortorder);
 			    print_liste_field_titre($langs->trans('AmountTTC'),$_SERVER['PHP_SELF'],'f.total_ttc','',$param,'align="right"',$sortfield,$sortorder);
 			    print_liste_field_titre($langs->trans('Received'),$_SERVER['PHP_SELF'],'am','',$param,'align="right"',$sortfield,$sortorder);
+			    print('<td align="right">% Comisión</td>');
+			    print('<td align="right">Comisión</td>');
 			    print_liste_field_titre($langs->trans('Status'),$_SERVER['PHP_SELF'],'fk_statut,paye,am','',$param,'align="right"',$sortfield,$sortorder);
 			    print_liste_field_titre('',$_SERVER["PHP_SELF"],"",'','','',$sortfield,$sortorder,'maxwidthsearch ');
 			    print "</tr>\n";
@@ -521,6 +520,9 @@ if ($id > 0)
 			    print '<td class="liste_titre"></td>';
 			    print '<td class="liste_titre" align="right"><input class="flat" type="text" size="6" name="search_montant_ttc" value="'.$search_montant_ttc.'"></td>';
 			    print '<td class="liste_titre"></td>';
+			    print '<td class="liste_titre"></td>';
+			    print '<td class="liste_titre"></td>';
+
 			    print '<td class="liste_titre" align="right">';
 				$liststatus=array('0'=>$langs->trans("BillShortStatusDraft"), '1'=>$langs->trans("BillShortStatusNotPaid"), '2'=>$langs->trans("BillShortStatusPaid"), '3'=>$langs->trans("BillShortStatusCanceled"));
 				print $form->selectarray('search_status', $liststatus, $search_status, 1);
@@ -616,6 +618,25 @@ if ($id > 0)
 
 			            print '<td align="right">'.(! empty($paiement)?price($paiement,0,$langs):'&nbsp;').'</td>';
 
+			            
+			            //Calculating totals
+
+			            $total_ht+=$objp->total_ht;
+			            $total_tva+=$objp->total_tva;
+			            $total_ttc+=$objp->total_ttc;
+			            $totalrecu+=$paiement;
+			            $special_commission=$objp->com; //Check for special client commission
+			            if($special_commission > 0) {
+		                	$total_commission += ($paiement * ($special_commission)/ 100);
+		                	print '<td align="right">'.number_format($special_commission,2).'</td>';
+		                	print '<td align="right">'.($paiement * ($special_commission)/ 100).'</td>';
+		                }
+		                else {
+		                	$total_commission += ($paiement * ($object->array_options['options_commission'])/ 100);
+		                	print '<td align="right">'.number_format($object->array_options['options_commission'],2).'</td>';
+		                	print '<td align="right">'.($paiement * ($object->array_options['options_commission'])/ 100).'</td>';
+		                }
+
 			            // Affiche statut de la facture
 			            print '<td align="right" class="nowrap">';
 			            print $facturestatic->LibStatut($objp->paye,$objp->fk_statut,5,$paiement,$objp->type);
@@ -624,17 +645,7 @@ if ($id > 0)
 			            print "<td></td>";
 
 			            print "</tr>\n";
-			            $total_ht+=$objp->total_ht;
-			            $total_tva+=$objp->total_tva;
-			            $total_ttc+=$objp->total_ttc;
-			            $totalrecu+=$paiement;
-			            $special_commission=$objp->com; //Check for special client commission
-			            if($special_commission > 0) {
-		                	$total_commission += ($paiement * ($special_commission)/ 100);
-		                }
-		                else {
-		                	$total_commission += ($paiement * ($object->array_options['options_commission'])/ 100);
-		                }
+			            
 			            $i++;
 			        }
 
@@ -642,7 +653,7 @@ if ($id > 0)
 			        {
 			            // Print total
 			            print '<tr class="liste_total">';
-			            print '<td class="liste_total" colspan="5" align="left">'.$langs->trans('Total').'</td>';
+			            print '<td class="liste_total" colspan="4" align="left">'.$langs->trans('Total').'</td>';
 			            print '<td class="liste_total" align="right">'.price($total_ht,0,$langs).'</td>';
 			            print '<td class="liste_total" align="right">'.price($total_tva,0,$langs).'</td>';
 			            print '<td class="liste_total" align="right">'.price($total_ttc,0,$langs).'</td>';
