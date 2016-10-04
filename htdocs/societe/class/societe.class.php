@@ -3284,7 +3284,7 @@ class Societe extends CommonObject
      *
      *  @return		int				Amount in debt for thirdparty
      */
-    function get_OutstandingBill()
+    function get_OutstandingBill($date_limit = '')
     {
 		/* Accurate value of remain to pay is to sum remaintopay for each invoice
 		$paiement = $invoice->getSommePaiement();
@@ -3300,6 +3300,7 @@ class Societe extends CommonObject
 		//$sql .= " AND (fk_statut <> 3 OR close_code <> 'abandon')";		// Not abandonned for undefined reason
 		$sql .= " AND fk_statut <> 3";		// Not abandonned
 		$sql .= " AND fk_statut <> 2";		// Not clasified as paid
+        if($date_limit != '') $sql .= " AND datef < '".$date_limit."'";       
 
 		dol_syslog("get_OutstandingBill", LOG_DEBUG);
 		$resql=$this->db->query($sql);
@@ -3310,7 +3311,7 @@ class Societe extends CommonObject
 			$facturestatic=new Facture($this->db);
 			while($obj=$this->db->fetch_object($resql)) {
 				$facturestatic->id=$obj->rowid;
-				$paiement = $facturestatic->getSommePaiement();
+				$paiement = $facturestatic->getSommePaiement($date_limit);
 				$creditnotes = $facturestatic->getSumCreditNotesUsed();
 				$deposits = $facturestatic->getSumDepositsUsed();
 

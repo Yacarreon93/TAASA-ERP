@@ -93,7 +93,7 @@ abstract class CommonInvoice extends CommonObject
 	 *
 	 *	@return		int		Amount of payment already done, <0 if KO
 	 */
-	function getSommePaiement()
+	function getSommePaiement($date_limit = '')
 	{
 		$table='paiement_facture';
 		$field='fk_facture';
@@ -103,9 +103,11 @@ abstract class CommonInvoice extends CommonObject
 			$field='fk_facturefourn';
 		}
 
-		$sql = 'SELECT sum(amount) as amount';
-		$sql.= ' FROM '.MAIN_DB_PREFIX.$table;
-		$sql.= ' WHERE '.$field.' = '.$this->id;
+		$sql = 'SELECT sum(pf.amount) as amount';
+		$sql.= ' FROM '.MAIN_DB_PREFIX.$table.' as pf';
+		if($date_limit != '') $sql .= ' JOIN '.MAIN_DB_PREFIX.'paiement as p ON p.rowid = pf.fk_paiement';
+		$sql.= ' WHERE pf.'.$field.' = '.$this->id;
+		if($date_limit != '') $sql .= ' AND p.datep < "'.$date_limit.'"';
 
 		dol_syslog(get_class($this)."::getSommePaiement", LOG_DEBUG);
 		$resql=$this->db->query($sql);
