@@ -431,9 +431,6 @@ if ($id > 0)
 			    if ($year)               $paramlist.='&year=' .$year;
                 print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">';
                 echo "<input type='hidden' name='id' value='".$id."'>";
-                echo '<br>';
-                echo '<br>';
-                echo '<br>';
                 echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
                 echo '<p style="margin:0">Seleccionar Mes</p>';
                 echo '<div style="display:inline-block;">';
