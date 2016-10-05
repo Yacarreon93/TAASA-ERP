@@ -677,6 +677,18 @@ if (empty($reshook))
 				$error ++;
 				setEventMessage($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("ReplaceInvoice")), 'errors');
 			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
+			}
+
+
 
 			if (! $error) {
 				// This is a replacement invoice
@@ -723,6 +735,17 @@ if (empty($reshook))
 			{
 				$error ++;
 				setEventMessage($langs->trans("ErrorFieldRequired", $langs->trans("Date")), 'errors');
+			}
+
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
 			}
 
 			if (! $error)
@@ -816,6 +839,16 @@ if (empty($reshook))
 				$error++;
 				setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Date")),'errors');
 			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
+			}
 
 			if (! $error)
 			{
@@ -850,6 +883,16 @@ if (empty($reshook))
 			{
 				$error++;
 				setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Date")),'errors');
+			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
 			}
 
 			if (! $error)
@@ -1153,6 +1196,16 @@ if (empty($reshook))
 			if (!($_POST['situations'] > 0)) {
 				$error++;
 				$mesg = '<div class="error">' . $langs->trans("ErrorFieldRequired", $langs->trans("InvoiceSituation")) . '</div>';
+			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
 			}
 
 			if (!$error) {
@@ -1926,6 +1979,7 @@ if ($action == 'create')
 		$fk_account        	= $soc->fk_account;
 		$remise_percent 	= $soc->remise_percent;
 		$remise_absolue 	= 0;
+		$object->array_options['options_vendor'] = $soc->array_options['options_vendor'];
 		$dateinvoice		= (empty($dateinvoice)?(empty($conf->global->MAIN_AUTOFILL_DATE)?-1:''):$dateinvoice);		// Do not set 0 here (0 for a date is 1970)
 	}
 	$absolute_discount = $soc->getAvailableDiscounts();
@@ -2257,12 +2311,12 @@ if ($action == 'create')
 	print '</td></tr>';
 
 	// Payment term
-	print '<tr><td class="nowrap">' . $langs->trans('PaymentConditionsShort') . '</td><td colspan="2">';
+	print '<tr><td class="nowrap fieldrequired">' . $langs->trans('PaymentConditionsShort') . '</td><td colspan="2">';
 	$form->select_conditions_paiements(isset($_POST['cond_reglement_id']) ? $_POST['cond_reglement_id'] : $cond_reglement_id, 'cond_reglement_id');
 	print '</td></tr>';
 
 	// Payment mode
-	print '<tr><td>' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
+	print '<tr><td class="fieldrequired">' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
 	$form->select_types_paiements(isset($_POST['mode_reglement_id']) ? $_POST['mode_reglement_id'] : $mode_reglement_id, 'mode_reglement_id', 'CRDT');
 	print '</td></tr>';
 
@@ -2304,6 +2358,8 @@ if ($action == 'create')
 	                                                                                      // hook
 	if (empty($reshook) && ! empty($extrafields->attribute_label)) {
 		print $object->showOptionals($extrafields, 'edit');
+
+		//add scriptttttt
 	}
 
 	// Template to use by default
