@@ -4002,9 +4002,27 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
+	            //Make them disable
+	            document.getElementById("selectmode_reglement_id").disabled = true;
+	            document.getElementById("options_vendor").disabled = true;
+	            document.getElementsByName("cond_reglement_id").disabled = true;
 	        }
 	    });
 	});
+
+	jQuery(function ($) {        
+	  $('form').bind('submit', function () { //function to enable fields before the submit
+	    document.getElementById("selectmode_reglement_id").disabled = false;
+	    document.getElementById("options_vendor").disabled = false;
+	  });
+	});
+
+	document.addEventListener('DOMContentLoaded', function() { //Disable the fields when the document is ready
+     //Make them disable
+	document.getElementById("selectmode_reglement_id").disabled = true;
+	document.getElementById("options_vendor").disabled = true;
+	document.getElementsByName("cond_reglement_id").disabled = true;
+	}, false);
 
 </script>
 

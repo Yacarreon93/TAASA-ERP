@@ -2500,8 +2500,19 @@ if ($action == 'create' && $user->rights->commande->creer)
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
+	            //Make them disable
+	            document.getElementsByName("cond_reglement_id").disabled = true;
+	            document.getElementById("selectmode_reglement_id").disabled = true;
+	            document.getElementById("options_vendor").disabled = true;
 	        }
 	    });
+	});
+
+	jQuery(function ($) {        
+	  $('form').bind('submit', function () { //function to enable fields before the submit
+	    document.getElementById("selectmode_reglement_id").disabled = false;
+	    document.getElementById("options_vendor").disabled = false;
+	  });
 	});
 
 </script>
