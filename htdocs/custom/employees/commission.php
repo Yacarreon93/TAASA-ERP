@@ -656,7 +656,7 @@ if ($id > 0)
 			            print '<td class="liste_total" align="right">'.price($total_ttc,0,$langs).'</td>';
 			            print '<td class="liste_total" align="right">'.price($totalrecu,0,$langs).'</td>';
 			            print '<td class="liste_total"></td>';
-			            print '<td class="liste_total"></td>';
+			            print '<td class="liste_total" align="right">'.number_format($total_commission,2).'</td>';
 			            print '</tr>';
 			        }
 			    }
