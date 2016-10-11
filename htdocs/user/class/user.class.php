@@ -1913,7 +1913,6 @@ class User extends CommonObject
         global $dolibarr_main_authentication, $dolibarr_main_demo;
         global $menumanager;
 
-
         $result = '';
         $companylink = '';
 
@@ -1962,7 +1961,7 @@ class User extends CommonObject
         }
 
 
-        $link = '<a href="'.DOL_URL_ROOT.'/custom/employees/card.php?id='.$this->id.'"';
+        $link = '<a href="'.DOL_URL_ROOT.'/custom/vendors/card.php?id='.$this->id.'"';
         $link.= ($notooltip?'':' title="'.dol_escape_htmltag($label, 1).'" class="classfortooltip"');
         $link.= '>';
 		$linkend='</a>';

@@ -134,17 +134,17 @@ function user_prepare_head_for_vendors($object)
     $h = 0;
     $head = array();
 
-    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/card.php?id='.$object->id;
+    $head[$h][0] = DOL_URL_ROOT.'/custom/vendors/card.php?id='.$object->id;
     $head[$h][1] = "Ficha vendedor";
     $head[$h][2] = 'user';
     $h++;
 
-    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/sales.php?id='.$object->id;
+    $head[$h][0] = DOL_URL_ROOT.'/custom/vendors/sales.php?id='.$object->id;
     $head[$h][1] = "Ventas";
     $head[$h][2] = 'sales';
     $h++;
 
-    $head[$h][0] = DOL_URL_ROOT.'/custom/employees/commission.php?id='.$object->id;
+    $head[$h][0] = DOL_URL_ROOT.'/custom/vendors/commission.php?id='.$object->id;
     $head[$h][1] = "Comisión";
     $head[$h][2] = 'comiission';
     $h++;
