@@ -1,5 +1,5 @@
 <?php
-
+require_once '../../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/fpdf/fpdf.php';
 
 //Select the Products you want to show in your PDF file

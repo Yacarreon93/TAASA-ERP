@@ -63,7 +63,6 @@ $year_lim	= GETPOST('year_lim','int');
 $filtre	= GETPOST('filtre');
 $fromDate = GETPOST('fromDate');
 $toDate = GETPOST('toDate');
-$export = GETPOST('export','int') ? GETPOST('export','int') : 0;
 
 // Define value to know what current user can do on users
 $canadduser=(! empty($user->admin) || $user->rights->user->user->creer);
@@ -111,12 +110,6 @@ $hookmanager->initHooks(array('paymentlist'));
 /**
  * Actions
  */
-
-if($export == 1) {
-
-	include "reports/exports/commision_report.php";
-
-}
 
 /*
  * View
@@ -581,23 +574,14 @@ if ($id > 0)
                 echo '<p style="margin-left:5px;">'.number_format(($total_amount * ($object->array_options['options_commission'])/ 100),2).'</p>';
             
                 print '<br>';
-                print '<div>';                
-			    print '<input id="export" type="submit" class="button" value="Generar reporte" style="float:right" form="commission_report">';		
-			    print '</div>';
 
-print <<<END
-
-<script>
-
-$("#export").click(function(){
-
-	$("form#commission_report").append("<input type='hidden' name='export' value='1'>");
-
-});
-
-</script>
-
-END;
+                print '<form action="reports/exports/commission_report.php" method="post" target="_blank">';
+			    foreach($_GET as $key => $val) {        
+			    	print '<input type="hidden" name="'.htmlspecialchars($key, ENT_COMPAT, 'UTF-8').'" ';
+			    	print 'value="'.htmlspecialchars($val, ENT_COMPAT, 'UTF-8').'">';  
+			    }                     
+			    print '<input type="submit" class="button" value="Generar reporte" style="float:right">';
+			    print '</form>';
 
             }
             else
