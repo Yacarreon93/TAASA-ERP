@@ -2,6 +2,7 @@
 require_once '../../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/fpdf/fpdf.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 
 $id         = GETPOST('id','int');
 $sortfield  = GETPOST("sortfield",'alpha');
@@ -18,58 +19,105 @@ $year_general   = GETPOST('year_general','int');
 if($month_general != '') $month = $month_general;
 if($year_general != '') $year = $year_general;
 
-$sql = "SELECT DISTINCT p.rowid, p.datep as dp, p.amount,"; // DISTINCT is to avoid duplicate when there is a link to sales representatives
-$sql.= " p.statut, p.num_paiement,";
-$sql.= " c.code as paiement_code,";
-$sql.= " ba.rowid as bid, ba.label,";
-$sql.= " s.rowid as socid, s.nom as name";
-$sql.= " FROM (".MAIN_DB_PREFIX."c_paiement as c, ".MAIN_DB_PREFIX."paiement as p)";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON p.fk_bank = b.rowid";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON p.rowid = pf.fk_paiement";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON pf.fk_facture = f.rowid";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON f.fk_soc = s.rowid";
-$sql.= " JOIN ".MAIN_DB_PREFIX."facture_extrafields as ef ON ef.fk_object = f.rowid"; // added extrafields to locate vendor
-if (!$user->rights->societe->client->voir && !$socid)
+$object = new User($db);
+
+$res = $object->fetch($id);
+if ($res < 0) { dol_print_error($db,$object->error); exit; }
+
+$sql = 'SELECT';
+if ($sall || $search_product_category > 0) $sql = 'SELECT DISTINCT';
+$sql.= ' f.rowid as facid, f.facnumber, f.ref_client, f.type, f.note_private, f.increment, f.total as total_ht, f.tva as total_tva, f.total_ttc,';
+$sql.= ' f.datef as df, f.date_lim_reglement as datelimite,';
+$sql.= ' f.paye as paye, f.fk_statut,';
+$sql.= ' s.nom as name, s.rowid as socid, s.code_client, s.client, se.commission as com';
+if (! $sall) $sql.= ', SUM(pf.amount) as am';   // To be able to sort on status
+$sql.= ' FROM '.MAIN_DB_PREFIX.'societe as s';
+$sql.= ' JOIN '.MAIN_DB_PREFIX.'societe_extrafields AS se ON se.fk_object = s.rowid';
+$sql.= ', '.MAIN_DB_PREFIX.'facture as f';
+if (! $sall) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture as pf ON pf.fk_facture = f.rowid';
+else $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facturedet as fd ON fd.fk_facture = f.rowid';
+if ($sall || $search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'facturedet as pd ON f.rowid=pd.fk_facture';
+if ($search_product_category > 0) $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'categorie_product as cp ON cp.fk_product=pd.fk_product';
+// We'll need this table joined to the select in order to filter by sale
+if ($search_sale > 0 || (! $user->rights->societe->client->voir && ! $socid)) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
+if ($search_user > 0)
 {
-    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_commerciaux as sc ON s.rowid = sc.fk_soc";
+    $sql.=", ".MAIN_DB_PREFIX."element_contact as ec";
+    $sql.=", ".MAIN_DB_PREFIX."c_type_contact as tc";
 }
-$sql.= " WHERE p.fk_paiement = c.id";
-$sql.= " AND p.entity = ".$conf->entity;
-$sql.= ' AND ef.vendor = '.$id; // searching a specific vendor
-if (! $user->rights->societe->client->voir && ! $socid)
-{
-    $sql.= " AND sc.fk_user = " .$user->id;
-}
-if ($socid > 0) $sql.= " AND f.fk_soc = ".$socid;
+$sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as ef ON ef.fk_object = f.rowid';
+$sql.= ' WHERE f.fk_soc = s.rowid';
+$sql.= ' AND ef.vendor = '.$id;
+$sql.= ' AND f.fk_statut = 2';
+$sql.= " AND f.entity = ".$conf->entity;
+if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
+if ($search_product_category > 0) $sql.=" AND cp.fk_categorie = ".$search_product_category;
+if ($socid > 0) $sql.= ' AND s.rowid = '.$socid;
 if ($userid)
 {
-    if ($userid == -1) $sql.= " AND f.fk_user_author IS NULL";
-    else  $sql.= " AND f.fk_user_author = ".$userid;
+    if ($userid == -1) $sql.=' AND f.fk_user_author IS NULL';
+    else $sql.=' AND f.fk_user_author = '.$userid;
 }
-// Search criteria
-if ($month > 0)
+if ($filtre)
+{
+    $aFilter = explode(',', $filtre);
+    foreach ($aFilter as $filter)
+    {
+        $filt = explode(':', $filter);
+        $sql .= ' AND ' . trim($filt[0]) . ' = ' . trim($filt[1]);
+    }
+}
+if ($search_ref) $sql .= natural_search('f.facnumber', $search_ref);
+if ($search_refcustomer) $sql .= natural_search('f.ref_client', $search_refcustomer);
+if ($search_societe) $sql .= natural_search('s.nom', $search_societe);
+if ($search_montant_ht != '') $sql.= natural_search('f.total', $search_montant_ht, 1);
+if ($search_montant_ttc != '') $sql.= natural_search('f.total_ttc', $search_montant_ttc, 1);
+if ($search_status != '' && $search_status >= 0) $sql.= " AND f.fk_statut = ".$db->escape($search_status);
+if ($fromDate && $toDate) {
+    $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
+}
+else if ($month > 0)
 {
     if ($year > 0 && empty($day))
-    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
     else if ($year > 0 && ! empty($day))
-    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
     else
-    $sql.= " AND date_format(p.datep, '%m') = '".$month."'";
+    $sql.= " AND date_format(f.datef, '%m') = '".$month."'";
 }
 else if ($year > 0)
 {
-    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
+    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
 }
-if ($search_ref > 0)            $sql .=" AND p.rowid=".$search_ref;
-if ($search_account > 0)        $sql .=" AND b.fk_account=".$search_account;
-if ($search_paymenttype != "")  $sql .=" AND c.code='".$db->escape($search_paymenttype)."'";
-if ($search_amount)             $sql .=" AND p.amount='".$db->escape(price2num($search_amount))."'";
-if ($search_company)            $sql .= natural_search('s.nom', $search_company);
-// Add where from hooks
-$parameters=array();
-$reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
-$sql.=$hookmanager->resPrint;
+if ($month_lim > 0)
+{
+    if ($year_lim > 0 && empty($day_lim))
+        $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,$month_lim,false))."' AND '".$db->idate(dol_get_last_day($year_lim,$month_lim,false))."'";
+    else if ($year_lim > 0 && ! empty($day_lim))
+        $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month_lim, $day_lim, $year_lim))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month_lim, $day_lim, $year_lim))."'";
+    else
+        $sql.= " AND date_format(f.date_lim_reglement, '%m') = '".$month_lim."'";
+}
+else if ($year_lim > 0)
+{
+    $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,1,false))."' AND '".$db->idate(dol_get_last_day($year_lim,12,false))."'";
+}
+if ($search_sale > 0) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$search_sale;
+if ($search_user > 0)
+{
+    $sql.= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='facture' AND tc.source='internal' AND ec.element_id = f.rowid AND ec.fk_socpeople = ".$search_user;
+}
+if (! $sall)
+{
+    $sql.= ' GROUP BY f.rowid, f.facnumber, ref_client, f.type, f.note_private, f.increment, f.total, f.tva, f.total_ttc,';
+    $sql.= ' f.datef, f.date_lim_reglement,';
+    $sql.= ' f.paye, f.fk_statut,';
+    $sql.= ' s.nom, s.rowid, s.code_client, s.client';
+}
+else
+{
+    $sql .= natural_search(array('s.nom', 'f.facnumber', 'f.note_public', 'fd.description'), $sall);
+}
 $sql.= $db->order($sortfield,$sortorder);
 
 $result = $db->query($sql);
@@ -100,14 +148,16 @@ $pdf->Cell(20,6,'FECHA',1,0,'L',1);
 $pdf->SetX(60);
 $pdf->Cell(20,6,'VENCIMIENTO',1,0,'L',1);
 $pdf->SetX(80);
-$pdf->Cell(20,6,'IMPORTE BASE',1,0,'R',1);
+$pdf->Cell(20,6,'CLIENTE',1,0,'L',1);
 $pdf->SetX(100);
-$pdf->Cell(20,6,'IMPORTE IVA',1,0,'R',1);
+$pdf->Cell(20,6,'IMPORTE BASE',1,0,'R',1);
 $pdf->SetX(120);
-$pdf->Cell(20,6,'IMPORTE TOTAL',1,0,'R',1);
+$pdf->Cell(20,6,'IMPORTE IVA',1,0,'R',1);
 $pdf->SetX(140);
-$pdf->Cell(20,6,'% COMISION',1,0,'C',1);
+$pdf->Cell(20,6,'IMPORTE TOTAL',1,0,'R',1);
 $pdf->SetX(160);
+$pdf->Cell(20,6,'% COMISION',1,0,'C',1);
+$pdf->SetX(180);
 $pdf->Cell(20,6,'COMISION',1,0,'R',1);
 $pdf->Ln();
 
@@ -122,7 +172,7 @@ $pdf->SetFillColor(255,255,255);
 $pdf->SetFont('Arial','',6);
 
 //For each row, add the field to the corresponding column
-while($row = $db->fetch_array($result))
+while($row = $db->fetch_object($result))
 {
     $Y_Fields_Name_position += 6;
 
@@ -130,20 +180,35 @@ while($row = $db->fetch_array($result))
     $pdf->SetX(20);
     $pdf->Cell(20,6,$row->facnumber,1,0,'L',1);
     $pdf->SetX(40);
-    $pdf->Cell(20,6,$row->datef,1,0,'L',1);
+    $pdf->Cell(20,6,dol_print_date($db->jdate($row->df),'day'),1,0,'L',1);
     $pdf->SetX(60);
-    $pdf->Cell(20,6,'VENCIMIENTO',1,0,'L',1);
+    $pdf->Cell(20,6,dol_print_date($datelimit,'day'),1,0,'L',1);
     $pdf->SetX(80);
-    $pdf->Cell(20,6,'IMPORTE BASE',1,0,'R',1);
+    $pdf->Cell(20,6,$row->name,1,0,'L',1);
     $pdf->SetX(100);
-    $pdf->Cell(20,6,'IMPORTE IVA',1,0,'R',1);
+    $pdf->Cell(20,6,price($row->total_ht,0,$langs),1,0,'R',1);
     $pdf->SetX(120);
-    $pdf->Cell(20,6,'IMPORTE TOTAL',1,0,'R',1);
+    $pdf->Cell(20,6,price($row->total_tva,0,$langs),1,0,'R',1);
     $pdf->SetX(140);
-    $pdf->Cell(20,6,'% COMISION',1,0,'C',1);
-    $pdf->SetX(160);
-    $pdf->Cell(20,6,'COMISION',1,0,'R',1);
-    $pdf->Ln();
+    $pdf->Cell(20,6,price($row->total_ttc,0,$langs),1,0,'R',1);
+
+    $special_commission = $row->com;
+    if($special_commission > 0) {
+        $total_commission += ($row->total_ttc * ($special_commission)/ 100);
+        $pdf->SetX(160);
+        $pdf->Cell(20,6,number_format($special_commission,2),1,0,'C',1);
+        $pdf->SetX(180);
+        $pdf->Cell(20,6,($row->total_ttc * ($special_commission)/ 100),1,0,'R',1);
+    }
+    else {
+        $total_commission += ($row->total_ttc * ($object->array_options['options_commission'])/ 100);
+        $pdf->SetX(160);
+        $pdf->Cell(20,6,number_format($object->array_options['options_commission'],2),1,0,'C',1);
+        $pdf->SetX(180);
+        $pdf->Cell(20,6,($row->total_ttc * ($object->array_options['options_commission'])/ 100),1,0,'R',1);
+    }
+
+    
 
     // $code = $row["ref"];
     // $name = substr($row["label"],0,20);
