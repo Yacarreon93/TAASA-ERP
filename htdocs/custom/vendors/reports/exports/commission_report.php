@@ -1,10 +1,79 @@
 <?php
 require_once '../../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/fpdf/fpdf.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 
-//Select the Products you want to show in your PDF file
-$result=$db->query("select ref,label,price_ttc from llx_product ORDER BY ref",$link);
-$number_of_products = $db->num_rows($result);
+$id         = GETPOST('id','int');
+$sortfield  = GETPOST("sortfield",'alpha');
+$sortorder  = GETPOST("sortorder",'alpha');
+$offset = $conf->liste_limit;
+if (! $sortorder) $sortorder='DESC';
+if (! $sortfield) $sortfield='f.datef';
+$limit = $conf->liste_limit;
+$day         = GETPOST('day','int');
+$month       = GETPOST('month','int');
+$year        = GETPOST('year','int');
+$month_general  = GETPOST('month_general','int');
+$year_general   = GETPOST('year_general','int');
+if($month_general != '') $month = $month_general;
+if($year_general != '') $year = $year_general;
+
+$sql = "SELECT DISTINCT p.rowid, p.datep as dp, p.amount,"; // DISTINCT is to avoid duplicate when there is a link to sales representatives
+$sql.= " p.statut, p.num_paiement,";
+$sql.= " c.code as paiement_code,";
+$sql.= " ba.rowid as bid, ba.label,";
+$sql.= " s.rowid as socid, s.nom as name";
+$sql.= " FROM (".MAIN_DB_PREFIX."c_paiement as c, ".MAIN_DB_PREFIX."paiement as p)";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank as b ON p.fk_bank = b.rowid";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."bank_account as ba ON b.fk_account = ba.rowid";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."paiement_facture as pf ON p.rowid = pf.fk_paiement";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."facture as f ON pf.fk_facture = f.rowid";
+$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON f.fk_soc = s.rowid";
+$sql.= " JOIN ".MAIN_DB_PREFIX."facture_extrafields as ef ON ef.fk_object = f.rowid"; // added extrafields to locate vendor
+if (!$user->rights->societe->client->voir && !$socid)
+{
+    $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_commerciaux as sc ON s.rowid = sc.fk_soc";
+}
+$sql.= " WHERE p.fk_paiement = c.id";
+$sql.= " AND p.entity = ".$conf->entity;
+$sql.= ' AND ef.vendor = '.$id; // searching a specific vendor
+if (! $user->rights->societe->client->voir && ! $socid)
+{
+    $sql.= " AND sc.fk_user = " .$user->id;
+}
+if ($socid > 0) $sql.= " AND f.fk_soc = ".$socid;
+if ($userid)
+{
+    if ($userid == -1) $sql.= " AND f.fk_user_author IS NULL";
+    else  $sql.= " AND f.fk_user_author = ".$userid;
+}
+// Search criteria
+if ($month > 0)
+{
+    if ($year > 0 && empty($day))
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+    else if ($year > 0 && ! empty($day))
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
+    else
+    $sql.= " AND date_format(p.datep, '%m') = '".$month."'";
+}
+else if ($year > 0)
+{
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
+}
+if ($search_ref > 0)            $sql .=" AND p.rowid=".$search_ref;
+if ($search_account > 0)        $sql .=" AND b.fk_account=".$search_account;
+if ($search_paymenttype != "")  $sql .=" AND c.code='".$db->escape($search_paymenttype)."'";
+if ($search_amount)             $sql .=" AND p.amount='".$db->escape(price2num($search_amount))."'";
+if ($search_company)            $sql .= natural_search('s.nom', $search_company);
+// Add where from hooks
+$parameters=array();
+$reshook=$hookmanager->executeHooks('printFieldListWhere',$parameters);    // Note that $action and $object may have been modified by hook
+$sql.=$hookmanager->resPrint;
+$sql.= $db->order($sortfield,$sortorder);
+
+$result = $db->query($sql);
+$num = $db->num_rows($result);
 
 //Initialize the 3 columns and the total
 $column_code = "";

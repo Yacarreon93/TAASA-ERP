@@ -387,8 +387,7 @@ if ($id > 0)
                 $sql.=$hookmanager->resPrint;
             }
             $sql.= $db->order($sortfield,$sortorder);
-            $sql.= $db->plimit($limit+1, $offset);
-            //print "$sql";
+
             $resql = $db->query($sql);
             if ($resql)
             {
