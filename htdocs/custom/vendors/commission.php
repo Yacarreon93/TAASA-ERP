@@ -659,8 +659,8 @@ if ($id > 0)
 			        }
 			    }
 
-			    print "</table>\n";
-
+			    print "</table>";
+			    print "</form>";
                
 
                 echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
@@ -671,6 +671,7 @@ if ($id > 0)
                 
                 echo '<p style="margin-left:5px;">'.number_format($total_commission,2).'</p>';
                 echo '<br>';
+
 
                 print '<form action="reports/exports/commission_report.php" method="post" target="_blank">';
 			    foreach($_GET as $key => $val) {        
