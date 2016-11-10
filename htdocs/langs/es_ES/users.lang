@@ -1,6 +1,7 @@
 # Dolibarr language file - Source file is en_US - users
 HRMArea=Área Recursos humanos
 UserCard=Ficha usuario
+VendorCard=Ficha vendedor
 ContactCard=Ficha contacto
 GroupCard=Ficha grupo
 NoContactCard=No hay ficha entre los contactos

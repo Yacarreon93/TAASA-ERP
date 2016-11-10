@@ -118,7 +118,7 @@ $hookmanager->initHooks(array('paymentlist'));
 $form = new Form($db);
 $formother=new FormOther($db);
 
-llxHeader('',$langs->trans("UserCard"));
+llxHeader('',$langs->trans("VendorCard"));
 
 /* ************************************************************************** */
 /*                                                                            */
