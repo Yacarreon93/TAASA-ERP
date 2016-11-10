@@ -21,7 +21,7 @@ class CommissionsPDF extends FPDF
 	    // Framed title
 	    $this->Cell(30,10,'REPORTE DE COMISIONES',0,0,'C');
 	    // Line break
-	    $this->Ln(5);
+	    $this->Ln(8);
 	}
 }
 

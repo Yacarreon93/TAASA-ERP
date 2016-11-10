@@ -131,19 +131,46 @@ $total = $total;
 $pdf = new CommissionsPDF();
 $pdf->AddPage();
 
+$pdf->SetFont('Arial', 'B', 8);
+
+if($object) 
+{
+    // Print the name of vendor
+    $pdf->Cell(80, 10, strtoupper($object->firstname.' '.$object->lastname), 0, 0, 'L');
+} 
+else 
+{
+    $pdf->Cell(80, 10, '', 0, 0, 'L');
+}
+
+// Print the date range
+if($month && $year)
+{
+    // Get the date range
+    $a_date = $year.'-'.$month.'-01';
+    $first_date_of_month = date("d/m/y", strtotime($a_date));
+    $last_date_of_month = date("t/m/y", strtotime($a_date));
+
+    // Print the date range
+    $pdf->Cell(30, 10, 'DEL: '.$first_date_of_month.' AL: '.$last_date_of_month, 0, 0, 'C');
+
+}
+
+$pdf->ln(10);
+
 //Fields Name position
-$Y_Fields_Name_position = 100;
+// $Y_Fields_Name_position = 50;
 //Table position, under Fields Name
-$Y_Table_Position = 26;
+// $Y_Table_Position = 26;
 
 //First create each Field Name
 //Gray color filling each Field Name box
 $pdf->SetFillColor(232,232,232);
 //Bold Font for Field Name
 $pdf->SetFont('Arial','B',6);
-$pdf->SetY($Y_Fields_Name_position);
-$pdf->SetX(20);
-$pdf->Cell(20,6,'FACTURA',1,0,'L',1);
+// $pdf->SetY($Y_Fields_Name_position);
+// $pdf->SetX(20);
+$pdf->Cell(30,6,'FACTURA',1,0,'L',1);
 $pdf->SetX(40);
 $pdf->Cell(20,6,'FECHA',1,0,'L',1);
 $pdf->SetX(60);
@@ -167,9 +194,10 @@ $column_code = "";
 $column_name = "";
 $column_price = "";
 $total = 0;
+$total_commission = 0;
+
 
 $pdf->SetFillColor(255,255,255);
-//Bold Font for Field Name
 $pdf->SetFont('Arial','',6);
 
 //For each row, add the field to the corresponding column
@@ -177,13 +205,13 @@ while($row = $db->fetch_object($result))
 {
     $Y_Fields_Name_position += 6;
 
-    $pdf->SetY($Y_Fields_Name_position);
-    $pdf->SetX(20);
-    $pdf->Cell(20,6,$row->facnumber,1,0,'L',1);
+    // $pdf->SetY($Y_Fields_Name_position);
+    // $pdf->SetX(20);
+    $pdf->Cell(30,6,$row->facnumber,1,0,'L',1);
     $pdf->SetX(40);
     $pdf->Cell(20,6,dol_print_date($db->jdate($row->df),'day'),1,0,'L',1);
     $pdf->SetX(60);
-    $pdf->Cell(20,6,dol_print_date($datelimit,'day'),1,0,'L',1);
+    $pdf->Cell(20,6,dol_print_date($db->jdate($row->datelimite),'day'),1,0,'L',1);
     $pdf->SetX(80);
     $pdf->Cell(20,6,$row->name,1,0,'L',1);
     $pdf->SetX(100);
@@ -207,9 +235,7 @@ while($row = $db->fetch_object($result))
         $pdf->Cell(20,6,number_format($object->array_options['options_commission'],2),1,0,'C',1);
         $pdf->SetX(180);
         $pdf->Cell(20,6,($row->total_ttc * ($object->array_options['options_commission'])/ 100),1,0,'R',1);
-    }
-
-    
+    }    
 
     // $code = $row["ref"];
     // $name = substr($row["label"],0,20);
@@ -220,9 +246,14 @@ while($row = $db->fetch_object($result))
     // $column_name = $column_name.$name."\n";
     // $column_price = $column_price.$price_to_show."\n";
 
-    //Sum all the Prices (TOTAL)
-    // $total = $total+$real_price;
+    // Sum (TOTAL)
+    // $total += $real_price;
+
+    $pdf->ln();
 }
+
+$pdf->SetFont('Arial','B',8);
+$pdf->Cell(80, 10, 'TOTAL: $'.number_format($total_commission, 2, '.', ','), 0, 0, 'L');
 
 //Now show the 3 columns
 // $pdf->SetFont('Arial','',12);
