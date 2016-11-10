@@ -1,8 +1,9 @@
 <?php
+
 require_once '../../../../main.inc.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/fpdf/fpdf.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/vendors/class/CommissionsPDF.php';
 
 $id         = GETPOST('id','int');
 $sortfield  = GETPOST("sortfield",'alpha');
@@ -127,11 +128,11 @@ $num = $db->num_rows($result);
 $total = $total;
 
 //Create a new PDF file
-$pdf=new FPDF();
+$pdf = new CommissionsPDF();
 $pdf->AddPage();
 
 //Fields Name position
-$Y_Fields_Name_position = 20;
+$Y_Fields_Name_position = 100;
 //Table position, under Fields Name
 $Y_Table_Position = 26;
 
