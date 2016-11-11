@@ -118,7 +118,7 @@ $hookmanager->initHooks(array('paymentlist'));
 $form = new Form($db);
 $formother=new FormOther($db);
 
-llxHeader('',$langs->trans("VendorCard"));
+llxHeader('',$langs->trans("UserCard"));
 
 /* ************************************************************************** */
 /*                                                                            */
@@ -254,6 +254,7 @@ if ($id > 0)
 			$result = $db->query($sql);
 			$nbtotalofrecords = $db->num_rows($result);
 		}
+
 
 		$sql.= $db->plimit($limit+1,$offset);
 
@@ -413,7 +414,8 @@ if ($id > 0)
 
             }
             $sql.= $db->order($sortfield,$sortorder);
-
+            $sql.= $db->plimit($limit+1, $offset);
+            //print "$sql";
             $resql = $db->query($sql);
             if ($resql)
             {
@@ -427,7 +429,7 @@ if ($id > 0)
                 $paramlist.=($search_amount?"&search_amount=".$search_amount:"");
                 if ($month)              $paramlist.='&month='.$month;
 			    if ($year)               $paramlist.='&year=' .$year;
-                print '<form id="commission_report" method="GET" action="'.$_SERVER["PHP_SELF"].'">';
+                print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">';
                 echo "<input type='hidden' name='id' value='".$id."'>";
                 echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
                 echo '<p style="margin:0">Seleccionar Mes</p>';
@@ -659,8 +661,8 @@ if ($id > 0)
 			        }
 			    }
 
-			    print "</table>";
-			    print "</form>";
+			    print "</table>\n";
+
                
 
                 echo '<div id ="date_filter" style="margin-bottom: 10px; background:rgb(140,150,180); font-weight: bold; color: #FFF; border-collapse: collapse; background-image: -webkit-linear-gradient(bottom, rgba(0,0,0,0.3) 0%, rgba(250,250,250,0.3) 100%); padding:5px;">';
@@ -668,20 +670,10 @@ if ($id > 0)
                 echo '<div style="display:inline-block;">';
                 echo '</div>';
                 echo '</div>';
-                
                 echo '<p style="margin-left:5px;">'.number_format($total_commission,2).'</p>';
-                echo '<br>';
-
-
-                print '<form action="reports/exports/commission_report.php" method="post" target="_blank">';
-			    foreach($_GET as $key => $val) {        
-			    	print '<input type="hidden" name="'.htmlspecialchars($key, ENT_COMPAT, 'UTF-8').'" ';
-			    	print 'value="'.htmlspecialchars($val, ENT_COMPAT, 'UTF-8').'">';  
-			    }                     
-			    print '<input type="submit" class="button" value="Generar reporte" style="float:right">';
-			    print '</form>';
-
             }
+
+
             else
             {
                 dol_print_error($db);
