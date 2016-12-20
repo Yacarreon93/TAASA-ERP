@@ -4002,6 +4002,7 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
+	            document.getElementById("options_currency").value = data.currency;
 	            //Make them disable
 	            document.getElementById("selectmode_reglement_id").disabled = true;
 	            document.getElementById("options_vendor").disabled = true;

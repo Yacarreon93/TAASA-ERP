@@ -2500,6 +2500,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
+	            document.getElementById("options_currency").value = data.currency;
 	            //Make them disable
 	            document.getElementsByName("cond_reglement_id").disabled = true;
 	            document.getElementById("selectmode_reglement_id").disabled = true;
