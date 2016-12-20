@@ -1351,34 +1351,115 @@ if (empty($reshook))
 
 				// multiprix
 
+				//checking for currency
+
+					$socid = GETPOST('socid','int');
+
+					$sqlCurrency = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency ";
+					$sqlCurrency.= " FROM ".MAIN_DB_PREFIX."societe s ";
+					$sqlCurrency.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
+					$sqlCurrency.= " WHERE s.rowid = '".$object->thirdparty->id."' LIMIT 1";
+
+					//print($object->thirdparty->id);
+
+					$resqlCurrency=$db->query($sqlCurrency);
+					if ($resqlCurrency)
+					{
+						$num = $db->num_rows($resqlCurrency);
+						$i = 0;
+						if ($num)
+						{
+							while ($i < $num)
+							{
+								$obj = $db->fetch_object($resqlCurrency);
+								if ($obj)
+								{
+									
+									if ($obj->currency) {
+										$clientCurrency= $obj->currency;
+										print ($clientCurrency);
+									}else{
+										$clientCurrency= "";
+									}
+								}
+								$i++;
+							}
+						}
+					}
+					else
+					{
+						$error++;
+						dol_print_error($db);
+					}
+					if (! $error)
+					{
+						$db->commit();
+					}
+					else
+					{
+						$db->rollback();
+					}
+
 					$kg_mayoreo = $prod->array_options['options_kg_mayoreo'];
 
 					// We define price for product
 					if (! empty($conf->global->PRODUIT_MULTIPRICES) && ! empty($object->thirdparty->price_level))
 					{
-						if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
+						if($clientCurrency != "")
 						{
+							if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
+							{
 
-							$pu_ht = $prod->multiprices[2];
-							$pu_ttc = $prod->multiprices_ttc[2];
-							$price_min = $prod->multiprices_min[2];
-							$price_base_type = $prod->multiprices_base_type[2];
-							if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
-							if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
-							$tva_tx=$prod->multiprices_tva_tx[2];
-							$tva_npr=$prod->multiprices_recuperableonly[2];
+								$pu_ht = $prod->multiprices[4];
+								$pu_ttc = $prod->multiprices_ttc[4];
+								$price_min = $prod->multiprices_min[4];
+								$price_base_type = $prod->multiprices_base_type[4];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[4];
+								$tva_npr=$prod->multiprices_recuperableonly[4];
+							}
+							else
+							{
+								$pu_ht = $prod->multiprices[3];
+								$pu_ttc = $prod->multiprices_ttc[3];
+								$price_min = $prod->multiprices_min[3];
+								$price_base_type = $prod->multiprices_base_type[3];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[3];
+								$tva_npr=$prod->multiprices_recuperableonly[3];
+							}
 						}
-						else
+
+						else 
 						{
-							$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
-							$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
-							$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
-							$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
-							if (isset($prod->multiprices_tva_tx[$object->thirdparty->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
-							if (isset($prod->multiprices_recuperableonly[$object->thirdparty->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
-							$tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
-							$tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+							if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
+							{
+
+								$pu_ht = $prod->multiprices[2];
+								$pu_ttc = $prod->multiprices_ttc[2];
+								$price_min = $prod->multiprices_min[2];
+								$price_base_type = $prod->multiprices_base_type[2];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[2];
+								$tva_npr=$prod->multiprices_recuperableonly[2];
+							}
+							else
+							{
+								$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
+								$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
+								$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
+								$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
+								if (isset($prod->multiprices_tva_tx[$object->thirdparty->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->thirdparty->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
+								$tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+							}
 						}
+
+						
 					}
 					elseif (! empty($conf->global->PRODUIT_CUSTOMER_PRICES))
 					{
