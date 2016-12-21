@@ -658,7 +658,6 @@ if (empty($reshook))
 									
 									if ($obj->currency) {
 										$clientCurrency= $obj->currency;
-										print ($clientCurrency);
 									}else{
 										$clientCurrency= "";
 									}
@@ -686,7 +685,7 @@ if (empty($reshook))
 					// We define price for product
 					if (! empty($conf->global->PRODUIT_MULTIPRICES) && ! empty($object->thirdparty->price_level))
 					{
-						if($clientCurrency != "")
+						if($clientCurrency == "USD")
 						{
 							if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
 							{
@@ -2251,8 +2250,72 @@ if ($action == 'create' && $user->rights->commande->creer)
 		print '<table id="tablelines" class="noborder noshadow" width="100%">';
 
 		// Show object lines
-		if (! empty($object->lines))
+		if (! empty($object->lines)){
+
 			$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
+
+			//checking for currency
+
+				$socid = GETPOST('socid','int');
+
+				$sqlCurrency = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency ";
+				$sqlCurrency.= " FROM ".MAIN_DB_PREFIX."societe s ";
+				$sqlCurrency.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
+				$sqlCurrency.= " WHERE s.rowid = '".$object->thirdparty->id."' LIMIT 1";
+
+
+				$resqlCurrency=$db->query($sqlCurrency);
+				if ($resqlCurrency)
+				{
+					$num = $db->num_rows($resqlCurrency);
+					$i = 0;
+					if ($num)
+					{
+						while ($i < $num)
+						{
+							$obj = $db->fetch_object($resqlCurrency);
+							if ($obj)
+							{									
+								if ($obj->currency) {
+									$clientCurrency= $obj->currency;
+								}else{
+										$clientCurrency= "";
+								}
+							}
+							$i++;
+						}
+					}
+				}
+				else
+				{
+					$error++;
+					dol_print_error($db);
+				}
+				if (! $error)
+				{
+					$db->commit();
+				}
+				else
+				{
+					$db->rollback();
+				}			
+
+				if($clientCurrency == "USD")
+				{
+					print '<script>
+								document.getElementById("PriceUHT").innerText = "P.U. USD";
+								document.getElementById("TotalHT").innerText = "Importe USD";
+							</script>';
+				}
+				else {
+					print '<script>
+								document.getElementById("PriceUHT").innerText = "P.U. MXN";
+								document.getElementById("TotalHT").innerText = "Importe MXN";
+							</script>';
+				}
+
+
+		}
 
 		$numlines = count($object->lines);
 

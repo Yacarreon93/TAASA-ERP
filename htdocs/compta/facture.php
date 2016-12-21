@@ -1377,7 +1377,6 @@ if (empty($reshook))
 									
 									if ($obj->currency) {
 										$clientCurrency= $obj->currency;
-										print ($clientCurrency);
 									}else{
 										$clientCurrency= "";
 									}
@@ -1405,7 +1404,7 @@ if (empty($reshook))
 					// We define price for product
 					if (! empty($conf->global->PRODUIT_MULTIPRICES) && ! empty($object->thirdparty->price_level))
 					{
-						if($clientCurrency != "")
+						if($clientCurrency == "USD")
 						{
 							if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
 							{
@@ -1562,6 +1561,7 @@ if (empty($reshook))
 			} else {
 				// Insert line
 				$result = $object->addline($desc, $pu_ht, $qty, $tva_tx, $localtax1_tx, $localtax2_tx, $idprod, $remise_percent, $date_start, $date_end, 0, $info_bits, '', $price_base_type, $pu_ttc, $type, - 1, $special_code, '', 0, GETPOST('fk_parent_line'), $fournprice, $buyingprice, $label, $array_options, $_POST['progress'], '', $fk_unit);
+
 
 				if ($result > 0)
 				{
@@ -2916,6 +2916,59 @@ else if ($id > 0 || ! empty($ref))
 		elseif ($reshook > 0) $formconfirm=$hookmanager->resPrint;
 	}
 
+
+	//hereeeeeeeeeeeeeeee
+
+
+	//checking for currency
+
+	$socid = GETPOST('socid','int');
+
+	$sqlCurrency = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency ";
+	$sqlCurrency.= " FROM ".MAIN_DB_PREFIX."societe s ";
+	$sqlCurrency.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
+	$sqlCurrency.= " WHERE s.rowid = '".$object->thirdparty->id."' LIMIT 1";
+
+//print($object->thirdparty->id);
+
+	$resqlCurrency=$db->query($sqlCurrency);
+	if ($resqlCurrency)
+	{
+		$num = $db->num_rows($resqlCurrency);
+		$i = 0;
+		if ($num)
+		{
+			while ($i < $num)
+			{
+				$obj = $db->fetch_object($resqlCurrency);
+			if ($obj)
+			{
+									
+					if ($obj->currency) {
+						$clientCurrency= $obj->currency;
+					}else{
+						$clientCurrency= "";
+					}
+				}
+				$i++;
+			}
+		}
+	}
+	else
+	{
+		$error++;
+		dol_print_error($db);
+	}
+	if (! $error)
+	{
+		$db->commit();
+	}
+	else
+	{
+		$db->rollback();
+	}
+
+
 	// Print form confirm
 	print $formconfirm;
 
@@ -3526,6 +3579,7 @@ else if ($id > 0 || ! empty($ref))
 	// Total with tax
 	print '<tr><td>' . $langs->trans('AmountTTC') . '</td><td colspan="3" class="nowrap">' . price($object->total_ttc, 1, '', 1, - 1, - 1, $conf->currency) . '</td></tr>';
 
+
 	// Statut
 	print '<tr><td>' . $langs->trans('Status') . '</td>';
 	print '<td colspan="3">' . ($object->getLibStatut(4, $totalpaye)) . '</td></tr>';
@@ -3612,7 +3666,6 @@ else if ($id > 0 || ! empty($ref))
 	}
 
 	print '<table id="tablelines" class="noborder noshadow" width="100%">';
-
 	// Show global modifiers
 	if (! empty($conf->global->INVOICE_US_SITUATION))
 	{
@@ -3663,8 +3716,70 @@ else if ($id > 0 || ! empty($ref))
 	}
 
 	// Show object lines
-	if (! empty($object->lines))
+	if (! empty($object->lines)) {
 		$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
+
+		//checking for currency
+
+		$socid = GETPOST('socid','int');
+
+		$sqlCurrency = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency ";
+		$sqlCurrency.= " FROM ".MAIN_DB_PREFIX."societe s ";
+		$sqlCurrency.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
+		$sqlCurrency.= " WHERE s.rowid = '".$object->thirdparty->id."' LIMIT 1";
+
+
+		$resqlCurrency=$db->query($sqlCurrency);
+		if ($resqlCurrency)
+		{
+			$num = $db->num_rows($resqlCurrency);
+			$i = 0;
+			if ($num)
+			{
+				while ($i < $num)
+				{
+					$obj = $db->fetch_object($resqlCurrency);
+					if ($obj)
+					{									
+						if ($obj->currency) {
+							$clientCurrency= $obj->currency;
+						}else{
+								$clientCurrency= "";
+						}
+					}
+					$i++;
+				}
+			}
+		}
+		else
+		{
+			$error++;
+			dol_print_error($db);
+		}
+		if (! $error)
+		{
+			$db->commit();
+		}
+		else
+		{
+			$db->rollback();
+		}			
+
+		if($clientCurrency == "USD")
+		{
+			print '<script>
+						document.getElementById("PriceUHT").innerText = "P.U. USD";
+						document.getElementById("TotalHT").innerText = "Importe USD";
+					</script>';
+		}
+		else {
+			print '<script>
+						document.getElementById("PriceUHT").innerText = "P.U. MXN";
+						document.getElementById("TotalHT").innerText = "Importe MXN";
+					</script>';
+		}
+		
+	}
 
 	// Form to add new line
 	if ($object->statut == 0 && $user->rights->facture->creer && $action != 'valid' && $action != 'editline' && ($object->is_first() || !$object->situation_cycle_ref))
