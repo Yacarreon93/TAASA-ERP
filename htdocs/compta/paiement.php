@@ -428,6 +428,14 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         print '<textarea name="comment" wrap="soft" cols="60" rows="'.ROWS_4.'">'.(empty($_POST['comment'])?'':$_POST['comment']).'</textarea></td>';
         print '</tr>';
 
+        //Currency
+        print '<tr><td>Moneda';
+        print '</td>';
+        print '<td><select>
+        			<option value=""></option>
+  					<option value="MX">MX</option>
+  					<option value="USD">USD</option></td></tr>';
+
         // Bank account
         print '<tr>';
         if (! empty($conf->banque->enabled))
@@ -469,9 +477,10 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         /*
          * List of unpaid invoices
          */
-        $sql = 'SELECT f.rowid as facid, f.facnumber, f.total_ttc, f.type, ';
+        $sql = 'SELECT f.rowid as facid, f.facnumber, f.total_ttc, f.type, currency,';
         $sql.= ' f.datef as df';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'facture as f';
+        $sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as fex';
         $sql.= ' WHERE f.entity = '.$conf->entity;
         $sql.= ' AND f.fk_soc = '.$facture->socid;
         $sql.= ' AND f.paye = 0';
@@ -485,8 +494,10 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
             $sql .= ' AND type = 2';		// If paying back a credit note, we show all credit notes
         }
 
+        $sql.=' AND fex.fk_object = f.rowid';
         // Sort invoices by date and serial number: the older one comes first
         $sql.=' ORDER BY f.datef ASC, f.facnumber ASC';
+
 
         $resql = $db->query($sql);
         if ($resql)
@@ -511,9 +522,11 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                 print '<tr class="liste_titre">';
                 print '<td>'.$arraytitle.'</td>';
                 print '<td align="center">'.$langs->trans('Date').'</td>';
+                print '<td align="center">Moneda</td>';
                 print '<td align="right">'.$langs->trans('AmountTTC').'</td>';
                 print '<td align="right">'.$alreadypayedlabel.'</td>';
                 print '<td align="right">'.$remaindertopay.'</td>';
+                print '<td align="right">Tipo de Cambio</td>';
                 print '<td align="right">'.$langs->trans('PaymentAmount').'</td>';
                 print '<td align="right">&nbsp;</td>';
                 print "</tr>\n";
@@ -546,6 +559,19 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     // Date
                     print '<td align="center">'.dol_print_date($db->jdate($objp->df),'day')."</td>\n";
 
+                    //Moneda
+                    if($objp->currency == 'USD') 
+                    {
+                    	print '<td align="center">'.$objp->currency.'</td>';
+                    }
+                    else if($objp->currency == 'MXN')  {
+                    	print '<td align="center">'.$objp->currency.'</td>';
+                    }
+                    else 
+                    {
+                    	print '<td align="center">MXN</td>';
+                    }
+
                     // Price
                     print '<td align="right">'.price($sign * $objp->total_ttc).'</td>';
 
@@ -558,6 +584,15 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     // Remain to take or to pay back
                     print '<td align="right">'.price($sign * $remaintopay).'</td>';
                     //$test= price(price2num($objp->total_ttc - $paiement - $creditnotes - $deposits));
+
+                    //Change_type
+                    if($objp->currency == 'USD') 
+                    {
+                    	print '<td align="right"><input type="text" size="4" name="change_type" value=""></td>';
+                    }
+                    else {
+                    	print '<td align="right"></td>';
+                    }
 
                     // Amount
                     print '<td align="right">';
@@ -612,6 +647,8 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     if ($totalrecudeposits) print '+'.price($totalrecudeposits);
                     print '</b></td>';
                     print '<td align="right"><b>'.price($sign * price2num($total_ttc - $totalrecu - $totalrecucreditnote - $totalrecudeposits,'MT')).'</b></td>';
+                    print '<td align="right">';
+                    print '<td align="right">';
                     print '<td align="right" id="result" style="font-weight: bold;"></td>';
                     print '<td align="center">&nbsp;</td>';
                     print "</tr>\n";
