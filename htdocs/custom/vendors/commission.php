@@ -491,8 +491,8 @@ if ($id > 0)
 			    print_liste_field_titre($langs->trans('Received'),$_SERVER['PHP_SELF'],'am','',$param,'align="right"',$sortfield,$sortorder);
 			    print('<td align="right">% Comisión</td>');
 			    print('<td align="right">Comisión</td>');
-			    print_liste_field_titre($langs->trans('Status'),$_SERVER['PHP_SELF'],'fk_statut,paye,am','',$param,'align="right"',$sortfield,$sortorder);
-			    print_liste_field_titre('',$_SERVER["PHP_SELF"],"",'','','',$sortfield,$sortorder,'maxwidthsearch ');
+			  print('<td align="right"></td>');
+			    print('<td align="right"></td>');
 			    print "</tr>\n";
 
 			    // Filters lines
@@ -520,10 +520,9 @@ if ($id > 0)
 
 			    print '<td class="liste_titre" align="right">';
 				$liststatus=array('0'=>$langs->trans("BillShortStatusDraft"), '1'=>$langs->trans("BillShortStatusNotPaid"), '2'=>$langs->trans("BillShortStatusPaid"), '3'=>$langs->trans("BillShortStatusCanceled"));
-				print $form->selectarray('search_status', $liststatus, $search_status, 1);
+				print '<td class="liste_titre"></td>';
 			    print '</td>';
-			    print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
-				print '<input type="image" class="liste_titre" name="button_removefilter" src="'.img_picto($langs->trans("Search"),'searchclear.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'" title="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'">';
+			    print '<td class="liste_titre" align="right">';
 			    print "</td></tr>\n";
 
 			     if ($num > 0)
@@ -632,10 +631,6 @@ if ($id > 0)
 		                	print '<td align="right">'.($paiement * ($object->array_options['options_commission'])/ 100).'</td>';
 		                }
 
-			            // Affiche statut de la facture
-			            print '<td align="right" class="nowrap">';
-			            print $facturestatic->LibStatut($objp->paye,$objp->fk_statut,5,$paiement,$objp->type);
-			            print "</td>";
 
 			            print "<td></td>";
 

@@ -2895,7 +2895,7 @@ abstract class CommonObject
 		print '<td align="right" width="50">'.$langs->trans('VAT').'</td>';
 
 		// Price HT
-		print '<td align="right" width="80">'.$langs->trans('PriceUHT').'</td>';
+		print '<td align="right" width="80" id="PriceUHT">'.$langs->trans('PriceUHT').'</td>';
 
 		if ($inputalsopricewithtax) print '<td align="right" width="80">'.$langs->trans('PriceUTTC').'</td>';
 
@@ -2928,7 +2928,7 @@ abstract class CommonObject
 		}
 
 		// Total HT
-		print '<td align="right" width="50">'.$langs->trans('TotalHTShort').'</td>';
+		print '<td align="right" width="50" id="TotalHT">'.$langs->trans('TotalHTShort').'</td>';
 
 		print '<td></td>';  // No width to allow autodim
 
