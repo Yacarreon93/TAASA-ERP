@@ -87,3 +87,28 @@ function payment_supplier_prepare_head(Paiement $object) {
 
 	return $head;
 }
+
+function payment_section_prepare_head($object) {
+	
+	global $langs, $conf;
+	
+	$h = 0;
+	$head = array();
+
+	$head[$h][0] = DOL_URL_ROOT.'/compta/paiement.php?facid='.$object->id.'&action=create';
+	$head[$h][1] = 'Sin moneda';
+	$head[$h][2] = 'NO_CURRENCY';
+	$h++;
+
+	$head[$h][0] = DOL_URL_ROOT.'/compta/paiement.php?facid='.$object->id.'&action=create&currency=MXN';
+	$head[$h][1] = 'MXN';
+	$head[$h][2] = 'MXN';
+	$h++;
+
+	$head[$h][0] = DOL_URL_ROOT.'/compta/paiement.php?facid='.$object->id.'&action=create&currency=USD';
+	$head[$h][1] = 'USD';	
+	$head[$h][2] = 'USD';	
+	$h++;
+
+	return $head;
+}

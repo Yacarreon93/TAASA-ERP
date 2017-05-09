@@ -32,6 +32,7 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
 
 $langs->load('companies');
 $langs->load('bills');
@@ -48,6 +49,9 @@ $paymentnum	= GETPOST('num_paiement');
 $sortfield	= GETPOST('sortfield','alpha');
 $sortorder	= GETPOST('sortorder','alpha');
 $page		= GETPOST('page','int');
+
+// extra
+$currency = GETPOST('currency','alpha') ? GETPOST('currency','alpha') : 'NO_CURRENCY';
 
 $amounts=array();
 $amountsresttopay=array();
@@ -403,7 +407,9 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 		print '<input type="hidden" name="type" id="invoice_type" value="'.$facture->type.'">';
 		print '<input type="hidden" name="thirdpartylabel" id="thirdpartylabel" value="'.dol_escape_htmltag($facture->client->name).'">';
 
-		dol_fiche_head();
+		$head = payment_section_prepare_head($facture);
+
+		dol_fiche_head($head, $currency);
 
 		print '<table class="border" width="100%">';
 
@@ -428,22 +434,34 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         print '<textarea name="comment" wrap="soft" cols="60" rows="'.ROWS_4.'">'.(empty($_POST['comment'])?'':$_POST['comment']).'</textarea></td>';
         print '</tr>';
 
-        //Currency
-        print '<tr><td>Moneda';
-        print '</td>';
-        print '<td><select>
-        			<option value=""></option>
-  					<option value="MX">MX</option>
-  					<option value="USD">USD</option></td></tr>';
+        // Currency
+        print '<tr>';
+		print '<td class="fieldrequired">Moneda</td>';
+        print '<td>';
+		print '<select name="currency"">';
+		if ($currency === 'NO_CURRENCY') print '<option value="" selected></option>';
+		if ($currency === 'MXN') print '<option value="MXN" selected>MXN</option>';
+		if ($currency === 'USD') print '<option value="USD" selected>USD</option>';
+		print '</select>';
+		print '</td>';
+		print '</tr>';
 
         // Bank account
         print '<tr>';
         if (! empty($conf->banque->enabled))
-        {
+        {				
+			if ($currency == 'USD') 
+			{
+				$filter = 'currency_code = "USD"';
+			}
+			else 
+			{
+				$filter = '(currency_code = "MXN" OR currency_code IS NULL)';
+			}
             if ($facture->type != 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToCredit').'</span></td>';
             if ($facture->type == 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToDebit').'</span></td>';
             print '<td>';
-            $form->select_comptes($accountid,'accountid',0,'',2);
+            $form->select_comptes($accountid, 'accountid', 0, $filter, 2); 
             print '</td>';
         }
         else
@@ -493,7 +511,14 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         {
             $sql .= ' AND type = 2';		// If paying back a credit note, we show all credit notes
         }
-
+		if ($currency && $currency !== 'NO_CURRENCY') 
+		{ 
+			$sql .= ' AND currency = "'.$currency.'"';
+		}
+		else 
+		{
+			$sql .= ' AND currency IS NULL';
+		}
         $sql.=' AND fex.fk_object = f.rowid';
         // Sort invoices by date and serial number: the older one comes first
         $sql.=' ORDER BY f.datef ASC, f.facnumber ASC';
@@ -550,7 +575,11 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     $alreadypayed=price2num($paiement + $creditnotes + $deposits,'MT');
                     $remaintopay=price2num($invoice->total_ttc - $paiement - $creditnotes - $deposits,'MT');
 
-                    print '<tr '.$bc[$var].'>';
+                    print '<tr '.$bc[$var];
+					if ($objp->facid == $facid) {
+						print ' style="background:rgb(238,246,252) !important"';
+					}
+					print '>';
 
                     print '<td>';
                     print $invoice->getNomUrl(1,'');
@@ -560,16 +589,13 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     print '<td align="center">'.dol_print_date($db->jdate($objp->df),'day')."</td>\n";
 
                     //Moneda
-                    if($objp->currency == 'USD') 
+                    if($objp->currency) 
                     {
-                    	print '<td align="center">'.$objp->currency.'</td>';
-                    }
-                    else if($objp->currency == 'MXN')  {
                     	print '<td align="center">'.$objp->currency.'</td>';
                     }
                     else 
                     {
-                    	print '<td align="center">MXN</td>';
+                    	print '<td align="center">Sin moneda</td>';
                     }
 
                     // Price
@@ -640,14 +666,13 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                 {
                     // Print total
                     print '<tr class="liste_total">';
-                    print '<td colspan="2" align="left">'.$langs->trans('TotalTTC').'</td>';
+                    print '<td colspan="3" align="left">'.$langs->trans('TotalTTC').'</td>';
                     print '<td align="right"><b>'.price($sign * $total_ttc).'</b></td>';
                     print '<td align="right"><b>'.price($sign * $totalrecu);
                     if ($totalrecucreditnote) print '+'.price($totalrecucreditnote);
                     if ($totalrecudeposits) print '+'.price($totalrecudeposits);
                     print '</b></td>';
                     print '<td align="right"><b>'.price($sign * price2num($total_ttc - $totalrecu - $totalrecucreditnote - $totalrecudeposits,'MT')).'</b></td>';
-                    print '<td align="right">';
                     print '<td align="right">';
                     print '<td align="right" id="result" style="font-weight: bold;"></td>';
                     print '<td align="center">&nbsp;</td>';
