@@ -137,11 +137,15 @@ if (empty($reshook))
 	        $error++;
 	    }
 
-	     if (! GETPOST('currency_rate'))
-	    {
-	        setEventMessage($langs->transnoentities('ErrorFieldRequired','Tipo de Cambio'), 'errors');
-	        $error++;
-	    }
+	     if($currency == 'USD') 
+	     {
+	     	if (! GETPOST('currency_rate'))
+	    	{
+	        	setEventMessage($langs->transnoentities('ErrorFieldRequired','Tipo de Cambio'), 'errors');
+	        	$error++;
+	    	}
+	     }
+	     
 
 	    if (! empty($conf->banque->enabled))
 	    {

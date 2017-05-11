@@ -109,8 +109,27 @@ class Paiement extends CommonObject
 
 		if ($result)
 		{
+			$sql = 'SELECT p.rowid, lpe.currency, lpe.currency_rate ';
+			$sql.= 'FROM llx_c_paiement as c, llx_paiement as p ';
+			$sql.= 'LEFT JOIN llx_bank as b ON p.fk_bank = b.rowid ';
+			$sql.= 'JOIN llx_paiement_extrafields as lpe ON lpe.fk_object = p.rowid ';
+			$sql.= 'WHERE p.fk_paiement = c.id';
+			if ($id > 0)
+			$sql.= ' AND p.rowid = '.$id;
+			else if ($ref)
+				$sql.= ' AND p.rowid = '.$ref;
+			else if ($fk_bank)
+				$sql.= ' AND p.fk_bank = '.$fk_bank;
+			$result2 = $this->db->query($sql);
+
 			if ($this->db->num_rows($result))
 			{
+				if ($result2)
+				{
+					$obj2 = $this->db->fetch_object($result2);
+					$this->currency = $obj2->currency;
+					$this->currency_rate = $obj2->currency_rate;
+				}
 				$obj = $this->db->fetch_object($result);
 				$this->id             = $obj->rowid;
 				$this->ref            = $obj->rowid;
@@ -136,6 +155,7 @@ class Paiement extends CommonObject
 				$this->db->free($result);
 				return 0;
 			}
+
 		}
 		else
 		{
@@ -283,7 +303,6 @@ class Paiement extends CommonObject
 			$sql.= " VALUES (".$this->id.", '".$this->currency."', '".$this->currency_rate."')";
 
 			$resql = $this->db->query($sql);
-
 
 
 		}

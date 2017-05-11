@@ -220,6 +220,11 @@ print '</td></tr>';
 // Amount
 print '<tr><td>'.$langs->trans('Amount').'</td><td colspan="3">'.price($object->montant,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
 
+//Extras (Currency and currency rate)
+print '<tr><td>Moneda</td><td colspan="3">'.$object->currency.'</td></tr>';
+
+print '<tr><td>Tipo de Cambio</td><td colspan="3">'.$object->currency_rate.'</td></tr>';
+
 // Note
 print '<tr><td class="tdtop">'.$form->editfieldkey("Note",'note',$object->note,$object,$user->rights->facture->paiement).'</td><td colspan="3">';
 print $form->editfieldval("Note",'note',$object->note,$object,$user->rights->facture->paiement,'textarea');
