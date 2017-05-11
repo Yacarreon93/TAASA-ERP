@@ -52,6 +52,7 @@ $page		= GETPOST('page','int');
 
 // extra
 $currency = GETPOST('currency','alpha') ? GETPOST('currency','alpha') : 'NO_CURRENCY';
+$currency_rate = GETPOST('currency_rate','alpha');
 
 $amounts=array();
 $amountsresttopay=array();
@@ -136,6 +137,12 @@ if (empty($reshook))
 	        $error++;
 	    }
 
+	     if (! GETPOST('currency_rate'))
+	    {
+	        setEventMessage($langs->transnoentities('ErrorFieldRequired','Tipo de Cambio'), 'errors');
+	        $error++;
+	    }
+
 	    if (! empty($conf->banque->enabled))
 	    {
 	        // If bank module is on, account is required to enter a payment
@@ -209,6 +216,8 @@ if (empty($reshook))
 	    $paiement->paiementid   = dol_getIdFromCode($db,$_POST['paiementcode'],'c_paiement');
 	    $paiement->num_paiement = $_POST['num_paiement'];
 	    $paiement->note         = $_POST['comment'];
+	    $paiement->currency = $_POST['currency'];
+	    $paiement->currency_rate = $_POST['currency_rate'];
 
 	    if (! $error)
 	    {
@@ -438,7 +447,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
         print '<tr>';
 		print '<td class="fieldrequired">Moneda</td>';
         print '<td>';
-		print '<select name="currency"">';
+		print '<select name="currency">';
 		if ($currency === 'NO_CURRENCY') print '<option value="" selected></option>';
 		if ($currency === 'MXN') print '<option value="MXN" selected>MXN</option>';
 		if ($currency === 'USD') print '<option value="USD" selected>USD</option>';
@@ -453,6 +462,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 			if ($currency == 'USD') 
 			{
 				$filter = 'currency_code = "USD"';
+				print'<td><span class="fieldrequired">Tipo de cambio</span><td><input name="currency_rate" value="'.$currency_rate.'"></td></td></tr>';
 			}
 			else 
 			{
@@ -551,7 +561,6 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                 print '<td align="right">'.$langs->trans('AmountTTC').'</td>';
                 print '<td align="right">'.$alreadypayedlabel.'</td>';
                 print '<td align="right">'.$remaindertopay.'</td>';
-                print '<td align="right">Tipo de Cambio</td>';
                 print '<td align="right">'.$langs->trans('PaymentAmount').'</td>';
                 print '<td align="right">&nbsp;</td>';
                 print "</tr>\n";
@@ -611,14 +620,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
                     print '<td align="right">'.price($sign * $remaintopay).'</td>';
                     //$test= price(price2num($objp->total_ttc - $paiement - $creditnotes - $deposits));
 
-                    //Change_type
-                    if($objp->currency == 'USD') 
-                    {
-                    	print '<td align="right"><input type="text" size="4" name="change_type" value=""></td>';
-                    }
-                    else {
-                    	print '<td align="right"></td>';
-                    }
+
 
                     // Amount
                     print '<td align="right">';

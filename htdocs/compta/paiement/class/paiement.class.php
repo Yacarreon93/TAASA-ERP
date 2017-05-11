@@ -64,6 +64,11 @@ class Paiement extends CommonObject
 	// fk_paiement dans llx_paiement est l'id du type de paiement (7 pour CHQ, ...)
 	// fk_paiement dans llx_paiement_facture est le rowid du paiement
 
+	//extras
+	var $currency; //Varible for currency (MXN,USD, NO CURRENCY)
+	var $currency_rate; //Varible for currency_rate
+
+
 
 	/**
 	 *	Constructor
@@ -271,6 +276,16 @@ class Paiement extends CommonObject
 				if ($result < 0) { $error++; }
 				// Fin appel triggers
 			}
+
+			//Register Currency extrafield
+
+			$sql = "INSERT INTO ".MAIN_DB_PREFIX."paiement_extrafields (fk_object, currency, currency_rate)";
+			$sql.= " VALUES (".$this->id.", '".$this->currency."', '".$this->currency_rate."')";
+
+			$resql = $this->db->query($sql);
+
+
+
 		}
 		else
 		{
