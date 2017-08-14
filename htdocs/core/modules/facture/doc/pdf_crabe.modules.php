@@ -657,7 +657,7 @@ class pdf_crabe extends ModelePDFFactures
 
 				$pdf->Close();
 
-				$pdf->Output($file,'F');
+				$pdf->Output($file,'D');
 
 				// Add pdfgeneration hook
 				$hookmanager->initHooks(array('pdfgeneration'));
