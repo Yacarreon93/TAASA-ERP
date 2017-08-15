@@ -176,7 +176,11 @@ if (empty($reshook))
 			}
 			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
 				$ret = $object->fetch($id); // Reload to get new records
-				$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+				// Uncomment to generate the document
+				// $result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+				$result = 1;
+				
 			}
 			if ($result >= 0) {
 				header('Location: ' . $_SERVER["PHP_SELF"] . '?facid=' . $id);
@@ -412,7 +416,10 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					// Uncomment to generate the document
+					// $result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					$result = 1;
+
 	    			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 				}
 			}
@@ -498,7 +505,8 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					// Uncomment to generate the document
+					// $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				}
 			}
 		}
@@ -1512,7 +1520,10 @@ if (empty($reshook))
 						$model=$object->modelpdf;
 						$ret = $object->fetch($id); // Reload to get new records
 
-						$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						// Uncomment to generate the document
+						// $result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						$result = 1;
+						
 						if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 					}
 
@@ -1674,7 +1685,9 @@ if (empty($reshook))
 					}
 
 					$ret = $object->fetch($id); // Reload to get new records
-					$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					
+					// Uncomment to generate the document
+					// $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				}
 
 				unset($_POST['qty']);
@@ -1787,7 +1800,10 @@ if (empty($reshook))
 			$outputlangs = new Translate("", $conf);
 			$outputlangs->setDefaultLang($newlang);
 		}
-		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+		
+		$document_mode = 'D';
+		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);		
+
 		if ($result <= 0)
 		{
 			setEventMessages($object->error, $object->errors, 'errors');
@@ -3903,7 +3919,11 @@ else if ($id > 0 || ! empty($ref))
 
 		// Build document if it not exists
 		if (! $file || ! is_readable($file)) {
-			$result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+			// Uncomment to generate the document
+			// $result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+			$result = 1;
+
 			if ($result <= 0) {
 				dol_print_error($db, $object->error, $object->errors);
 				exit();

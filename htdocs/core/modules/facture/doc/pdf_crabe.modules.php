@@ -164,7 +164,7 @@ class pdf_crabe extends ModelePDFFactures
      *  @param		int			$hideref			Do not show ref
      *  @return     int         	    			1=OK, 0=KO
 	 */
-	function write_file($object,$outputlangs,$srctemplatepath='',$hidedetails=0,$hidedesc=0,$hideref=0)
+	function write_file($object,$outputlangs,$srctemplatepath='',$hidedetails=0,$hidedesc=0,$hideref=0,$mode='F')
 	{
 		global $user,$langs,$conf,$mysoc,$db,$hookmanager;
 
@@ -657,7 +657,7 @@ class pdf_crabe extends ModelePDFFactures
 
 				$pdf->Close();
 
-				$pdf->Output($file,'D');
+				$pdf->Output($file, $mode);
 
 				// Add pdfgeneration hook
 				$hookmanager->initHooks(array('pdfgeneration'));

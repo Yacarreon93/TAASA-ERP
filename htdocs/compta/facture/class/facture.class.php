@@ -3553,7 +3553,7 @@ class Facture extends CommonInvoice
 	 *  @param  int			$hideref        Hide ref
 	 *	@return int        					<0 if KO, >0 if OK
 	 */
-	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
+	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0, $mode='F')
 	{
 		global $conf,$user,$langs;
 
@@ -3574,7 +3574,7 @@ class Facture extends CommonInvoice
 
 		$modelpath = "core/modules/facture/doc/";
 
-		$result=$this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
+		$result=$this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $mode);
 
 		return $result;
 	}
