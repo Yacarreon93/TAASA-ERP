@@ -117,7 +117,7 @@ function print_eldy_menu($db,$atarget,$type_user,&$tabMenu,&$menu,$noout=0)
 	if (! empty($conf->fournisseur->enabled)) $menuqualified++;
 	if (! empty($conf->contrat->enabled)) $menuqualified++;
 	if (! empty($conf->ficheinter->enabled)) $menuqualified++;
-	$tmpentry=array('enabled'=>$menuqualified, 'perms'=>(! empty($user->rights->societe->lire) || ! empty($user->rights->societe->contact->lire)), 'module'=>'propal|commande|fournisseur|contrat|ficheinter');
+	$tmpentry=array('enabled'=>$menuqualified, 'perms'=>( empty($user->rights->societe->lire) || ! empty($user->rights->societe->contact->lire)), 'module'=>'propal|commande|fournisseur|contrat|ficheinter');
 	$showmode=dol_eldy_showmenu($type_user, $tmpentry, $listofmodulesforexternal);
 	if ($showmode)
 	{
