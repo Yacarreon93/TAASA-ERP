@@ -4028,7 +4028,7 @@ else if ($id > 0 || ! empty($ref))
 	    $.ajax(
 	    {
 	        data: params,
-	        url: "../../scripts/commande/getClientData.php",
+	        url: "../scripts/commande/getClientData.php",
 	        type: "post",
 	        dataType: "json",
 	        success:  function (data) 

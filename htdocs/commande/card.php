@@ -2521,7 +2521,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 	    $.ajax(
 	    {
 	        data: params,
-	        url: "../../scripts/commande/getClientData.php",
+	        url: "../scripts/commande/getClientData.php",
 	        type: "post",
 	        dataType: "json",
 	        success:  function (data) 
