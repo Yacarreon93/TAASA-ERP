@@ -1,6 +1,6 @@
 <?php
 
-require_once("../../htdocs/master.inc.php");
+require_once("../../master.inc.php");
 
 $db->begin();
 $error = 0;
