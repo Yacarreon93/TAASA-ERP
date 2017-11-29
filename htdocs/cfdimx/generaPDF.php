@@ -311,7 +311,7 @@ class PDF extends FPDF {
 
 				}else{
 					//$this->Image($this->dolibarr_main_data_root.'/'.$_SESSION['dol_entity'].'/mycompany/logos/thumbs/'.$this->prm["otros"]["logosmall"],$punto_anclaje,$ordena, $width, $height);
-					$this->Image($this->dolibarr_main_data_root.'/'.$_SESSION['dol_entity'].'/mycompany/logos/thumbs/'.$this->prm["otros"]["logosmall"],11,6,2,40);
+					$this->Image($this->dolibarr_main_data_root.'/'.$_SESSION['dol_entity'].'/mycompany/logos/thumbs/'.$this->prm["otros"]["logosmall"],11,6,40);
 				}
 				//AMM
 			}
