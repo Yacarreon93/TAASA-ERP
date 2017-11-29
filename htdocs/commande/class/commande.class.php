@@ -3300,7 +3300,7 @@ class Commande extends CommonOrder
 	 *  @param      int			$hideref        Hide ref
 	 *  @return     int         				0 if KO, 1 if OK
 	 */
-	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0)
+	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0, $mode='F')
 	{
 		global $conf,$langs;
 
@@ -3321,7 +3321,7 @@ class Commande extends CommonOrder
 
 		$modelpath = "core/modules/commande/doc/";
 
-		return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
+		return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $mode);
 	}
 
 

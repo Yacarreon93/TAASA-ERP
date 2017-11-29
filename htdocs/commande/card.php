@@ -1,31 +1,4 @@
 <?php
-/* Copyright (C) 2003-2006	Rodolphe Quiedeville	<rodolphe@quiedeville.org>
- * Copyright (C) 2004-2015	Laurent Destailleur		<eldy@users.sourceforge.net>
- * Copyright (C) 2005		Marc Barilley / Ocebo	<marc@ocebo.com>
- * Copyright (C) 2005-2015	Regis Houssin			<regis.houssin@capnetworks.com>
- * Copyright (C) 2006		Andre Cianfarani		<acianfa@free.fr>
- * Copyright (C) 2010-2013	Juanjo Menent			<jmenent@2byte.es>
- * Copyright (C) 2011		Philippe Grand			<philippe.grand@atoo-net.com>
- * Copyright (C) 2012-2013	Christophe Battarel		<christophe.battarel@altairis.fr>
- * Copyright (C) 2012		Marcos García			<marcosgdf@gmail.com>
- * Copyright (C) 2012       Cedric Salvador      <csalvador@gpcsolutions.fr>
- * Copyright (C) 2013		Florian Henry			<florian.henry@open-concept.pro>
- * Copyright (C) 2014       Ferran Marcet			<fmarcet@2byte.es>
- * Copyright (C) 2015       Jean-François Ferry		<jfefe@aternatik.fr>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 /**
  * \file htdocs/commande/card.php
@@ -199,7 +172,9 @@ if (empty($reshook))
 			}
 			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
 				$ret = $object->fetch($object->id); // Reload to get new records
-				$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+				// Uncomment to generate the document
+				// $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 			}
 
 			header('Location: '.$_SERVER["PHP_SELF"].'?id='.$object->id);
@@ -519,7 +494,9 @@ if (empty($reshook))
 				}
 
 				$ret = $object->fetch($object->id); // Reload to get new records
-				$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+				// Uncomment to generate the document
+				// $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 			}
 		}
 	}
@@ -567,7 +544,7 @@ if (empty($reshook))
 		{
 			$idprod=GETPOST('idprod', 'int');
 			$tva_tx = '';
-		}
+		}		
 
 		$qty = GETPOST('qty' . $predef);
 		$remise_percent = GETPOST('remise_percent' . $predef);
@@ -631,16 +608,75 @@ if (empty($reshook))
 					$price_base_type = $prod->price_base_type;
 
 					// multiprix
+
+					$kg_mayoreo = $prod->array_options['options_kg_mayoreo'];
+
 					if (! empty($conf->global->PRODUIT_MULTIPRICES) && ! empty($object->thirdparty->price_level))
 					{
-						$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
-						$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
-						$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
-						$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
-						if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
-						if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
-						$tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
-						$tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+
+						// Pay attention to these flags
+						define('MXN_INDEX', '1');
+						define('USD_INDEX', '3');
+						
+						if ($object->array_options['options_currency'] == 'MXN') {
+							$currency_index = MXN_INDEX;
+						} else if ($object->array_options['options_currency'] == 'USD') {
+							$currency_index = USD_INDEX;
+						}						
+
+						if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
+						{
+							if ($conf->global->MULTI_CURRENCY) {
+
+								$pu_ht = $prod->multiprices[$currency_index + 1];
+								$pu_ttc = $prod->multiprices_ttc[$currency_index + 1];
+								$price_min = $prod->multiprices_min[$currency_index + 1];
+								$price_base_type = $prod->multiprices_base_type[$currency_index + 1];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$currency_index + 1];
+								$tva_npr=$prod->multiprices_recuperableonly[$currency_index + 1];
+
+							} else {
+
+								$pu_ht = $prod->multiprices[2];
+								$pu_ttc = $prod->multiprices_ttc[2];
+								$price_min = $prod->multiprices_min[2];
+								$price_base_type = $prod->multiprices_base_type[2];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[2];
+								$tva_npr=$prod->multiprices_recuperableonly[2];
+
+							}
+						}
+						else
+						{
+							if ($conf->global->MULTI_CURRENCY) {
+
+								$pu_ht = $prod->multiprices[$currency_index];
+								$pu_ttc = $prod->multiprices_ttc[$currency_index];
+								$price_min = $prod->multiprices_min[$currency_index];
+								$price_base_type = $prod->multiprices_base_type[$currency_index];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$currency_index];
+								$tva_npr=$prod->multiprices_recuperableonly[$currency_index];
+
+							} else {
+
+								$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
+								$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
+								$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
+								$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
+								$tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+
+							}
+						}
+						
 					}
 					elseif (! empty($conf->global->PRODUIT_CUSTOMER_PRICES))
 					{
@@ -766,7 +802,8 @@ if (empty($reshook))
 							$outputlangs->setDefaultLang($newlang);
 						}
 
-						$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						// Uncomment to generate the document
+						// $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					}
 
 					unset($_POST['prod_entry_mode']);
@@ -897,7 +934,9 @@ if (empty($reshook))
 					}
 
 					$ret = $object->fetch($object->id); // Reload to get new records
-					$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+					// Uncomment to generate the document
+					// $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				}
 
 				unset($_POST['qty']);
@@ -969,7 +1008,8 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					// Uncomment to generate the document
+					// $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				}
 			}
 			else
@@ -1022,7 +1062,8 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					// Uncomment to generate the document
+					// $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
 				}
 			}
 		}
@@ -1094,7 +1135,10 @@ if (empty($reshook))
 			$outputlangs = new Translate("", $conf);
 			$outputlangs->setDefaultLang($newlang);
 		}
-		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+		$document_mode = 'D';
+		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);		
+		
 		if ($result <= 0)
 		{
 			setEventMessages($object->error, $object->errors, 'errors');
@@ -2370,7 +2414,11 @@ if ($action == 'create' && $user->rights->commande->creer)
 
 			// Build document if it not exists
 			if (! $file || ! is_readable($file)) {
-				$result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+				// Uncomment to generate the document
+				// $result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+				$result = 1;
+
 				if ($result <= 0) {
 					dol_print_error($db, $object->error, $object->errors);
 					exit();
@@ -2473,7 +2521,7 @@ if ($action == 'create' && $user->rights->commande->creer)
 	    $.ajax(
 	    {
 	        data: params,
-	        url: "../../scripts/commande/getClientData.php",
+	        url: "../scripts/commande/getClientData.php",
 	        type: "post",
 	        dataType: "json",
 	        success:  function (data) 
@@ -2481,8 +2529,19 @@ if ($action == 'create' && $user->rights->commande->creer)
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
+	            //Make them disable
+	            document.getElementsByName("cond_reglement_id").disabled = true;
+	            document.getElementById("selectmode_reglement_id").disabled = true;
+	            document.getElementById("options_vendor").disabled = true;
 	        }
 	    });
+	});
+
+	jQuery(function ($) {        
+	  $('form').bind('submit', function () { //function to enable fields before the submit
+	    document.getElementById("selectmode_reglement_id").disabled = false;
+	    document.getElementById("options_vendor").disabled = false;
+	  });
 	});
 
 </script>

@@ -48,6 +48,7 @@ $price_level = GETPOST('price_level', 'int');
 $action = GETPOST('action', 'alpha');
 $id = GETPOST('id', 'int');
 $price_by_qty_rowid = GETPOST('pbq', 'int');
+$currency = GETPOST('currency', 'alpha');
 
 /*
  * View
@@ -156,7 +157,8 @@ if (! empty($action) && $action == 'fetch' && ! empty($id))
 	}
 
 	echo json_encode($outjson);
-} else {
+} else {	
+
 	require_once DOL_DOCUMENT_ROOT . '/core/class/html.form.class.php';
 
 	$langs->load("products");
@@ -178,8 +180,8 @@ if (! empty($action) && $action == 'fetch' && ! empty($id))
 	$searchkey = (GETPOST($idprod) ? GETPOST($idprod) : (GETPOST($htmlname) ? GETPOST($htmlname) : ''));
 
 	$form = new Form($db);
-	if (empty($mode) || $mode == 1) {
-		$arrayresult = $form->select_produits_list("", $htmlname, $type, "", $price_level, $searchkey, $status, 2, $outjson, $socid);
+	if (empty($mode) || $mode == 1) {		
+		$arrayresult = $form->select_produits_list("", $htmlname, $type, "", $price_level, $searchkey, $status, 2, $outjson, $socid, $currency);
 	} elseif ($mode == 2) {
 		$arrayresult = $form->select_produits_fournisseurs_list($socid, "", $htmlname, $type, "", $searchkey, $status, $outjson, $socid);
 	}

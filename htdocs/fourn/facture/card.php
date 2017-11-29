@@ -2377,6 +2377,40 @@ else
     }
 }
 
+?>
+<script type="text/javascript" language="javascript">
+
+	$("#socid").change(function()
+	{
+		var socid = document.getElementById("socid").value;
+	    var client = $("#socid option:selected").text();
+
+	    var params = {  "socid" : socid };
+
+	    $.ajax(
+	    {
+	        data: params,
+	        url: "../../../scripts/commande/getSupplierData.php",
+	        type: "post",
+	        dataType: "json",
+	        success:  function (data) 
+	        {
+	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+	            document.getElementById("selectmode_reglement_id").value = data.mode;
+	            document.getElementById("options_currency").value = data.currency;
+	            //Make them disable
+	            //need to check this!!!!
+	            //document.getElementsByName("cond_reglement_id").disabled = true;
+	            //document.getElementById("selectmode_reglement_id").disabled = true;
+	        }
+	    });
+	});
+
+	
+
+</script>
+
+<?php
 
 // End of page
 llxFooter();

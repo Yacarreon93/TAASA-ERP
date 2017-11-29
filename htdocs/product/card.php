@@ -928,7 +928,7 @@ else
         // Units
 	    if($conf->global->PRODUCT_USE_UNITS)
 	    {
-		    print '<tr><td>'.$langs->trans('DefaultUnitToShow').'</td>';
+		    print '<tr><td>'.$langs->trans('Unidad de venta').'</td>';
 		    print '<td colspan="3">';
 		    print $form->selectUnits('','units');
 		    print '</td></tr>';
@@ -1214,7 +1214,7 @@ else
         	// Units
 	        if($conf->global->PRODUCT_USE_UNITS)
 	        {
-		        print '<tr><td>'.$langs->trans('DefaultUnitToShow').'</td>';
+		        print '<tr><td>'.$langs->trans('Unidad de venta').'</td>';
 		        print '<td colspan="3">';
 		        print $form->selectUnits($object->fk_unit, 'units');
 		        print '</td></tr>';
@@ -1525,7 +1525,7 @@ else
 			{
 				$unit = $object->getLabelOfUnit();
 
-				print '<tr><td>'.$langs->trans('DefaultUnitToShow').'</td><td>';
+				print '<tr><td>'.$langs->trans('Unidad de venta').'</td><td>';
 				if ($unit !== '') {
 					print $langs->trans($unit);
 				}

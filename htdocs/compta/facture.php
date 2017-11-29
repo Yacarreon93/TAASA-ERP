@@ -1,33 +1,4 @@
 <?php
-/* Copyright (C) 2002-2006 Rodolphe Quiedeville  <rodolphe@quiedeville.org>
- * Copyright (C) 2004      Eric Seigne           <eric.seigne@ryxeo.com>
- * Copyright (C) 2004-2014 Laurent Destailleur   <eldy@users.sourceforge.net>
- * Copyright (C) 2005      Marc Barilley / Ocebo <marc@ocebo.com>
- * Copyright (C) 2005-2015 Regis Houssin         <regis.houssin@capnetworks.com>
- * Copyright (C) 2006      Andre Cianfarani      <acianfa@free.fr>
- * Copyright (C) 2010-2015 Juanjo Menent         <jmenent@2byte.es>
- * Copyright (C) 2012-2013 Christophe Battarel   <christophe.battarel@altairis.fr>
- * Copyright (C) 2012-2013 Cédric Salvador       <csalvador@gpcsolutions.fr>
- * Copyright (C) 2012-2014 Raphaël Doursenaud    <rdoursenaud@gpcsolutions.fr>
- * Copyright (C) 2013      Jean-Francois FERRY   <jfefe@aternatik.fr>
- * Copyright (C) 2013-2014 Florian Henry         <florian.henry@open-concept.pro>
- * Copyright (C) 2013      Cédric Salvador       <csalvador@gpcsolutions.fr>
- * Copyright (C) 2014	   Ferran Marcet	 	 <fmarcet@2byte.es>
- * Copyright (C) 2015      Marcos García         <marcosgdf@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 /**
  * \file 	htdocs/compta/facture.php
@@ -205,7 +176,11 @@ if (empty($reshook))
 			}
 			if (empty($conf->global->MAIN_DISABLE_PDF_AUTOUPDATE)) {
 				$ret = $object->fetch($id); // Reload to get new records
-				$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+				$document_mode = 'F';
+				$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
+				$result = 1;
+				
 			}
 			if ($result >= 0) {
 				header('Location: ' . $_SERVER["PHP_SELF"] . '?facid=' . $id);
@@ -441,7 +416,10 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					
+					// $result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					$result = 1;
+
 	    			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 				}
 			}
@@ -527,7 +505,8 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					$document_mode = 'F';
+					$object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 				}
 			}
 		}
@@ -677,6 +656,18 @@ if (empty($reshook))
 				$error ++;
 				setEventMessage($langs->trans("ErrorFieldRequired", $langs->transnoentitiesnoconv("ReplaceInvoice")), 'errors');
 			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
+			}
+
+
 
 			if (! $error) {
 				// This is a replacement invoice
@@ -723,6 +714,17 @@ if (empty($reshook))
 			{
 				$error ++;
 				setEventMessage($langs->trans("ErrorFieldRequired", $langs->trans("Date")), 'errors');
+			}
+
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
 			}
 
 			if (! $error)
@@ -816,6 +818,16 @@ if (empty($reshook))
 				$error++;
 				setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Date")),'errors');
 			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
+			}
 
 			if (! $error)
 			{
@@ -850,6 +862,16 @@ if (empty($reshook))
 			{
 				$error++;
 				setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Date")),'errors');
+			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
 			}
 
 			if (! $error)
@@ -1154,6 +1176,16 @@ if (empty($reshook))
 				$error++;
 				$mesg = '<div class="error">' . $langs->trans("ErrorFieldRequired", $langs->trans("InvoiceSituation")) . '</div>';
 			}
+			if (!$_POST['cond_reglement_id'])
+			{
+				$error++;
+				setEventMessage($langs->trans("ErrorFieldRequired","Condicion de pago",'errors'));
+			}
+
+			if (!$_POST['mode_reglement_id']) {
+				$error ++;
+				setEventMessage($langs->trans("ErrorFieldRequired", "Forma de pago", 'errors'));
+			}
 
 			if (!$error) {
 				$result = $object->fetch($_POST['situations']);
@@ -1296,15 +1328,79 @@ if (empty($reshook))
 					$price_min = $prod->price_min;
 					$price_base_type = $prod->price_base_type;
 
+				// multiprix
+
+					$kg_mayoreo = $prod->array_options['options_kg_mayoreo'];
+
 					// We define price for product
 					if (! empty($conf->global->PRODUIT_MULTIPRICES) && ! empty($object->thirdparty->price_level))
 					{
-						$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
-						$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
-						$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
-						$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
-						if (isset($prod->multiprices_tva_tx[$object->thirdparty->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
-						if (isset($prod->multiprices_recuperableonly[$object->thirdparty->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+
+						// Pay attention to these flags
+						define('MXN_INDEX', '1');
+						define('USD_INDEX', '3');
+						
+						if ($object->array_options['options_currency'] == 'MXN') {
+							$currency_index = MXN_INDEX;
+						} else if ($object->array_options['options_currency'] == 'USD') {
+							$currency_index = USD_INDEX;
+						}
+
+						if( $kg_mayoreo != '' && $kg_mayoreo > 0 && $qty >= $kg_mayoreo)
+						{
+
+							if ($conf->global->MULTI_CURRENCY) {
+
+								$pu_ht = $prod->multiprices[$currency_index + 1];
+								$pu_ttc = $prod->multiprices_ttc[$currency_index + 1];
+								$price_min = $prod->multiprices_min[$currency_index + 1];
+								$price_base_type = $prod->multiprices_base_type[$currency_index + 1];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$currency_index + 1];
+								$tva_npr=$prod->multiprices_recuperableonly[$currency_index + 1];
+
+							} else {
+
+								$pu_ht = $prod->multiprices[2];
+								$pu_ttc = $prod->multiprices_ttc[2];
+								$price_min = $prod->multiprices_min[2];
+								$price_base_type = $prod->multiprices_base_type[2];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[2];
+								$tva_npr=$prod->multiprices_recuperableonly[2];
+							
+							}
+
+						}
+						else
+						{
+							if ($conf->global->MULTI_CURRENCY) {
+
+								$pu_ht = $prod->multiprices[$currency_index];
+								$pu_ttc = $prod->multiprices_ttc[$currency_index];
+								$price_min = $prod->multiprices_min[$currency_index];
+								$price_base_type = $prod->multiprices_base_type[$currency_index];
+								if (isset($prod->multiprices_tva_tx[$object->client->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->client->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$currency_index];
+								$tva_npr=$prod->multiprices_recuperableonly[$currency_index];
+
+							} else {
+
+								$pu_ht = $prod->multiprices[$object->thirdparty->price_level];
+								$pu_ttc = $prod->multiprices_ttc[$object->thirdparty->price_level];
+								$price_min = $prod->multiprices_min[$object->thirdparty->price_level];
+								$price_base_type = $prod->multiprices_base_type[$object->thirdparty->price_level];
+								if (isset($prod->multiprices_tva_tx[$object->thirdparty->price_level])) $tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
+								if (isset($prod->multiprices_recuperableonly[$object->thirdparty->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+								$tva_tx=$prod->multiprices_tva_tx[$object->thirdparty->price_level];
+								$tva_npr=$prod->multiprices_recuperableonly[$object->thirdparty->price_level];
+
+							}
+
+						}
 					}
 					elseif (! empty($conf->global->PRODUIT_CUSTOMER_PRICES))
 					{
@@ -1424,7 +1520,10 @@ if (empty($reshook))
 						$model=$object->modelpdf;
 						$ret = $object->fetch($id); // Reload to get new records
 
-						$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
+						$document_mode = 'F';
+						$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
+						$result = 1;
+						
 						if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 					}
 
@@ -1586,7 +1685,9 @@ if (empty($reshook))
 					}
 
 					$ret = $object->fetch($id); // Reload to get new records
-					$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+					
+					$document_mode = 'F';
+					$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 				}
 
 				unset($_POST['qty']);
@@ -1699,7 +1800,10 @@ if (empty($reshook))
 			$outputlangs = new Translate("", $conf);
 			$outputlangs->setDefaultLang($newlang);
 		}
-		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+		
+		$document_mode = 'F';
+		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);		
+
 		if ($result <= 0)
 		{
 			setEventMessages($object->error, $object->errors, 'errors');
@@ -1905,6 +2009,7 @@ if ($action == 'create')
 		$fk_account        	= $soc->fk_account;
 		$remise_percent 	= $soc->remise_percent;
 		$remise_absolue 	= 0;
+		$object->array_options['options_vendor'] = $soc->array_options['options_vendor'];
 		$dateinvoice		= (empty($dateinvoice)?(empty($conf->global->MAIN_AUTOFILL_DATE)?-1:''):$dateinvoice);		// Do not set 0 here (0 for a date is 1970)
 	}
 	$absolute_discount = $soc->getAvailableDiscounts();
@@ -2236,12 +2341,12 @@ if ($action == 'create')
 	print '</td></tr>';
 
 	// Payment term
-	print '<tr><td class="nowrap">' . $langs->trans('PaymentConditionsShort') . '</td><td colspan="2">';
+	print '<tr><td class="nowrap fieldrequired">' . $langs->trans('PaymentConditionsShort') . '</td><td colspan="2">';
 	$form->select_conditions_paiements(isset($_POST['cond_reglement_id']) ? $_POST['cond_reglement_id'] : $cond_reglement_id, 'cond_reglement_id');
 	print '</td></tr>';
 
 	// Payment mode
-	print '<tr><td>' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
+	print '<tr><td class="fieldrequired">' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
 	$form->select_types_paiements(isset($_POST['mode_reglement_id']) ? $_POST['mode_reglement_id'] : $mode_reglement_id, 'mode_reglement_id', 'CRDT');
 	print '</td></tr>';
 
@@ -2283,6 +2388,8 @@ if ($action == 'create')
 	                                                                                      // hook
 	if (empty($reshook) && ! empty($extrafields->attribute_label)) {
 		print $object->showOptionals($extrafields, 'edit');
+
+		//add scriptttttt
 	}
 
 	// Template to use by default
@@ -3623,7 +3730,7 @@ else if ($id > 0 || ! empty($ref))
 					if ($resteapayer == 0) {
 						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseRemainderToPayIsZero") . '">' . $langs->trans('DoPayment') . '</span></div>';
 					} else {
-						print '<div class="inline-block divButAction"><a class="butAction" href="paiement.php?facid=' . $object->id . '&amp;action=create&amp;accountid='.$object->fk_account.'">' . $langs->trans('DoPayment') . '</a></div>';
+						print '<div class="inline-block divButAction"><a class="butAction" href="paiement.php?facid=' . $object->id . '&amp;action=create&amp;accountid='.$object->fk_account.'&amp;currency='.$object->array_options['options_currency'].'">' . $langs->trans('DoPayment') . '</a></div>';
 					}
 				}
 			}
@@ -3812,7 +3919,11 @@ else if ($id > 0 || ! empty($ref))
 
 		// Build document if it not exists
 		if (! $file || ! is_readable($file)) {
-			$result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref);
+
+			$document_mode = 'F';
+			$result = $object->generateDocument(GETPOST('model') ? GETPOST('model') : $object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
+			$result = 1;
+
 			if ($result <= 0) {
 				dol_print_error($db, $object->error, $object->errors);
 				exit();
@@ -3904,5 +4015,51 @@ else if ($id > 0 || ! empty($ref))
 	}
 }
 
+?>
+<script type="text/javascript" language="javascript">
+
+	$("#socid").change(function()
+	{
+		var socid = document.getElementById("socid").value;
+	    var client = $("#socid option:selected").text();
+
+	    var params = {  "socid" : socid };
+
+	    $.ajax(
+	    {
+	        data: params,
+	        url: "../scripts/commande/getClientData.php",
+	        type: "post",
+	        dataType: "json",
+	        success:  function (data) 
+	        {
+	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+	            document.getElementById("selectmode_reglement_id").value = data.mode;
+	            document.getElementById("options_vendor").value = data.vendor;
+	            //Make them disable
+	            document.getElementById("selectmode_reglement_id").disabled = true;
+	            document.getElementById("options_vendor").disabled = true;
+	            document.getElementsByName("cond_reglement_id").disabled = true;
+	        }
+	    });
+	});
+
+	jQuery(function ($) {        
+	  $('form').bind('submit', function () { //function to enable fields before the submit
+	    document.getElementById("selectmode_reglement_id").disabled = false;
+	    document.getElementById("options_vendor").disabled = false;
+	  });
+	});
+
+	document.addEventListener('DOMContentLoaded', function() { //Disable the fields when the document is ready
+     //Make them disable
+	document.getElementById("selectmode_reglement_id").disabled = true;
+	document.getElementById("options_vendor").disabled = true;
+	document.getElementsByName("cond_reglement_id").disabled = true;
+	}, false);
+
+</script>
+
+<?php
 llxFooter();
 $db->close();

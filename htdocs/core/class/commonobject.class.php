@@ -2895,7 +2895,7 @@ abstract class CommonObject
 		print '<td align="right" width="50">'.$langs->trans('VAT').'</td>';
 
 		// Price HT
-		print '<td align="right" width="80">'.$langs->trans('PriceUHT').'</td>';
+		print '<td align="right" width="80" id="PriceUHT">'.$langs->trans('PriceUHT').'</td>';
 
 		if ($inputalsopricewithtax) print '<td align="right" width="80">'.$langs->trans('PriceUTTC').'</td>';
 
@@ -2928,7 +2928,7 @@ abstract class CommonObject
 		}
 
 		// Total HT
-		print '<td align="right" width="50">'.$langs->trans('TotalHTShort').'</td>';
+		print '<td align="right" width="50" id="TotalHT">'.$langs->trans('TotalHTShort').'</td>';
 
 		print '<td></td>';  // No width to allow autodim
 
@@ -3390,7 +3390,7 @@ abstract class CommonObject
 	 * @param 	int 		$hideref 		1 to hide product reference. 0 by default
 	 * @return 	int 						>0 if OK, <0 if KO
 	 */
-	protected function commonGenerateDocument($modelspath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref)
+	protected function commonGenerateDocument($modelspath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref, $mode='F')
 	{
 		global $conf, $langs;
 
@@ -3493,7 +3493,7 @@ abstract class CommonObject
 			// We save charset_output to restore it because write_file can change it if needed for
 			// output format that does not support UTF8.
 			$sav_charset_output=$outputlangs->charset_output;
-			if ($obj->write_file($this, $outputlangs, $srctemplatepath, $hidedetails, $hidedesc, $hideref) > 0)
+			if ($obj->write_file($this, $outputlangs, $srctemplatepath, $hidedetails, $hidedesc, $hideref, $mode) > 0)
 			{
 				$outputlangs->charset_output=$sav_charset_output;
 

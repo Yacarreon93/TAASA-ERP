@@ -93,7 +93,7 @@ abstract class CommonInvoice extends CommonObject
 	 *
 	 *	@return		int		Amount of payment already done, <0 if KO
 	 */
-	function getSommePaiement()
+	function getSommePaiement($date_limit = '')
 	{
 		$table='paiement_facture';
 		$field='fk_facture';
@@ -103,9 +103,11 @@ abstract class CommonInvoice extends CommonObject
 			$field='fk_facturefourn';
 		}
 
-		$sql = 'SELECT sum(amount) as amount';
-		$sql.= ' FROM '.MAIN_DB_PREFIX.$table;
-		$sql.= ' WHERE '.$field.' = '.$this->id;
+		$sql = 'SELECT sum(pf.amount) as amount';
+		$sql.= ' FROM '.MAIN_DB_PREFIX.$table.' as pf';
+		if($date_limit != '') $sql .= ' JOIN '.MAIN_DB_PREFIX.'paiement as p ON p.rowid = pf.fk_paiement';
+		$sql.= ' WHERE pf.'.$field.' = '.$this->id;
+		if($date_limit != '') $sql .= ' AND p.datep < "'.$date_limit.'"';
 
 		dol_syslog(get_class($this)."::getSommePaiement", LOG_DEBUG);
 		$resql=$this->db->query($sql);
@@ -121,6 +123,32 @@ abstract class CommonInvoice extends CommonObject
 			return -1;
 		}
 	}
+
+	function getLastPaiement()  //Added function to get last payment
+    {
+        $sql = "SELECT p.datep";
+        $sql.= " FROM ".MAIN_DB_PREFIX."facture AS fi";
+        $sql.= " JOIN ";
+        $sql.= MAIN_DB_PREFIX."paiement_facture AS pf ON fi.rowid = pf.fk_facture";
+        $sql.= " JOIN ";
+        $sql.= MAIN_DB_PREFIX."paiement AS p ON pf.fk_paiement = p.rowid";
+        $sql.= ' WHERE fi.rowid = '.$this->id;
+        $sql.= ' ORDER BY p.datep DESC LIMIT 1';
+
+        $resql=$this->db->query($sql);
+        if ($resql)
+        {
+            $obj = $this->db->fetch_object($resql);
+            if ($obj) $dateLastPaiement=$obj->datep;
+
+            $this->db->free($resql);
+            return $dateLastPaiement;
+        }
+        else
+        {
+            return -1;
+        }
+    }
 
 	/**
 	 *	Renvoie tableau des ids de facture avoir issus de la facture
