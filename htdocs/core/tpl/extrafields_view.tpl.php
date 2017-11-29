@@ -76,7 +76,8 @@ if (empty($reshook) && ! empty($extrafields->attribute_label))
 			if ($action == 'edit_extras' && $permok && GETPOST('attribute') == $key)
 			{
 				print '<form enctype="multipart/form-data" action="' . $_SERVER["PHP_SELF"] . '" method="post" name="formextra">';
-				print '<input type="hidden" name="action" value="update_extras">';
+				// print '<input type="hidden" name="action" value="update_extras">';
+				print '<input type="hidden" name="action" value="update_extras_fixed">';
 				print '<input type="hidden" name="attribute" value="' . $key . '">';
 				print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
 				print '<input type="hidden" name="id" value="' . $object->id . '">';

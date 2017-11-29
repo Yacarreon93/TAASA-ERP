@@ -1294,6 +1294,68 @@ class Facture extends CommonInvoice
 		}
 	}
 
+	/**
+	 *      Update ExtraFields
+	 *
+	 *      @param      User	$user        	User that modify
+	 *      @param      int		$notrigger	    0=launch triggers after, 1=disable triggers
+	 *      @return     int      			   	<0 if KO, >0 if OK
+	 */
+	function update_extrafields($user=null) 
+	{
+		global $conf;
+		
+		$error = 0;
+
+		// Update request
+		$sql = "UPDATE ".MAIN_DB_PREFIX."facture_extrafields SET";
+
+		if (is_array($this->array_options) && count($this->array_options) > 0) {
+
+			$elementCount = 0;
+
+			foreach ($this->array_options as $key => $value) {
+				$field = str_replace('options_', '', $key);
+				$sql .= ' '.$field.'="'.$value.'"';
+				if ($elementCount != count($this->array_options) - 1) {
+					$sql .= ",";
+				}
+				$elementCount++;
+			}
+			
+			$sql.= " WHERE fk_object=".$this->id;
+			
+			$this->db->begin();
+			
+			dol_syslog(get_class($this)."::update_extrafields", LOG_DEBUG);
+			$resql = $this->db->query($sql);
+
+			if (! $resql) {
+				$error++; $this->errors[]="Error ".$this->db->lasterror();
+			}	
+			
+			// Commit or rollback
+			if ($error)
+			{
+				foreach($this->errors as $errmsg)
+				{
+					dol_syslog(get_class($this)."::update ".$errmsg, LOG_ERR);
+					$this->error.=($this->error?', '.$errmsg:$errmsg);
+				}
+				$this->db->rollback();
+				return -1*$error;
+			}
+			else
+			{
+				$this->db->commit();
+				return 1;
+			}
+
+		} else {
+			return 0;
+		}
+
+	}
 
 	/**
 	 *    Add a discount line into invoice using an existing absolute discount

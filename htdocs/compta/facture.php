@@ -1772,12 +1772,13 @@ if (empty($reshook))
 	$mode='emailfrominvoice';
 	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 
-
+	
 	/*
-	 * Generate document
-	 */
+	* Generate document
+	*/
 	if ($action == 'builddoc') // En get ou en post
 	{
+		echo 'yui';
 		$object->fetch($id);
 		$object->fetch_thirdparty();
 
@@ -1828,6 +1829,54 @@ if (empty($reshook))
 		}
 	}
 
+	else if ($action == 'update_extras') {
+
+		// Fill array 'array_options' with data from add form
+
+		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);		
+		$ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
+		if ($ret < 0) $error++;
+		
+		if (! $error) {
+			// Actions on extra fields (by external module or standard code)
+			// TODO le hook fait double emploi avec le trigger !!
+			$hookmanager->initHooks(array('invoicedao'));
+			$parameters = array('id' => $object->id);
+
+			$reshook = $hookmanager->executeHooks('insertExtraFields', $parameters, $object, $action); // Note that $action and $object may have been modified by
+																																														// some hooks
+			if (empty($reshook)) {
+						$result = $object->insertExtraFields();
+					if ($result < 0) {
+						$error ++;
+					}
+				} else if ($reshook < 0)
+					$error ++;
+			}
+
+			if ($error)
+				$action = 'edit_extras';
+		}
+	}
+
+	
+	if ($action == 'update_extras_fixed') {
+	
+		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
+		$ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
+		if ($ret < 0) $error++;
+			
+		if (! $error) {
+
+			$res = $object->update_extrafields();
+
+			if ($res < 0) $error ++;
+
+			if ($error) $action = 'edit_extras';
+
+		}
+	}
+
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
 	if (! empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && $user->rights->facture->creer)
@@ -1853,7 +1902,7 @@ if (empty($reshook))
 			}
 		}
 	}
-
+	
 	// bascule du statut d'un contact
 	else if ($action == 'swapstatut')
 	{
@@ -1878,34 +1927,6 @@ if (empty($reshook))
 		}
 	}
 
-
-	if ($action == 'update_extras')
-	{
-		// Fill array 'array_options' with data from add form
-		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
-		$ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
-		if ($ret < 0) $error++;
-
-		if (! $error) {
-			// Actions on extra fields (by external module or standard code)
-			// TODO le hook fait double emploi avec le trigger !!
-			$hookmanager->initHooks(array('invoicedao'));
-			$parameters = array('id' => $object->id);
-			$reshook = $hookmanager->executeHooks('insertExtraFields', $parameters, $object, $action); // Note that $action and $object may have been modified by
-			                                                                                      // some hooks
-			if (empty($reshook)) {
-						$result = $object->insertExtraFields();
-					if ($result < 0) {
-						$error ++;
-					}
-				} else if ($reshook < 0)
-					$error ++;
-			}
-
-			if ($error)
-				$action = 'edit_extras';
-		}
-	}
 }
 
 
@@ -2584,36 +2605,36 @@ else if ($id > 0 || ! empty($ref))
 		dol_print_error($db, $object->error);
 		exit();
 	}
-
+	
 	// fetch optionals attributes and labels
 	$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
-
+	
 	if ($user->societe_id > 0 && $user->societe_id != $object->socid)
-		accessforbidden('', 0);
-
+	accessforbidden('', 0);
+	
 	$result = $object->fetch_thirdparty();
-
+	
 	$soc = new Societe($db);
 	$result=$soc->fetch($object->socid);
 	if ($result < 0) dol_print_error($db);
 	$selleruserevenustamp = $mysoc->useRevenueStamp();
-
+	
 	$totalpaye = $object->getSommePaiement();
 	$totalcreditnotes = $object->getSumCreditNotesUsed();
 	$totaldeposits = $object->getSumDepositsUsed();
 	// print "totalpaye=".$totalpaye." totalcreditnotes=".$totalcreditnotes." totaldeposts=".$totaldeposits."
 	// selleruserrevenuestamp=".$selleruserevenustamp;
-
+	
 	// We can also use bcadd to avoid pb with floating points
 	// For example print 239.2 - 229.3 - 9.9; does not return 0.
 	// $resteapayer=bcadd($object->total_ttc,$totalpaye,$conf->global->MAIN_MAX_DECIMALS_TOT);
 	// $resteapayer=bcadd($resteapayer,$totalavoir,$conf->global->MAIN_MAX_DECIMALS_TOT);
 	$resteapayer = price2num($object->total_ttc - $totalpaye - $totalcreditnotes - $totaldeposits, 'MT');
-
+	
 	if ($object->paye)
-		$resteapayer = 0;
+	$resteapayer = 0;
 	$resteapayeraffiche = $resteapayer;
-
+	
 	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
 		$filterabsolutediscount = "fk_facture_source IS NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 		$filtercreditnote = "fk_facture_source IS NOT NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
@@ -2621,31 +2642,31 @@ else if ($id > 0 || ! empty($ref))
 		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND description='(DEPOSIT)')";
 		$filtercreditnote = "fk_facture_source IS NOT NULL AND description <> '(DEPOSIT)'";
 	}
-
+	
 	$absolute_discount = $soc->getAvailableDiscounts('', $filterabsolutediscount);
 	$absolute_creditnote = $soc->getAvailableDiscounts('', $filtercreditnote);
 	$absolute_discount = price2num($absolute_discount, 'MT');
 	$absolute_creditnote = price2num($absolute_creditnote, 'MT');
-
+	
 	$author = new User($db);
 	if ($object->user_author) {
 		$author->fetch($object->user_author);
 	}
-
+	
 	$objectidnext = $object->getIdReplacingInvoice();
-
+	
 	$head = facture_prepare_head($object);
-
+	
 	dol_fiche_head($head, 'compta', $langs->trans('InvoiceCustomer'), 0, 'bill');
-
+	
 	$formconfirm = '';
-
+	
 	// Confirmation de la conversion de l'avoir en reduc
 	if ($action == 'converttoreduc') {
 		$text = $langs->trans('ConfirmConvertToReduc');
 		$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);
 	}
-
+	
 	// Confirmation to delete invoice
 	if ($action == 'delete') {
 		$text = $langs->trans('ConfirmDeleteBill', $object->ref);
