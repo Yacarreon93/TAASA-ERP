@@ -1258,14 +1258,14 @@ if (empty($reshook))
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
 		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline, $predef);
-		
-		// validate required extrafields on invoice line
+
+		// Validate required extrafields on invoice line
 		$extrafields_passed_required = ExtraFields::validateRequired($array_options, $extrafieldsline->attribute_required);
 		if (!$extrafields_passed_required) {
 			setEventMessage($langs->trans('ErrorSomeRequiredExtrafieldsAreEmpty'), 'errors');
 			$error ++;
 		}
-		
+			
 		if (empty($idprod) && ($price_ht < 0) && ($qty < 0)) {
 			setEventMessage($langs->trans('ErrorBothFieldCantBeNegative', $langs->transnoentitiesnoconv('UnitPriceHT'), $langs->transnoentitiesnoconv('Qty')), 'errors');
 			$error ++;
@@ -1291,7 +1291,7 @@ if (empty($reshook))
 			$langs->load("errors");
 			setEventMessage($langs->trans('ErrorQtyForCustomerInvoiceCantBeNegative'), 'errors');
 			$error ++;
-		}
+		}		
 		if (! $error && ($qty >= 0) && (! empty($product_desc) || ! empty($idprod))) {
 			$ret = $object->fetch($id);
 			if ($ret < 0) {

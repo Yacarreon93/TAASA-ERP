@@ -309,7 +309,12 @@ else {
 			$newline = new SupplierInvoiceLine($this->db);
 		}
 		if (is_object($newline)) {
-			print $newline->showOptionals($extrafieldsline, 'edit', array('style'=>$bcnd[$var], 'colspan'=>$coldisplay+8));
+			if ($object->element === 'facture') {
+				// Harcoded -- switch to showOptionals method to enable the inputs
+				print $newline->showDisabledOptionals($extrafieldsline, 'edit', array('style'=>$bcnd[$var], 'colspan'=>$coldisplay+8));
+			} else {
+				print $newline->showOptionals($extrafieldsline, 'edit', array('style'=>$bcnd[$var], 'colspan'=>$coldisplay+8));
+			}
 		}
 	}
 	?>
