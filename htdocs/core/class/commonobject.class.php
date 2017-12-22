@@ -4009,10 +4009,10 @@ abstract class CommonObject
 
 					switch($mode) {
 					case "view":
-						$out .= $extrafields->showOutputField($key,$value, 'disabled');
+						$out .= $extrafields->showOutputField($key, $value, 'readonly');
 						break;
 					case "edit":
-						$out .= $extrafields->showInputField($key,$value,'disabled',$keyprefix);
+						$out .= $extrafields->showInputField($key, $value,'readonly', $keyprefix);
 						break;
 					}
 
