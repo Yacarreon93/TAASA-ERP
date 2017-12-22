@@ -138,11 +138,11 @@ else {
 			echo ' ';
 		}
 	}
-
+	
 	echo $form->select_type_of_lines(isset($_POST["type"])?$_POST["type"]:-1,'type',1,1,$forceall);
-
+	
 	echo '</span>';
-
+	
 	// Predefined product/service
 	if (! empty($conf->product->enabled) || ! empty($conf->service->enabled))
 	{
@@ -164,16 +164,18 @@ else {
 		}
 		echo '</label>';
 		echo ' ';
-
+		
 		$filtertype='';
 		if (! empty($object->element) && $object->element == 'contrat' && empty($conf->global->CONTRACT_SUPPORT_PRODUCTS)) $filtertype='1';
-
+		
 		if (empty($senderissupplier))
 		{
 			// Pay attention on this flag				
 			$currency = $object->array_options['options_currency'];
 
-			$form->select_produits(GETPOST('idprod'), 'idprod', $filtertype, $conf->product->limit_size, $buyer->price_level, 1, 2, '', 1, array(),$buyer->id, $currency);
+			$return_extras = $object->element === 'facture' ? 1 : 0;
+
+			$form->select_produits(GETPOST('idprod'), 'idprod', $filtertype, $conf->product->limit_size, $buyer->price_level, 1, 2, '', 1, array(),$buyer->id, $currency, $return_extras);
 		}
 		else
 		{
@@ -197,7 +199,7 @@ else {
 		$parameters=array('htmlname'=>'addproduct');
 		$reshook=$hookmanager->executeHooks('formCreateProductSupplierOptions',$parameters,$object,$action);
 	}
-
+	
 
 	if (! empty($conf->product->enabled) || ! empty($conf->service->enabled)) echo '<br>';
 

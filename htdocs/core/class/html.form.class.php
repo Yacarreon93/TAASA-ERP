@@ -1509,9 +1509,10 @@ class Form
      *  @param		int			$hidelabel				Hide label (0=no, 1=yes, 2=show search icon (before) and placeholder, 3 search icon after)
      *  @param		array		$ajaxoptions			Options for ajax_autocompleter
      *  @param      int			$socid					Thirdparty Id
+     *  @param      int			$return_extras          =0 if no, =1 if yes
      *  @return		void
      */
-    function select_produits($selected='', $htmlname='productid', $filtertype='', $limit=20, $price_level=0, $status=1, $finished=2, $selected_input_value='', $hidelabel=0, $ajaxoptions=array(), $socid=0, $currency='')
+    function select_produits($selected='', $htmlname='productid', $filtertype='', $limit=20, $price_level=0, $status=1, $finished=2, $selected_input_value='', $hidelabel=0, $ajaxoptions=array(), $socid=0, $currency='', $return_extras=0)
     {
         global $langs,$conf;
 
@@ -1531,6 +1532,9 @@ class Form
             }
             // mode=1 means customers products
             $urloption='htmlname='.$htmlname.'&outjson=1&price_level='.$price_level.'&type='.$filtertype.'&mode=1&status='.$status.'&finished='.$finished;
+
+            if ($return_extras === 1) $urloption .= '&return_extras=1';
+
             //Price by customer
             if (! empty($conf->global->PRODUIT_CUSTOMER_PRICES) && !empty($socid)) {
             	$urloption.='&socid='.$socid;
@@ -1539,6 +1543,8 @@ class Form
             if ($currency) {
                 $urloption .= '&currency='.$currency;
             }
+
+            if ($return_extras === 1) $ajaxoptions['custom_extras'] = array('umed' => 'umed', 'claveprodserv' => 'claveprodserv');
 
             print ajax_autocompleter($selected, $htmlname, DOL_URL_ROOT.'/product/ajax/products.php', $urloption, $conf->global->PRODUIT_USE_SEARCH_TO_SELECT, 0, $ajaxoptions);
             if (empty($hidelabel)) print $langs->trans("RefOrLabel").' : ';
@@ -1573,9 +1579,10 @@ class Form
      *  @param      int		$finished       Filter on finished field: 2=No filter
      *  @param      int		$outputmode     0=HTML select string, 1=Array
      *  @param      int		$socid     		Thirdparty Id
+     *  @param      int     $return_extras  =0 if no, =1 if yes
      *  @return     array    				Array of keys for json
      */
-    function select_produits_list($selected='',$htmlname='productid',$filtertype='',$limit=20,$price_level=0,$filterkey='',$status=1,$finished=2,$outputmode=0,$socid=0,$currency='')
+    function select_produits_list($selected='',$htmlname='productid',$filtertype='',$limit=20,$price_level=0,$filterkey='',$status=1,$finished=2,$outputmode=0,$socid=0,$currency='',$return_extras=0)
     {
         global $langs,$conf,$user,$db;
 
@@ -1584,6 +1591,10 @@ class Form
 
         $sql = "SELECT ";
         $sql.= " p.rowid, p.label, p.ref, p.description, p.fk_product_type, p.price, p.price_ttc, p.price_base_type, p.tva_tx, p.duration, p.stock, p.fk_price_expression";
+
+        if ($return_extras == 1) {
+            $sql.= " ,pef.*";            
+        }
 
         //Price by customer
         if (! empty($conf->global->PRODUIT_CUSTOMER_PRICES) && !empty($socid)) {
@@ -1607,8 +1618,14 @@ class Form
 			if ($price_level >= 1 && !empty($conf->global->PRODUIT_MULTIPRICES)) $sql.= " AND price_level=".$price_level;
 			$sql.= " ORDER BY date_price";
 			$sql.= " DESC LIMIT 1) as price_by_qty";
-		}
+        }
+        
         $sql.= " FROM ".MAIN_DB_PREFIX."product as p";
+
+        if ($return_extras == 1) {
+            $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_extrafields as pef ON p.rowid = pef.fk_object";            
+        }
+
         //Price by customer
         if (! empty($conf->global->PRODUIT_CUSTOMER_PRICES) && !empty($socid)) {
         	$sql.=" LEFT JOIN  ".MAIN_DB_PREFIX."product_customer_price as pcp ON pcp.fk_soc=".$socid." AND pcp.fk_product=p.rowid";
@@ -1700,12 +1717,18 @@ class Form
 							$objp->price_by_qty_rowid = $objp2->rowid;
 
 							$this->constructProductListOption($objp, $opt, $optJson, 0, $selected);
-
+                            
 							$j++;
-
+                            
 							// Add new entry
 							// "key" value of json key array is used by jQuery automatically as selected value
-							// "label" value of json key array is used by jQuery automatically as text for combo box
+                            // "label" value of json key array is used by jQuery automatically as text for combo box
+                            
+                            if ($return_extras == 1) {
+                                $optJson['umed'] = $objp->umed;
+                                $optJson['claveprodserv'] = $objp->claveprodserv;
+                            }
+
 							$out.=$opt;
 							array_push($outarray, $optJson);
 						}
@@ -1726,21 +1749,29 @@ class Form
                             $objp->price_ttc = price2num($objp->price_ttc,'MU');
                         }
                     }
+
 					$this->constructProductListOption($objp, $opt, $optJson, $price_level, $selected);
-					// Add new entry
+                                       
+                    // Add new entry
 					// "key" value of json key array is used by jQuery automatically as selected value
-					// "label" value of json key array is used by jQuery automatically as text for combo box
+                    // "label" value of json key array is used by jQuery automatically as text for combo box
+                    
+                    if ($return_extras == 1) {
+                        $optJson['umed'] = $objp->umed;
+                        $optJson['claveprodserv'] = $objp->claveprodserv;
+                    }
+
 					$out.=$opt;
 					array_push($outarray, $optJson);
 				}
-
+                
                 $i++;
             }
 
             $out.='</select>';
-
+            
             $this->db->free($result);
-
+            
             if (empty($outputmode)) return $out;
             return $outarray;
         }
