@@ -54,6 +54,11 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 					$("input#search_'.$htmlname.'").keydown(function() {
 						//console.log(\'purge_id_after_keydown\');
 						$("#'.$htmlname.'").val("");
+						if (options.custom_extras) {
+							$.each(options.custom_extras, function(key, value) {
+								$("input[name=\'options_"+key+"\']").val("");
+							});
+						}	
 					});
 					$("input#search_'.$htmlname.'").change(function() {
 						//console.log(\'change\');
@@ -92,7 +97,12 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 	    									$("#" + key).html("");
 										}
 	    							});
-								}							
+								}
+								if (options.custom_extras) {
+									$.each(options.custom_extras, function(key, value) {
+    									$("input[name=\'options_"+key+"\']").val("").trigger("change");
+									});
+								}					
 						    }
                     });
     				$("input#search_'.$htmlname.'").autocomplete({

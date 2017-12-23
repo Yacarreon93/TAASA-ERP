@@ -1593,7 +1593,7 @@ class Form
         $sql.= " p.rowid, p.label, p.ref, p.description, p.fk_product_type, p.price, p.price_ttc, p.price_base_type, p.tva_tx, p.duration, p.stock, p.fk_price_expression";
 
         if ($return_extras == 1) {
-            $sql.= " , pef.rowid as pefid, pef.*";            
+            $sql.= " , pef.umed, pef.claveprodserv";            
         }
 
         //Price by customer
