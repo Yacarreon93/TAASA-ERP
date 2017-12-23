@@ -1258,14 +1258,14 @@ if (empty($reshook))
 		$extrafieldsline = new ExtraFields($db);
 		$extralabelsline = $extrafieldsline->fetch_name_optionals_label($object->table_element_line);
 		$array_options = $extrafieldsline->getOptionalsFromPost($extralabelsline, $predef);
-		// Unset extrafield
-		if (is_array($extralabelsline)) {
-			// Get extra fields
-			foreach ($extralabelsline as $key => $value) {
-				unset($_POST["options_" . $key . $predef]);
-			}
-		}
 
+		// Validate required extrafields on invoice line
+		$extrafields_passed_required = ExtraFields::validateRequired($array_options, $extrafieldsline->attribute_required);
+		if (!$extrafields_passed_required) {
+			setEventMessage($langs->trans('ErrorSomeRequiredExtrafieldsAreEmpty'), 'errors');
+			$error ++;
+		}
+			
 		if (empty($idprod) && ($price_ht < 0) && ($qty < 0)) {
 			setEventMessage($langs->trans('ErrorBothFieldCantBeNegative', $langs->transnoentitiesnoconv('UnitPriceHT'), $langs->transnoentitiesnoconv('Qty')), 'errors');
 			$error ++;
@@ -1291,7 +1291,7 @@ if (empty($reshook))
 			$langs->load("errors");
 			setEventMessage($langs->trans('ErrorQtyForCustomerInvoiceCantBeNegative'), 'errors');
 			$error ++;
-		}
+		}		
 		if (! $error && ($qty >= 0) && (! empty($product_desc) || ! empty($idprod))) {
 			$ret = $object->fetch($id);
 			if ($ret < 0) {
@@ -1546,21 +1546,29 @@ if (empty($reshook))
 					unset($_POST['idprod']);
 					unset($_POST['units']);
 
-			    	unset($_POST['date_starthour']);
-			    	unset($_POST['date_startmin']);
-			    	unset($_POST['date_startsec']);
-			    	unset($_POST['date_startday']);
-			    	unset($_POST['date_startmonth']);
-			    	unset($_POST['date_startyear']);
-			    	unset($_POST['date_endhour']);
-			    	unset($_POST['date_endmin']);
-			    	unset($_POST['date_endsec']);
-			    	unset($_POST['date_endday']);
-			    	unset($_POST['date_endmonth']);
-			    	unset($_POST['date_endyear']);
+					unset($_POST['date_starthour']);
+					unset($_POST['date_startmin']);
+					unset($_POST['date_startsec']);
+					unset($_POST['date_startday']);
+					unset($_POST['date_startmonth']);
+					unset($_POST['date_startyear']);
+					unset($_POST['date_endhour']);
+					unset($_POST['date_endmin']);
+					unset($_POST['date_endsec']);
+					unset($_POST['date_endday']);
+					unset($_POST['date_endmonth']);
+					unset($_POST['date_endyear']);
 
 					unset($_POST['situations']);
 					unset($_POST['progress']);
+
+					// Unset extrafield
+					if (is_array($extralabelsline)) {
+						// Get extra fields
+						foreach ($extralabelsline as $key => $value) {
+							unset($_POST["options_" . $key . $predef]);
+						}
+					}
 				} else {
 					setEventMessage($object->error, 'errors');
 				}

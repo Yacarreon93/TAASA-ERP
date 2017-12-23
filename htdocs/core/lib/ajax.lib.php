@@ -54,6 +54,11 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 					$("input#search_'.$htmlname.'").keydown(function() {
 						//console.log(\'purge_id_after_keydown\');
 						$("#'.$htmlname.'").val("");
+						if (options.custom_extras) {
+							$.each(options.custom_extras, function(key, value) {
+								$("input[name=\'options_"+key+"\']").val("");
+							});
+						}	
 					});
 					$("input#search_'.$htmlname.'").change(function() {
 						//console.log(\'change\');
@@ -92,7 +97,12 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 	    									$("#" + key).html("");
 										}
 	    							});
-	    						}
+								}
+								if (options.custom_extras) {
+									$.each(options.custom_extras, function(key, value) {
+    									$("input[name=\'options_"+key+"\']").val("").trigger("change");
+									});
+								}					
 						    }
                     });
     				$("input#search_'.$htmlname.'").autocomplete({
@@ -117,8 +127,14 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 											$.each(options.update_textarea, function(key, value) {
 												textarea[key] = item[value];
 											});
-										}
-										return { label: label, value: item.value, id: item.key, update: update, textarea: textarea, disabled: item.disabled }
+										}		
+										var custom_extras = {};								
+										if (options.custom_extras) {
+											$.each(options.custom_extras, function(key, value) {
+												custom_extras[key] = item[key];
+											});
+										}										
+										return { label: label, value: item.value, id: item.key, update: update, textarea: textarea, disabled: item.disabled, custom_extras: custom_extras}
 									}));
 								}
 								else console.error("Error: Ajax url '.$url.($urloption?'?'.$urloption:'').' has returned an empty page. Should be an empty json array.");
@@ -127,7 +143,8 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 						dataType: "json",
     					minLength: '.$minLength.',
     					select: function( event, ui ) {		// Function ran when new value is selected into javascript combo
-							//console.log(\'set value of id with \'+ui.item.id);
+							console.log(\'set value of id with \'+ui.item.id);
+							console.log(ui.item);
     						$("#'.$htmlname.'").val(ui.item.id).trigger("change");	// Select new value
     						// Disable an element
     						if (options.option_disabled) {
@@ -170,7 +187,12 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
     									$("#" + key).focus();
 									}
     							});
-    						}
+							}
+							if (ui.item.custom_extras) {
+								$.each(ui.item.custom_extras, function(key, value) {
+    								$("input[name=\'options_"+key+"\']").val(value).trigger("change");
+    							});
+							}
     						$("#search_'.$htmlname.'").trigger("change");	// To tell that input text field was modified
     					}
     					,delay: 500
