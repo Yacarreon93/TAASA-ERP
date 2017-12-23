@@ -4005,15 +4005,17 @@ abstract class CommonObject
 						$label = '<span class="fieldrequired">'.$label.'</span>';
 
 					$out .= '<td>'.$langs->trans($label).'</td>';
-					$out .='<td'.($colspan?' colspan="'.$colspan.'"':'').'>';
+                    $out .='<td'.($colspan?' colspan="'.$colspan.'"':'').'>';
+                    
+                    $input_attrs = 'readonly style="background:#ddd;cursor:not-allowed"';
 
 					switch($mode) {
-					case "view":
-						$out .= $extrafields->showOutputField($key, $value, 'readonly');
-						break;
-					case "edit":
-						$out .= $extrafields->showInputField($key, $value,'readonly', $keyprefix);
-						break;
+					    case "view":
+						    $out .= $extrafields->showOutputField($key, $value, $input_attrs);
+						    break;
+					    case "edit":
+						    $out .= $extrafields->showInputField($key, $value, $input_attrs, $keyprefix);
+						    break;
 					}
 
 					$out .= '</td>';
