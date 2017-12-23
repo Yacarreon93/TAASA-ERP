@@ -143,8 +143,7 @@ function ajax_autocompleter($selected, $htmlname, $url, $urloption='', $minLengt
 						dataType: "json",
     					minLength: '.$minLength.',
     					select: function( event, ui ) {		// Function ran when new value is selected into javascript combo
-							console.log(\'set value of id with \'+ui.item.id);
-							console.log(ui.item);
+							// console.log(\'set value of id with \'+ui.item.id);
     						$("#'.$htmlname.'").val(ui.item.id).trigger("change");	// Select new value
     						// Disable an element
     						if (options.option_disabled) {
