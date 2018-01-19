@@ -2830,7 +2830,9 @@ if( $cfdi_tot>0 ){
 										echo '<form method="post" action="">';
 										echo '<input type="hidden" name="uuid" value="'.$uuid.'">';
 										echo '<input type="hidden" name="rfc_emisor" value="'.$conf->global->MAIN_INFO_SIREN.'">';
-										echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de cancelar la factura?\')" name="cancelaCFDIaction" value="Cancelar CFDI" class="button">';
+                                        if ($user->rights->facture->supprimer) {
+                                            echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de cancelar la factura?\')" name="cancelaCFDIaction" value="Cancelar CFDI" class="button">';
+                                        }
 										echo '</form>';
 										echo '</p>';
 										echo '</div>';
