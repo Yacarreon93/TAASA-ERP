@@ -81,7 +81,7 @@ if($action==""){
 	print '<td class="liste_titre" width="18">&nbsp;</td>';
 	print '</tr>';
 	// Payments already done (from payment on this invoice)
-	$sql = 'SELECT p.datep as dp, p.ref, p.num_paiement, p.rowid, p.fk_bank,';
+	$sql = 'SELECT p.datep as dp, p.rowid as ref, p.num_paiement, p.rowid, p.fk_bank,';
 	$sql .= ' c.code as payment_code, c.libelle as payment_label,';
 	$sql .= ' pf.amount,';
 	$sql .= ' ba.rowid as baid, ba.ref as baref, ba.label';
@@ -90,9 +90,9 @@ if($action==""){
 	$sql .= ' LEFT JOIN ' . MAIN_DB_PREFIX . 'bank_account as ba ON b.fk_account = ba.rowid';
 	$sql .= ' WHERE pf.fk_facture = ' . $object->id . ' AND p.fk_paiement = c.id AND pf.fk_paiement = p.rowid';
 	$sql .= ' ORDER BY p.datep, p.tms';
-	
+
 	$result = $db->query($sql);
-	
+
 		@$num = $db->num_rows($result);
 		$i = 0;
 	
@@ -296,11 +296,14 @@ if($action=="guardar"){
 	}
 }
 
-if($action=="cfdi"){
+if ($action=="cfdi") {
+
+	$form = $form2;
+
 	$obpag = new Paiement($db);
 	$obpag->fetch(GETPOST("pagcid"));
 	print '<table class="border centpercent">'."\n";
-	
+
 	// Ref
 	print '<tr><td class="titlefield">'.$langs->trans('Ref').' Pago</td><td colspan="3">';
 	print $form->showrefnav($obpag, 'ref', $linkback, 0, 'ref', 'ref', '');
