@@ -296,9 +296,9 @@ if($action=="guardar"){
 	}
 }
 
-if ($action=="cfdi") {
+$form = $form2;
 
-	$form = $form2;
+if ($action=="cfdi") {
 
 	$obpag = new Paiement($db);
 	$obpag->fetch(GETPOST("pagcid"));
@@ -964,7 +964,6 @@ if($action=="cfdi1"){
 		print $out;
 	}
 }
-
 
 llxFooter();
 $db->close();
