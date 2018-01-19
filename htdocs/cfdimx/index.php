@@ -177,7 +177,7 @@ jQuery(document).ready(function() {
 
 
 
-<?
+<?php
 
 foreach ($_REQUEST as $key => $value) {
 
@@ -958,7 +958,7 @@ print '</table>';
 
 
 
-<?
+<?php
 
 // End of page
 
