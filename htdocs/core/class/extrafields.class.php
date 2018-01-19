@@ -1474,4 +1474,14 @@ class ExtraFields
 			return 0;
 		}
 	}
+
+	public static function validateRequired($array_options, $required_extrafields)
+	{
+		foreach ($array_options as $key => $value) {
+			if ($required_extrafields[str_replace('options_', '', $key)] == 1 && $value === '') {
+				return 0;
+			}
+		}
+		return 1;
+	}
 }
