@@ -1016,6 +1016,24 @@ if($action=="cfdi1"){
 	}
 }
 
+?>
+<script type="text/javascript" language="javascript">
+
+	window.onload = function()
+	{
+		var d = new Date();
+		if(document.getElementById("fechaPagohour").value == "12"
+			&& document.getElementById("fechaPagomin").value == "00") {
+			document.getElementById("fechaPagohour").value = d.getHours();
+			document.getElementById("fechaPagomin").value = d.getMinutes();
+		}
+	};
+
+</script>
+
+<?php
+
+
 llxFooter();
 $db->close();
 ?>
