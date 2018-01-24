@@ -512,11 +512,62 @@ if ($action=="cfdi") {
 			$idDocumento=$rs->uuid;
 			$metodoPDR=$factura_metodopago;
 		}
+
+		$savedHour = date('G', $datep);
+		$savedMin = date('i', $datep);
 		
 		print '<tr><td class="titlefield"><strong>Fecha de Pago</strong></td>';
 		print '<td>';
 		print '<input type="hidden" name="mos" id="mos" value="0">';
-		$form->select_date($datep,'fechaPago',1,1,0,'nfechaPago');
+		if($datep != "") { 
+			print'<input id="fechaPago" readonly="readonly" name="fechaPago" type="date" size="9" maxlength="9"  value="'.date("Y-m-d",$datep).'">';
+		}
+
+		print '<select class="flat " id="fechaPagohour" name="fechaPagohour">';
+		for($k = 0; $k < 24; $k++) {
+			if($k < 10) {
+				$hourValue = "0".$k;
+				if($hourValue == $savedHour) {
+					print '<option selected value="'.$hourValue.'">'.$hourValue.'</option>';
+				}
+				else {
+					print '<option value="'.$hourValue.'">'.$hourValue.'</option>';	
+				}
+			}
+			else {
+				$hourValue = $k;
+				if($hourValue == $savedHour) {
+					print '<option selected value="'.$hourValue.'">'.$hourValue.'</option>';
+				} else {
+					print '<option value="'.$hourValue.'">'.$hourValue.'</option>';
+				}
+			}
+		}
+		print '</select>';
+
+		print '<select class="flat " id="fechaPagomin" name="fechaPagomin">';
+		for($k = 0; $k < 60; $k++) {
+			if($k < 10) {
+				$minValue = "0".$k;
+				if($minValue == $savedMin) {
+					print '<option selected value="'.$minValue.'">'.$minValue.'</option>';	
+				}
+				else {
+					print '<option value="'.$minValue.'">'.$minValue.'</option>';
+				}
+					
+			}
+			else {
+				$minValue = $k;
+				if($minValue == $savedMin) {
+					print '<option selected value="'.$minValue.'">'.$minValue.'</option>';
+				}
+				else {
+					print '<option value="'.$minValue.'">'.$minValue.'</option>';
+				}
+			}
+		}
+		
 		print '</td>';
 		
 		print '<td class="titlefield"><strong>Forma de Pago</strong></td>';
