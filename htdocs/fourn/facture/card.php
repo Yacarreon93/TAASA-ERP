@@ -470,7 +470,7 @@ if (empty($reshook))
 	        }
 	        else if (! $error)
 	        {
-	            $id = $object->create($user);
+				$id = $object->create($user);				
 	            if ($id < 0)
 	            {
 	                $error++;
@@ -2061,7 +2061,7 @@ else
 
         // Other attributes
         $cols = 4;
-		include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
+		include DOL_DOCUMENT_ROOT . '/core/tpl/no_editable_extrafields_view.tpl.php';
 
         print '</table><br>';
 
