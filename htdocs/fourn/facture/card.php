@@ -1327,15 +1327,16 @@ if ($action == 'create')
     print '<tr><td class="fieldrequired">'.$langs->trans('Supplier').'</td>';
     print '<td>';
 
-    if (GETPOST('socid') > 0)
-    {
-        print $societe->getNomUrl(1);
-        print '<input type="hidden" name="socid" value="'.GETPOST('socid','int').'">';
-    }
-    else
-    {
-        print $form->select_company(GETPOST('socid','int'),'socid','s.fournisseur = 1',1);
-    }
+	// Disabled fixed socid
+    // if (GETPOST('socid') > 0)
+    // {
+    //     print $societe->getNomUrl(1);
+    //     print '<input type="hidden" name="socid" value="'.GETPOST('socid','int').'">';
+    // }
+    // else
+    // {
+    print $form->select_company(GETPOST('socid','int'),'socid','s.fournisseur = 1',1);
+    // }
     print '</td></tr>';
 
     // Ref supplier
@@ -1474,6 +1475,15 @@ if ($action == 'create')
     $form->select_comptes($fk_account, 'fk_account', 0, '', 1);
     print '</td></tr>';
 
+	// Extrafields
+	if (empty($reshook) && ! empty($extrafields->attribute_label))
+	{
+		print $object->showLockedOptionals($extrafields, 'edit');
+	}
+
+	// Currency
+	print '<input type="hidden" name="options_currency" value="'.$_POST['options_currency'].'">';
+
 	// Public note
 	print '<tr><td>'.$langs->trans('NotePublic').'</td>';
     print '<td>';
@@ -1492,10 +1502,6 @@ if ($action == 'create')
     // print '<td><textarea name="note" wrap="soft" cols="60" rows="'.ROWS_5.'"></textarea></td>';
     print '</tr>';
 
-	if (empty($reshook) && ! empty($extrafields->attribute_label))
-	{
-		print $object->showOptionals($extrafields, 'edit');
-	}
 
     if (is_object($objectsrc))
     {
@@ -1595,7 +1601,7 @@ if ($action == 'create')
         $objectsrc->printOriginLinesList();
 
         print '</table>';
-    }
+	}
 }
 else
 {
@@ -2378,36 +2384,30 @@ else
 }
 
 ?>
+
 <script type="text/javascript" language="javascript">
-
-	$("#socid").change(function()
-	{
-		var socid = document.getElementById("socid").value;
-	    var client = $("#socid option:selected").text();
-
-	    var params = {  "socid" : socid };
-
-	    $.ajax(
-	    {
+	$("#socid").change(function() {
+		var socid = document.getElementById("socid").value
+	    var client = $("#socid option:selected").text()
+	    var params = { "socid": socid }
+	    $.ajax({
 	        data: params,
-	        url: "../../../scripts/commande/getSupplierData.php",
+	        url: "../../scripts/commande/getSupplierData.php",
 	        type: "post",
 	        dataType: "json",
-	        success:  function (data) 
-	        {
-	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
-	            document.getElementById("selectmode_reglement_id").value = data.mode;
-	            document.getElementById("options_currency").value = data.currency;
-	            //Make them disable
-	            //need to check this!!!!
-	            //document.getElementsByName("cond_reglement_id").disabled = true;
-	            //document.getElementById("selectmode_reglement_id").disabled = true;
+	        success: function(data) {
+				$("[name='cond_reglement_id'").each(function() {
+					$(this).val(data.cond)
+				})
+				$("[name='mode_reglement_id'").each(function() {
+					$(this).val(data.mode)
+				})
+	            $("[name='options_currency']").each(function() {
+					$(this).val(data.currency)
+				})
 	        }
-	    });
-	});
-
-	
-
+	    })
+	})
 </script>
 
 <?php
