@@ -406,7 +406,7 @@ else
 			$head=array();
 			$h=0;
 			$head[$h][0] = $_SERVER["PHP_SELF"].'?id='.$object->id;
-			$head[$h][1] = $langs->trans("CardBill");
+			$head[$h][1] = "$langs->trans("CardBill")";
 			$head[$h][2] = 'card';
 
 			dol_fiche_head($head, 'card', $langs->trans("PredefinedInvoices"),0,'bill');	// Add a div

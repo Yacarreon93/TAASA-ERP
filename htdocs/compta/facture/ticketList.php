@@ -139,7 +139,7 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
  * View
  */
 
-llxHeader('',$langs->trans('Bill'),'EN:Customers_Invoices|FR:Factures_Clients|ES:Facturas_a_clientes');
+llxHeader('',"Ticket",'Tickets a Clientes');
 
 $form = new Form($db);
 $formother = new FormOther($db);
@@ -209,23 +209,23 @@ else if ($year > 0)
 }
 if ($month_lim > 0)
 {
-    if ($year_lim > 0 && empty($day_lim))
-        $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,$month_lim,false))."' AND '".$db->idate(dol_get_last_day($year_lim,$month_lim,false))."'";
-    else if ($year_lim > 0 && ! empty($day_lim))
-        $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month_lim, $day_lim, $year_lim))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month_lim, $day_lim, $year_lim))."'";
-    else
-        $sql.= " AND date_format(f.date_lim_reglement, '%m') = '".$month_lim."'";
+	if ($year_lim > 0 && empty($day_lim))
+		$sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,$month_lim,false))."' AND '".$db->idate(dol_get_last_day($year_lim,$month_lim,false))."'";
+	else if ($year_lim > 0 && ! empty($day_lim))
+		$sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month_lim, $day_lim, $year_lim))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month_lim, $day_lim, $year_lim))."'";
+	else
+		$sql.= " AND date_format(f.date_lim_reglement, '%m') = '".$month_lim."'";
 }
 else if ($year_lim > 0)
 {
-    $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,1,false))."' AND '".$db->idate(dol_get_last_day($year_lim,12,false))."'";
+	$sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,1,false))."' AND '".$db->idate(dol_get_last_day($year_lim,12,false))."'";
 }
 if ($search_sale > 0) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$search_sale;
 if ($search_user > 0)
 {
     $sql.= " AND ec.fk_c_type_contact = tc.rowid AND tc.element='facture' AND tc.source='internal' AND ec.element_id = f.rowid AND ec.fk_socpeople = ".$search_user;
 }
-$sql.=" AND (fe.isticket != 1 OR ISNULL(fe.isticket))";
+$sql.=" AND fe.isticket = 1";
 if (! $sall)
 {
     $sql.= ' GROUP BY f.rowid, f.facnumber, ref_client, f.type, f.note_private, f.increment, f.total, f.tva, f.total_ttc,';
@@ -245,8 +245,8 @@ $sql.= ' f.rowid DESC ';
 $nbtotalofrecords = 0;
 if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST))
 {
-    $result = $db->query($sql);
-    $nbtotalofrecords = $db->num_rows($result);
+	$result = $db->query($sql);
+	$nbtotalofrecords = $db->num_rows($result);
 }
 
 $sql.= $db->plimit($limit+1,$offset);
@@ -272,7 +272,7 @@ if ($resql)
     if ($search_user > 0)    $param.='&search_user=' .$search_user;
     if ($search_montant_ht != '')  $param.='&search_montant_ht='.$search_montant_ht;
     if ($search_montant_ttc != '') $param.='&search_montant_ttc='.$search_montant_ttc;
-    print_barre_liste($langs->trans('BillsCustomers').' '.($socid?' '.$soc->name:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_accountancy.png');
+    print_barre_liste("Tickets a Clientes".' '.($socid?' '.$soc->name:''),$page,$_SERVER["PHP_SELF"],$param,$sortfield,$sortorder,'',$num,$nbtotalofrecords,'title_accountancy.png');
 
     $i = 0;
     print '<form method="GET" action="'.$_SERVER["PHP_SELF"].'">'."\n";
