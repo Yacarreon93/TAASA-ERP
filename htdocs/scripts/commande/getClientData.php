@@ -7,7 +7,7 @@ $error = 0;
 
 $socid = $_POST['socid'];
 
-$sql = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency ";
+$sql = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency, se.cash_desk ";
 $sql.= " FROM ".MAIN_DB_PREFIX."societe s ";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
 $sql.= " WHERE s.rowid = '".$socid."' LIMIT 1";
@@ -43,6 +43,11 @@ if ($resql)
 					$resultado["currency"]= $obj->currency;
 				}else{
 					$resultado["currency"]= "";
+				}
+				if ($obj->cash_desk) {
+					$resultado["cash_desk"]= $obj->cash_desk;
+				}else{
+					$resultado["cash_desk"]= "";
 				}
 				echo json_encode($resultado);
 			}

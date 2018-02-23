@@ -4306,11 +4306,13 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
 	            document.getElementsByName("options_currency")[0].value = data.currency;
+	            document.getElementsByName("fk_account")[0].value = data.cash_desk;
 	            //Make them disable
 	            document.getElementById("selectmode_reglement_id").disabled = true;
 	            document.getElementById("options_vendor").disabled = true;
 	            document.getElementsByName("cond_reglement_id").disabled = true;
 	            document.getElementsByName("options_isticket").disabled = true;
+	            document.getElementsByName("fk_account")[0].disabled = true;
 	        }
 	    });
 	});
@@ -4320,6 +4322,7 @@ else if ($id > 0 || ! empty($ref))
 	    document.getElementById("selectmode_reglement_id").disabled = false;
 	    document.getElementById("options_vendor").disabled = false;
 	    document.getElementsByName("options_isticket")[0].disabled = false;
+	    document.getElementsByName("fk_account")[0].disabled = false;
 	  });
 	});
 
@@ -4329,6 +4332,7 @@ else if ($id > 0 || ! empty($ref))
 	document.getElementById("options_vendor").disabled = true;
 	document.getElementsByName("cond_reglement_id").disabled = true;
 	document.getElementsByName("options_isticket")[0].disabled = true;
+	document.getElementsByName("fk_account")[0].disabled = true;
 	}, false);
 
 </script>
