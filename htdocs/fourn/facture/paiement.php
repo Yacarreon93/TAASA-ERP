@@ -370,7 +370,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 	            $sql = 'SELECT f.rowid as facid, f.ref, f.ref_supplier, f.total_ht, f.total_ttc, f.datef as df, currency ';
 	            $sql.= ', SUM(pf.amount) as am';
 	            $sql.= ' FROM '.MAIN_DB_PREFIX.'facture_fourn as f';
-	            $sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as fex';
+	            $sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_fourn_extrafields as fex';
 	            $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiementfourn_facturefourn as pf ON pf.fk_facturefourn = f.rowid';
 	            $sql.= " WHERE f.entity = ".$conf->entity;
 	            $sql.= ' AND f.fk_soc = '.$object->socid;
