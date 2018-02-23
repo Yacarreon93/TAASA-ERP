@@ -76,6 +76,24 @@ if ($id > 0 || ! empty($ref)) {
 	$ret = $object->fetch($id, $ref);
 }
 
+//Checking if it's ticket or facture
+	if(!$isTicket) {
+		
+		$sqlTicket = 'SELECT fe.isticket
+					  FROM llx_facture AS f
+					  JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+					  WHERE f.rowid ='.$id;
+		$resql = $db->query($sqlTicket);
+		if ($resql)
+		{
+			$objTicket = $db->fetch_object($resql);
+			if($objTicket->isticket == 1) {
+				header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);
+  				exit;
+			}
+		}
+	}
+
 // Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
 $hookmanager->initHooks(array('invoicecard','globalcard'));
 
@@ -2737,23 +2755,6 @@ else if ($id > 0 || ! empty($ref))
 	
 	// fetch optionals attributes and labels
 	$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
- 
-	
-	//Checking if it's ticket or facture
-	if(!$isTicket) {
-		$sqlTicket = 'SELECT fe.isticket
-					  FROM llx_facture AS f
-					  JOIN llx_facture_extrafields AS fe ON f.rowid = fe.rowid
-					  WHERE f.rowid ='.$id;
-		$resql = $db->query($sqlTicket);
-		if ($resql)
-		{
-			$objTicket = $db->fetch_object($resql);
-			if($objTicket->isticket == 1) {
-				$isTicket = 1;
-			}
-		}
-	}
 
 	if ($user->societe_id > 0 && $user->societe_id != $object->socid)
 	accessforbidden('', 0);

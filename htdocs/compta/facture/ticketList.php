@@ -395,12 +395,12 @@ if ($resql)
             if (! empty($objp->note_private))
             {
 				print ' <span class="note">';
-				print '<a href="'.DOL_URL_ROOT.'/compta/facture/note.php?id='.$objp->facid.'">'.img_picto($langs->trans("ViewPrivateNote"),'object_generic').'</a>';
+				print '<a href="'.DOL_URL_ROOT.'/compta/facture/note.php?isTicket=1&id='.$objp->facid.'">'.img_picto($langs->trans("ViewPrivateNote"),'object_generic').'</a>';
 				print '</span>';
 			}
             $filename=dol_sanitizeFileName($objp->facnumber);
             $filedir=$conf->facture->dir_output . '/' . dol_sanitizeFileName($objp->facnumber);
-            $urlsource=$_SERVER['PHP_SELF'].'?id='.$objp->facid;
+            $urlsource=$_SERVER['PHP_SELF'].'?isTicket=1&id='.$objp->facid;
             print $formfile->getDocumentsLink($facturestatic->element, $filename, $filedir);
 			print '</td>';
             print '</tr>';
