@@ -2180,7 +2180,7 @@ else
 	            // Make payments
 	            if ($action != 'edit' && $object->statut == FactureFournisseur::STATUS_VALIDATED && $object->paye == 0  && $user->societe_id == 0)
 	            {
-	                print '<a class="butAction" href="paiement.php?facid='.$object->id.'&amp;action=create &amp;accountid='.$object->fk_account.'">'.$langs->trans('DoPayment').'</a>';	// must use facid because id is for payment id not invoice
+	                print '<a class="butAction" href="paiement.php?facid='.$object->id.'&amp;action=create&amp;accountid='.$object->fk_account.'&amp;currency='.$object->array_options['options_currency'].'">'.$langs->trans('DoPayment').'</a>';	// must use facid because id is for payment id not invoice
 	            }
 	
 	            // Classify paid
