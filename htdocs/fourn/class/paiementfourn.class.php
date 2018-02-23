@@ -67,6 +67,10 @@ class PaiementFourn extends Paiement
 	 */
 	public $type_code;
 
+	// extras
+	var $currency; //Varible for currency (MXN,USD, NO CURRENCY)
+	var $currency_rate; //Varible for currency_rate
+
 	/**
 	 *	Constructor
 	 *
@@ -87,9 +91,11 @@ class PaiementFourn extends Paiement
 	{
 		$sql = 'SELECT p.rowid, p.datep as dp, p.amount, p.statut, p.fk_bank,';
 		$sql.= ' c.code as paiement_code, c.libelle as paiement_type,';
-		$sql.= ' p.num_paiement, p.note, b.fk_account';
+		$sql.= ' p.num_paiement, p.note, b.fk_account,';
+		$sql.= ' lpe.currency, lpe.currency_rate';
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'c_paiement as c, '.MAIN_DB_PREFIX.'paiementfourn as p';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank as b ON p.fk_bank = b.rowid ';
+		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'llx_paiementfourn_extrafields as lpe ON lpe.fk_object = p.rowid ';
 		$sql.= ' WHERE p.fk_paiement = c.id';
 		$sql.= ' AND p.rowid = '.$id;
 		$resql = $this->db->query($sql);
@@ -97,7 +103,7 @@ class PaiementFourn extends Paiement
 		{
 			$num = $this->db->num_rows($resql);
 			if ($num > 0)
-			{
+			{				
 				$obj = $this->db->fetch_object($resql);
 				$this->id             = $obj->rowid;
 				$this->ref            = $obj->rowid;
@@ -109,7 +115,8 @@ class PaiementFourn extends Paiement
 				$this->note           = $obj->note;
 				$this->type_code      = $obj->paiement_code;
 				$this->type_libelle   = $obj->paiement_type;
-				$this->statut         = $obj->statut;
+				$this->currency       = $obj->currency;
+				$this->currency_rate  = $obj->currency_rate;
 				$error = 1;
 			}
 			else
@@ -219,6 +226,14 @@ class PaiementFourn extends Paiement
                     if ($result < 0) $error++;
                     // End call triggers
 				}
+
+				//Register Currency extrafield
+
+				$sql = "INSERT INTO ".MAIN_DB_PREFIX."paiementfourn_extrafields (fk_object, currency, currency_rate)";
+				$sql.= " VALUES (".$this->id.", '".$this->currency."', '".$this->currency_rate."')";
+
+				$resql = $this->db->query($sql);
+
 			}
 			else
 			{
