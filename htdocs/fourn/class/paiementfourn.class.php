@@ -95,7 +95,7 @@ class PaiementFourn extends Paiement
 		$sql.= ' lpe.currency, lpe.currency_rate';
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'c_paiement as c, '.MAIN_DB_PREFIX.'paiementfourn as p';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank as b ON p.fk_bank = b.rowid ';
-		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'llx_paiementfourn_extrafields as lpe ON lpe.fk_object = p.rowid ';
+		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiementfourn_extrafields as lpe ON lpe.fk_object = p.rowid ';
 		$sql.= ' WHERE p.fk_paiement = c.id';
 		$sql.= ' AND p.rowid = '.$id;
 		$resql = $this->db->query($sql);

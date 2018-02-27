@@ -192,6 +192,12 @@ if ($result > 0)
 	// Amount
 	print '<tr><td valign="top" colspan="2">'.$langs->trans('Amount').'</td><td colspan="3">'.price($object->montant,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
 
+	// Extras (Currency and currency rate)
+	print '<tr><td colspan="2">Moneda</td><td colspan="3">'.$object->currency.'</td></tr>';
+	if ($object->currency === 'USD') {
+		print '<tr><td>Tipo de Cambio</td><td colspan="3">'.price($object->currency_rate,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
+	}
+
 	if (! empty($conf->global->BILL_ADD_PAYMENT_VALIDATION))
 	{
 		print '<tr><td valign="top" colspan="2">'.$langs->trans('Status').'</td><td colspan="3">'.$object->getLibStatut(4).'</td></tr>';
