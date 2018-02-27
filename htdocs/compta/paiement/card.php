@@ -221,9 +221,10 @@ print '</td></tr>';
 print '<tr><td>'.$langs->trans('Amount').'</td><td colspan="3">'.price($object->montant,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
 
 // Extras (Currency and currency rate)
-print '<tr><td>Moneda</td><td colspan="3">'.$object->currency.'</td></tr>';
-
-print '<tr><td>Tipo de Cambio</td><td colspan="3">'.price($object->currency_rate,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
+print '<tr><td colspan="2">Moneda</td><td colspan="3">'.$object->currency.'</td></tr>';
+if ($object->currency === 'USD') {
+	print '<tr><td colspan="2">Tipo de Cambio</td><td colspan="3">'.price($object->currency_rate,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
+}
 
 // Note
 print '<tr><td class="tdtop">'.$form->editfieldkey("Note",'note',$object->note,$object,$user->rights->facture->paiement).'</td><td colspan="3">';
