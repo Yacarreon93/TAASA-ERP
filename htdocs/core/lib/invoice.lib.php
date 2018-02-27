@@ -36,6 +36,8 @@ function facture_prepare_head($object)
 	$h = 0;
 	$head = array();
 
+	//checkpoint
+
 	$head[$h][0] = DOL_URL_ROOT.'/compta/facture.php?facid='.$object->id;
 	$head[$h][1] = $langs->trans('CardBill');
 	$head[$h][2] = 'compta';
@@ -71,6 +73,87 @@ function facture_prepare_head($object)
     // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
     // $this->tabs = array('entity:-tabname);   												to remove a tab
     complete_head_from_modules($conf,$langs,$object,$head,$h,'invoice');
+
+    if (empty($conf->global->MAIN_DISABLE_NOTES_TAB))
+    {
+    	$nbNote = 0;
+        if(!empty($object->note_private)) $nbNote++;
+		if(!empty($object->note_public)) $nbNote++;
+    	$head[$h][0] = DOL_URL_ROOT.'/compta/facture/note.php?facid='.$object->id;
+    	$head[$h][1] = $langs->trans('Notes');
+		if ($nbNote > 0) $head[$h][1].= ' <span class="badge">'.$nbNote.'</span>';
+    	$head[$h][2] = 'note';
+    	$h++;
+    }
+
+	require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+	$upload_dir = $conf->facture->dir_output . "/" . dol_sanitizeFileName($object->ref);
+	$nbFiles = count(dol_dir_list($upload_dir,'files',0,'','(\.meta|_preview\.png)$'));
+	$head[$h][0] = DOL_URL_ROOT.'/compta/facture/document.php?facid='.$object->id;
+	$head[$h][1] = $langs->trans('Documents');
+	if($nbFiles > 0) $head[$h][1].= ' <span class="badge">'.$nbFiles.'</span>';
+	$head[$h][2] = 'documents';
+	$h++;
+
+	$head[$h][0] = DOL_URL_ROOT.'/compta/facture/info.php?facid='.$object->id;
+	$head[$h][1] = $langs->trans('Info');
+	$head[$h][2] = 'info';
+	$h++;
+
+	complete_head_from_modules($conf,$langs,$object,$head,$h,'invoice','remove');
+
+	return $head;
+}
+
+/**
+ * Initialize the array of tabs for tickets system
+ *
+ * @param	Facture		$object		Invoice object
+ * @return	array					Array of head tabs
+ */
+function facture_prepare_head_ticket($object)
+{
+	global $langs, $conf;
+	$h = 0;
+	$head = array();
+
+	//checkpoint
+
+	$head[$h][0] = DOL_URL_ROOT.'/compta/facture.php?facid='.$object->id;
+	$head[$h][1] = "Ficha Ticket";
+	$head[$h][2] = 'compta';
+	$h++;
+
+	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB))
+	{
+		$head[$h][0] = DOL_URL_ROOT.'/compta/facture/contact.php?facid='.$object->id;
+		$head[$h][1] = $langs->trans('ContactsAddresses');
+		$head[$h][2] = 'contact';
+		$h++;
+	}
+
+	if (! empty($conf->global->MAIN_USE_PREVIEW_TABS))
+	{
+		$head[$h][0] = DOL_URL_ROOT.'/compta/facture/apercu.php?facid='.$object->id;
+		$head[$h][1] = $langs->trans('Preview');
+		$head[$h][2] = 'preview';
+		$h++;
+	}
+
+	//if ($fac->mode_reglement_code == 'PRE')
+	if (! empty($conf->prelevement->enabled))
+	{
+		$head[$h][0] = DOL_URL_ROOT.'/compta/facture/prelevement.php?facid='.$object->id;
+		$head[$h][1] = $langs->trans('StandingOrders');
+		$head[$h][2] = 'standingorders';
+		$h++;
+	}
+
+    // Show more tabs from modules
+    // Entries must be declared in modules descriptor with line
+    // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
+    // $this->tabs = array('entity:-tabname);   												to remove a tab
+    //complete_head_from_modules($conf,$langs,$object,$head,$h,'invoice');
 
     if (empty($conf->global->MAIN_DISABLE_NOTES_TAB))
     {

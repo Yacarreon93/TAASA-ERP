@@ -1424,6 +1424,66 @@ class ExtraFields
 			return 0;
 		}
 	}
+
+	/**
+	 * Fill array_options property of object by extrafields value (using for data sent by forms) for tickets
+	 *
+	 * @param   array	$extralabels    $array of extrafields
+	 * @param   object	$object         Object
+	 * @param	string	$onlykey		Only following key is filled. When we make update of only one extrafield ($action = 'update_extras'), calling page must must set this to avoid to have other extrafields being reset.
+	 * @return	int						1 if array_options set, 0 if no value, -1 if error (field required missing for example)
+	 */
+	function setOptionalsFromPostTicket($extralabels,&$object,$onlykey='')
+	{
+		global $_POST, $langs;
+		$nofillrequired='';// For error when required field left blank
+		$error_field_required = array();
+
+		if (is_array($extralabels))
+		{
+			// Get extra fields
+			foreach ($extralabels as $key => $value)
+			{
+				if (! empty($onlykey) && $key != $onlykey) continue;
+
+				$key_type = $this->attribute_type[$key];
+				if($this->attribute_required[$key] && !GETPOST("options_$key",2))
+				{
+					$nofillrequired++;
+					$error_field_required[] = $value;
+				}
+
+				if (in_array($key_type,array('date','datetime')))
+				{
+					// Clean parameters
+					$value_key=dol_mktime($_POST["options_".$key."hour"], $_POST["options_".$key."min"], 0, $_POST["options_".$key."month"], $_POST["options_".$key."day"], $_POST["options_".$key."year"]);
+				}
+				else if (in_array($key_type,array('checkbox','chkbxlst')))
+				{
+					$value_arr=GETPOST("options_".$key);
+					if (!empty($value_arr)) {
+						$value_key=implode($value_arr,',');
+					}else {
+						$value_key='';
+					}
+				}
+				else if (in_array($key_type,array('price','double')))
+				{
+					$value_arr=GETPOST("options_".$key);
+					$value_key=price2num($value_arr);
+				}
+				else
+				{
+					$value_key=GETPOST("options_".$key);
+				}
+				$object->array_options["options_".$key]=$value_key;
+			}
+				return 1;
+		}
+		else {
+			return 0;
+		}
+	}
 	
 	/**
 	 * return array_options array for object by extrafields value (using for data send by forms)
