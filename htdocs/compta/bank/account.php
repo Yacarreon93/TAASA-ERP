@@ -294,8 +294,6 @@ if ($id > 0 || ! empty($ref))
 			$param.='&amp;req_enddtmonth='.$req_enddtmonth.'&amp;req_enddtday='.$req_enddtday.'&amp;req_enddtyear='.$req_enddtyear;
 			$mode_search = 1;
 	}
-	
-
 	$sql = "SELECT count(*) as total";
 	$sql.= " FROM ".MAIN_DB_PREFIX."bank_account as ba";
 	$sql.= ", ".MAIN_DB_PREFIX."bank as b";
@@ -308,7 +306,7 @@ if ($id > 0 || ! empty($ref))
 	$sql.= " AND b.fk_account = ba.rowid";
 	$sql.= " AND ba.entity IN (".getEntity('bank_account', 1).")";
 	$sql.= $sql_rech;
-
+	
 	dol_syslog("account.php count transactions -", LOG_DEBUG);
 	$result=$db->query($sql);
 	if ($result)
@@ -316,17 +314,17 @@ if ($id > 0 || ! empty($ref))
 		$obj = $db->fetch_object($result);
 		$nbline = $obj->total;
 		$total_lines = $nbline;
-
+		
 		$db->free($result);
 	}
 	else
 	{
 		dol_print_error($db);
 	}
-
+	
 	//Total pages
 	$totalPages = ceil($total_lines/$viewline);
-
+	
 	if ($totalPages == 0) {
 		$page = 0;
 	} else {
@@ -360,24 +358,25 @@ if ($id > 0 || ! empty($ref))
 	print $form->showrefnav($object, 'ref', $linkback, 1, 'ref');
 	print '</td></tr>';
 
+	
 	// Label
 	print '<tr><td>'.$langs->trans("Label").'</td>';
 	print '<td colspan="3">'.$object->label.'</td></tr>';
-
+	
 	print '</table>';
 
 	dol_fiche_end();
 	
-
-
+	
+	
 	/*
-	 * Buttons actions
-	 */
-
+	* Buttons actions
+	*/
+	
 	if ($action != 'delete')
 	{
 		print '<div class="tabsAction">';
-
+		
 		if ($object->type != 2 && $object->rappro) 
 		{ 
 			// If not cash account and can be reconciliate
@@ -390,43 +389,43 @@ if ($id > 0 || ! empty($ref))
 				print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("Conciliate").'</a>';
 			}
 		}
-
+		
 		if ($action != 'addline') 
 		{
 			if (empty($conf->global->BANK_DISABLE_DIRECT_INPUT)) 
 			{
-                if (empty($conf->accounting->enabled))
+				if (empty($conf->accounting->enabled))
                 {
-                    if ($user->rights->banque->modifier) {
-                        print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=addline&amp;id='.$object->id.'&amp;page='.$page.($vline?'&amp;vline='.$vline:'').'">'.$langs->trans("AddBankRecord").'</a>';
+					if ($user->rights->banque->modifier) {
+						print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?action=addline&amp;id='.$object->id.'&amp;page='.$page.($vline?'&amp;vline='.$vline:'').'">'.$langs->trans("AddBankRecord").'</a>';
                     } else {
-                        print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
+						print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
                     }
                 } else {
-                    print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
+					print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
                 }
 			} else {
-                print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
+				print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
             }
         }
         print '</div>';
     }
 	
 	print '<br>';
-		
+	
 	/**
 	 * Search form
 	 */
 	$param.='&amp;account='.$object->id.'&amp;vline='.$vline;
-
+	
 	// Confirmation delete
 	if ($action == 'delete')
 	{
 		$text=$langs->trans('ConfirmDeleteTransaction');
 		print $form->formconfirm($_SERVER['PHP_SELF'].'?id='.$object->id.'&amp;rowid='.GETPOST("rowid"),$langs->trans('DeleteTransaction'),$text,'confirm_delete');
-
+		
 	}
-
+	
 	// Define transaction list navigation string
 	print '<form action="'.$_SERVER["PHP_SELF"].'" name="newpage" method="POST">';
 	print '<input type="hidden" name="token"        value="'.$_SESSION['newtoken'].'">';
@@ -457,10 +456,10 @@ if ($id > 0 || ! empty($ref))
 		$navig.= '<a href="'.$_SERVER["PHP_SELF"].'?'.$param.'&amp;page='.($page-1).'">'.img_next().'</a>';
 	}
 	$navig.='</div>';
-
+	
 	
 	//var_dump($navig);
-
+	
 	if ($action != 'addline' && $action != 'delete')
 	{
 		print '<div class="floatright">'.$navig.'</div>';
@@ -469,7 +468,7 @@ if ($id > 0 || ! empty($ref))
 	// Form to add a transaction with no invoice
 	if ($user->rights->banque->modifier && $action == 'addline')
 	{
-        print_fiche_titre($langs->trans("AddBankRecordLong"),'','');
+		print_fiche_titre($langs->trans("AddBankRecordLong"),'','');
 
 		print '<table class="noborder" width="100%">';
 		print '<tr class="liste_titre">';
@@ -952,8 +951,9 @@ if ($id > 0 || ! empty($ref))
 			if ($sep > 0) print '&nbsp;';	// If we had at least one line in future
 			else print $langs->trans("CurrentBalance");
 			print ' '.$object->currency_code.'</td>';
-			print '<td align="right" class="nowrap"><b>'.price($solde, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
-			print '<td>&nbsp;</td>';
+			print '<td align="right" class="nowrap"><b>'.price($total_deb, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
+			print '<td align="right" class="nowrap"><b>'.price($total_cred, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
+			// print '<td>&nbsp;</td>';
 			print '</tr>';
 		} else {
 			// Only total according row displays
