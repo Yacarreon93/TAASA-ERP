@@ -88,7 +88,12 @@ if ($id > 0 || ! empty($ref)) {
 		{
 			$objTicket = $db->fetch_object($resql);
 			if($objTicket->isticket == 1) {
-				header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);
+				if($action == "editline") {
+					$ticketLine = $_GET['lineid'];
+					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&id='.$id.'&action=editline'.'&lineid='. $lineid);
+				} else {
+					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);	
+				}
   				exit;
 			}
 		}
@@ -2458,7 +2463,7 @@ if ($action == 'create')
 		$fk_account = $_POST['fk_account'];
 	}
 
-    print '<tr><td>' . $langs->trans('BankAccount') . '</td><td colspan="2">';
+    print '<tr><td>' . 'Caja' . '</td><td colspan="2">';
     $form->select_comptes($fk_account, 'fk_account', 0, '', 1);
     print '</td></tr>';
 
@@ -3785,6 +3790,7 @@ else if ($id > 0 || ! empty($ref))
 		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 		<input type="hidden" name="mode" value="">
 		<input type="hidden" name="id" value="' . $object->id . '">
+		<input type="hidden" name="isTicket" value="true">
 		';
 	} else {
 		print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
@@ -3808,7 +3814,11 @@ else if ($id > 0 || ! empty($ref))
 	{
 		if ($object->situation_cycle_ref && $object->statut == 0) {
 			print '<tr class="liste_titre nodrag nodrop">';
-			print '<form name="updatealllines" id="updatealllines" action="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '"#updatealllines" method="POST">';
+			if($isTicket) {
+				print '<form name="updatealllines" id="updatealllines" action="' . $_SERVER['PHP_SELF'] . '?id=' . $object->id . '"#updatealllines" method="POST">';
+			} else {
+				print '<form name="updatealllines" id="updatealllines" action="' . $_SERVER['PHP_SELF'] . '?isTicket=1&id=' . $object->id . '"#updatealllines" method="POST">';
+			}
 			print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '" />';
 			print '<input type="hidden" name="action" value="updatealllines" />';
 			print '<input type="hidden" name="id" value="' . $object->id . '" />';
