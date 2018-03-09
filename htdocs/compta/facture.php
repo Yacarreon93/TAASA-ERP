@@ -91,7 +91,10 @@ if ($id > 0 || ! empty($ref)) {
 				if($action == "editline") {
 					$ticketLine = $_GET['lineid'];
 					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&id='.$id.'&action=editline'.'&lineid='. $lineid);
-				} else {
+				} else if ($action == "ask_deleteline") {
+					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&id='.$id.'&action=ask_deleteline'.'&lineid='. $lineid);
+				}
+				 else {
 					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);	
 				}
   				exit;
