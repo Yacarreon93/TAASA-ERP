@@ -188,6 +188,39 @@ foreach ($_REQUEST as $key => $value) {
 $facturestatic = new Facture($db);
 
 
+
+$sql = 'SELECT f.rowid as facid, f.facnumber, f.type, f.amount, f.total, f.total_ttc,';
+
+$sql.= ' f.datef as df, f.datec as dc, f.paye as paye, f.fk_statut as statut,';
+
+$sql.= ' s.nom, s.rowid as socid,';
+
+$sql.= ' SUM(pf.amount) as am';
+
+$sql.=', fe.isticket';
+
+$sql.= " FROM ".MAIN_DB_PREFIX."societe as s,".MAIN_DB_PREFIX."facture as f";
+
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiement_facture as pf ON f.rowid=pf.fk_facture';
+
+$sql.=' JOIN '.MAIN_DB_PREFIX.'facture_extrafields AS fe ON f.rowid = fe.fk_object';
+
+$sql.= " WHERE f.fk_soc = s.rowid";
+
+$sql.= " AND f.entity = ".$conf->entity;
+
+$sql.=" AND (fe.isticket != 1 OR ISNULL(fe.isticket))";
+
+$sql.= ' GROUP BY f.rowid, f.facnumber, f.type, f.amount, f.total, f.total_ttc,';
+
+$sql.= ' f.datef, f.datec, f.paye, f.fk_statut,';
+
+$sql.= ' s.nom, s.rowid';
+
+$sql.= " ORDER BY f.datef DESC, f.datec DESC";
+
+
+
 $MAXLIST=10;
 
 
@@ -577,9 +610,13 @@ if ($conf->facture->enabled && $user->rights->facture->lire)
 
 	$sql.= " s.nom, s.rowid as socid, f.fk_statut as statut";
 
-	if (!$user->rights->societe->client->voir && !$socid) $sql.= ", sc.fk_soc, sc.fk_user ";
+	if (!$user->rights->societe->client->voir && !$socid) $sql.= ", sc.fk_soc, sc.fk_user";
 
-	$sql.= " FROM ".MAIN_DB_PREFIX."facture as f, ".MAIN_DB_PREFIX."societe as s";
+	$sql.=', fe.isticket';
+
+	$sql.= " FROM " .MAIN_DB_PREFIX."societe as s, " .MAIN_DB_PREFIX."facture as f";
+
+	$sql.=' JOIN '.MAIN_DB_PREFIX.'facture_extrafields AS fe ON f.rowid = fe.fk_object';
 
 	if (!$user->rights->societe->client->voir && !$socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
 
@@ -601,7 +638,9 @@ if ($conf->facture->enabled && $user->rights->facture->lire)
 
 	$sql .= " AND f.rowid NOT IN (SELECT fk_facture FROM  ".MAIN_DB_PREFIX."cfdimx)";
 
-	
+	$sql.=" AND (fe.isticket != 1 OR ISNULL(fe.isticket))";
+
+
 
 	$resql = $db->query($sql);
 
@@ -940,4 +979,3 @@ llxFooter();
 $db->close();
 
 ?>
-
