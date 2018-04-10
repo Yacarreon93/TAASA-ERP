@@ -3907,16 +3907,17 @@ else if ($id > 0 || ! empty($ref))
 			// Editer une facture deja validee, sans paiement effectue et pas exporte en compta
 			if ($object->statut == 1) 
 			{
+				if ($isTicket) {
+					$ticket_type = $object->cond_reglement_id == 1 ? 'cash' : 'credit';
+					print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=printTicket&amp;ticketType='.$ticket_type.'">Imprimir Ticket</a></div>';
+				}
 				// On verifie si les lignes de factures ont ete exportees en compta et/ou ventilees
 				$ventilExportCompta = $object->getVentilExportCompta();
 
 				if ($resteapayer == $object->total_ttc && empty($object->paye) && $ventilExportCompta == 0) 
 				{
 					if (! $objectidnext && $object->is_last_in_cycle()) 
-					{
-						if ($isTicket) {
-							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=printTicket&amp;object=invoice">Imprimir Ticket</a></div>';
-						}
+					{						
 					    if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->creer))
        						|| (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->unvalidate)))
 						{
