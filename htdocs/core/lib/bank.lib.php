@@ -41,7 +41,9 @@ function bank_prepare_head(Account $object)
     $head[$h][2] = 'bankname';
     $h++;
 
-    $head[$h][0] = DOL_URL_ROOT . "/compta/bank/account.php?id=" . $object->id;
+$todaySearchParameters = "&action='search'&req_stdtmonth=".date('m')."&req_stdtday=".date('j')."&req_stdtyear=".date('Y')."&req_enddtday=".date('j')."&req_enddtmonth=".date('m').'&req_enddtyear='.date('Y');
+
+    $head[$h][0] = DOL_URL_ROOT . "/compta/bank/account.php?id=" . $object->id.$todaySearchParameters;
     $head[$h][1] = $langs->trans("Transactions");
     $head[$h][2] = 'journal';
     $h++;

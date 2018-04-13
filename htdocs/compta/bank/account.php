@@ -74,6 +74,8 @@ $req_credit=GETPOST("req_credit",'',3);
 $req_stdtmonth=GETPOST('req_stdtmonth', 'int');
 $req_stdtday=GETPOST('req_stdtday', 'int');
 $req_stdtyear=GETPOST('req_stdtyear', 'int');
+
+
 $req_stdt = dol_mktime(0, 0, 0, $req_stdtmonth, $req_stdtday, $req_stdtyear);
 $req_enddtmonth=GETPOST('req_enddtmonth', 'int');
 $req_enddtday=GETPOST('req_enddtday', 'int');
@@ -179,7 +181,6 @@ if ($action == 'confirm_delete' && $confirm == 'yes' && $user->rights->banque->m
  */
 
 llxHeader('',$langs->trans("FinancialAccount").'-'.$langs->trans("Transactions"));
-
 $societestatic=new Societe($db);
 $userstatic=new User($db);
 $chargestatic=new ChargeSociales($db);
@@ -341,11 +342,14 @@ if ($id > 0 || ! empty($ref))
 		}
 	}
 
+
+
 	//print $limitsql.'-'.$page.'-'.$viewline;
 
 	// Onglets
 	$head=bank_prepare_head($object);
-	dol_fiche_head($head,'journal',$langs->trans("FinancialAccount"),0,'account');
+
+	dol_fiche_head($head,'journal',$langs->trans("FinancialAccount"),0,'account');		
 
 
 	print '<table class="border" width="100%">';
@@ -377,18 +381,18 @@ if ($id > 0 || ! empty($ref))
 	{
 		print '<div class="tabsAction">';
 		
-		if ($object->type != 2 && $object->rappro) 
-		{ 
-			// If not cash account and can be reconciliate
-			if ($user->rights->banque->consolidate) 
-			{
-				print '<a class="butAction" href="'.DOL_URL_ROOT.'/compta/bank/rappro.php?account='.$object->id.($vline?'&amp;vline='.$vline:'').'">'.$langs->trans("Conciliate").'</a>';
-			}
-			else
-			{
-				print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("Conciliate").'</a>';
-			}
-		}
+		// if ($object->type != 2 && $object->rappro) 
+		// { 
+		// 	// If not cash account and can be reconciliate
+		// 	if ($user->rights->banque->consolidate) 
+		// 	{
+		// 		print '<a class="butAction" href="'.DOL_URL_ROOT.'/compta/bank/rappro.php?account='.$object->id.($vline?'&amp;vline='.$vline:'').'">'.$langs->trans("Conciliate").'</a>';
+		// 	}
+		// 	else
+		// 	{
+		// 		print '<a class="butActionRefused" title="'.$langs->trans("NotEnoughPermissions").'" href="#">'.$langs->trans("Conciliate").'</a>';
+		// 	}
+		// }
 		
 		if ($action != 'addline') 
 		{
@@ -408,6 +412,53 @@ if ($id > 0 || ! empty($ref))
 				print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
             }
         }
+
+        	 //Checking of sales receipts against cash received
+
+		if ($user->rights->banque->modifier)
+		{
+			print '<div style="float:right">';
+			print '<form action="'.$_SERVER["PHP_SELF"].'" name="newpage" method="POST">';
+			print '<input type="hidden" name="token"        value="'.$_SESSION['newtoken'].'">';
+			print '<input type="hidden" name="action"       value="add">';
+			print '<input type="hidden" name="vline"        value="'.$vline.'">';
+			print '<input type="hidden" name="paiementtype" value="'.$paiementtype.'">';
+			print '<input type="hidden" name="req_nb"       value="'.$req_nb.'">';
+			print '<input type="hidden" name="req_desc"     value="'.$req_desc.'">';
+			print '<input type="hidden" name="req_debit"    value="'.$req_debit.'">';
+			print '<input type="hidden" name="req_credit"   value="'.$req_credit.'">';
+			print '<input type="hidden" name="thirdparty"   value="'.$thirdparty.'">';
+			print '<input type="hidden" name="nbpage"       value="'.$totalPages.'">';
+			print '<input type="hidden" name="id"           value="'.$object->id.'">';
+			print '<input type="hidden" name="req_stdtmonth"     value="'.$req_stdtmonth.'">';
+			print '<input type="hidden" name="req_stdtyear"     value="'.$req_stdtyear.'">';
+			print '<input type="hidden" name="req_stdtday"     value="'.$req_stdtday.'">';
+			print '<input type="hidden" name="req_enddtmonth"     value="'.$req_enddtmonth.'">';
+			print '<input type="hidden" name="req_enddtday"     value="'.$req_enddtday.'">';
+			print '<input type="hidden" name="req_enddtyear"     value="'.$req_enddtyear.'">';
+
+			//statement to get account total
+			$sqlAccount = "SELECT SUM(amount) as amount";
+			$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
+			$sqlAccount.= " WHERE fk_account = ".$id;
+			$resultAccount = $db->query($sqlAccount);		
+			if ($resultAccount)
+			{
+				$objp = $db->fetch_object($resultAccount);
+			}
+
+			// Form to add a transaction with no invoice
+			print '<input id="op" name="op" type="hidden" value="'.date("Y-m-d H:i:s").'" onchange="dpChangeDay(\'op\',\'MM/dd/yyyy\'); ">';
+			print '<input id="selectoperation" name="operation" type="hidden" value="LIQ">';
+			print '<input name="num_chq" type="hidden" value=""></td>';
+			print '<input name="label" type="hidden"  value="Retiro por corte de caja">';
+			print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
+			print '<input type="submit" name="save" class="button" value="Corte de Caja" "><br>';
+			print '</form>';
+			print '<br>';
+			print '</div>';
+
+		} 	
         print '</div>';
     }
 	
@@ -947,12 +998,13 @@ if ($id > 0 || ! empty($ref))
 		if ($page == 0 && ! $mode_search)
 		{
 			//Real account situation
-			print '<tr class="liste_total"><td align="left" colspan="8">';
+			print '<tr class="liste_total"><td align="left" colspan="6">';
 			if ($sep > 0) print '&nbsp;';	// If we had at least one line in future
 			else print $langs->trans("CurrentBalance");
 			print ' '.$object->currency_code.'</td>';
 			print '<td align="right" class="nowrap"><b>'.price($total_deb, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
 			print '<td align="right" class="nowrap"><b>'.price($total_cred, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
+			print '<td align="right" class="nowrap"><b>'.price($total_deb + $total_cred, 0, $langs, 0, 0, -1, $object->currency_code).'</b></td>';
 			// print '<td>&nbsp;</td>';
 			print '</tr>';
 		} else {
