@@ -7,6 +7,7 @@
  */
 
 require '../main.inc.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/price2letters.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
 date_default_timezone_set('America/Mexico_City');
@@ -23,6 +24,8 @@ $rfc = 'TAA121024V48';
 $folio = '30077';
 $today = date('d/m/Y');
 $time = date('h:i:s a');
+$total_weight = 1;
+$cashier = 'KARLA';
 
 function separator() {
     $str = '<p>';
@@ -83,6 +86,12 @@ if ($ret) {
         $lines_str .= '<span class="flex-2 auto right">TOTAL</span>';
         $lines_str .= '<span class="flex right">$'.price($object->total_ttc).'</span>';
         $lines_str .= '</p>';
+        $lines_str .= '<br>';
+        $lines_str .= '<p>Kgs.: '.number_format((float)$total_weight, 2, '.', '').'</p>';
+        $lines_str .= '<p>Empleado: '.strtoupper($cashier).'</p>';
+        $lines_str .= '<br>';
+        $lines_str .= '<p>('.strtoupper(price2letters(price($object->total_ttc))).')</p>';
+
     } else if ($ticket_type === 'credit') {
       $lines_str = '';
     }
