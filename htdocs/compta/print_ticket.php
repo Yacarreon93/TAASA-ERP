@@ -26,6 +26,7 @@ $today = date('d/m/Y');
 $time = date('h:i:s a');
 $total_weight = 1;
 $cashier = 'KARLA';
+$tva = 0;
 
 function separator() {
     $str = '<p>';
@@ -91,7 +92,9 @@ if ($ret) {
         $lines_str .= '<p>Empleado: '.strtoupper($cashier).'</p>';
         $lines_str .= '<br>';
         $lines_str .= '<p>('.strtoupper(price2letters(price($object->total_ttc))).')</p>';
-
+        $lines_str .= '<br>';
+        $lines_str .= '<p class="center">* = Producto con I.V.A. tasa '.$tva.'%</p>';
+        $lines_str .= '<p class="center">>>> CUIDE SU CREDITO, PAGUE A TIEMPO <<<</p>';
     } else if ($ticket_type === 'credit') {
       $lines_str = '';
     }
