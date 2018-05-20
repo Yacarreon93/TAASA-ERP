@@ -113,11 +113,11 @@ if ($ret) {
             $temp_prod->fetch($line->fk_product);      
             $total_weight += $temp_prod->weight ? $temp_prod->weight : 0;
             if (!in_array($line->tva_tx, $tva)) {
-                $tva[] = $line->tva_tx;
+                $tva[] = intval($line->tva_tx);
             }
             $lines_str .= '<p>'.fitString($line->libelle).(getAsterisks($line->tva_tx, $tva)).'</p>';
             $lines_str .= '<p class="d-flex">';
-            $lines_str .= '<span class="flex right">'.number_format((float)$line->qty, 2, '.', '').'</span>';
+            $lines_str .= '<span class="flex right">'.$line->qty.'</span>';
             $lines_str .= '<span class="flex right">$'.price($line->total_ttc / $line->qty).'</span>';
             $lines_str .= '<span class="flex right">$'.price($line->total_ttc).'</span>';
             $lines_str .= '</p>';
@@ -135,11 +135,44 @@ if ($ret) {
         $lines_str .= '<br>';
         $count = 0;
         foreach ($tva as $t) {
-            $lines_str .= '<p class="center">'.(concatChart('*', ++$count)).' = Producto con I.V.A. tasa '.$t.'%</p>';            
+            $lines_str .= '<p class="center">';
+            $lines_str .= (concatChart('*', ++$count)).' = Producto con I.V.A. tasa '.(intval($t)).'%';
+            $lines_str .= '</p>';
         }
         $lines_str .= '<p class="center">>>> CUIDE SU CREDITO, PAGUE A TIEMPO <<<</p>';
     } else if ($ticket_type === 'credit') {
-      $lines_str = '';
+        $lines_str .= separator();
+        foreach ($object->lines as $line) {
+            $temp_prod->fetch($line->fk_product);      
+            $total_weight += $temp_prod->weight ? $temp_prod->weight : 0;
+            if (!in_array($line->tva_tx, $tva)) {
+                $tva[] = intval($line->tva_tx);
+            }
+            $lines_str .= '<p>'.fitString($line->libelle).(getAsterisks($line->tva_tx, $tva)).'</p>';
+            $lines_str .= '<p class="d-flex">';
+            $lines_str .= '<span class="flex right">'.$line->qty.'</span>';
+            $lines_str .= '<span class="flex right">$'.price($line->total_ttc / $line->qty).'</span>';
+            $lines_str .= '<span class="flex right">$'.price($line->total_ttc).'</span>';
+            $lines_str .= '</p>';
+        }
+        $lines_str .= separator();
+        $lines_str .= '<p class="d-flex">';
+        $lines_str .= '<span class="flex-2 auto right">TOTAL</span>';
+        $lines_str .= '<span class="flex right">$'.price($object->total_ttc).'</span>';
+        $lines_str .= '</p>';
+        $lines_str .= '<br>';
+        $lines_str .= '<p>Kgs.: '.number_format((float)$total_weight, 2, '.', '').'</p>';
+        $lines_str .= '<p>Empleado: '.strtoupper($cashier).'</p>';
+        $lines_str .= '<br>';
+        $lines_str .= '<p>('.strtoupper(price2letters(price($object->total_ttc))).')</p>';
+        $lines_str .= '<br>';
+        $count = 0;
+        foreach ($tva as $t) {
+            $lines_str .= '<p class="center">';
+            $lines_str .= (concatChart('*', ++$count)).' = Producto con I.V.A. tasa '.(intval($t)).'%';
+            $lines_str .= '</p>';
+        }
+        $lines_str .= '<p class="center">>>> CUIDE SU CREDITO, PAGUE A TIEMPO <<<</p>';
     }
 } else {
     echo "ERROR: Id de Factura requerido";
