@@ -9,28 +9,20 @@
 require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT . '/core/lib/price2letters.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
+require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
 date_default_timezone_set('America/Mexico_City');
 
-define('MAX_CHAR', 41);
+define('CHAR_LIMIT', 41);
 
 $facid = (GETPOST('facid', 'int'));
 
 $object = new Facture($db);
-
-// Demo data
-$telephone = '01 (449) 9779901';
-$rfc = 'TAA121024V48';
-$folio = '30077';
-$today = date('d/m/Y');
-$time = date('h:i:s a');
-$total_weight = 1;
-$cashier = 'KARLA';
-$tva = 0;
+$temp_prod = new Product($db);
 
 function separator() {
     $str = '<p>';
-    for ($i = 0; $i < MAX_CHAR; $i++) {
+    for ($i = 0; $i < CHAR_LIMIT; $i++) {
         $str .= '-';
     }
     $str .= '</p>';
@@ -39,18 +31,61 @@ function separator() {
 
 function fitString($str) { 
     $new_str = trim($str);  
-    if (strlen($new_str) > MAX_CHAR - 6) {
-        $new_str .= substr($new_str, 0 , MAX_CHAR - 3);
+    if (strlen($new_str) > CHAR_LIMIT - 6) {
+        $new_str .= substr($new_str, 0 , CHAR_LIMIT - 3);
         $new_str .= '...';        
         return $new_str;
     }
-    return substr($new_str, 0, MAX_CHAR);
+    return substr($new_str, 0, CHAR_LIMIT);
+}
+
+function getInitials($user) {
+    $initials = '';
+    if ($user->firstname) {
+        $initials = substr($user->firstname, 0, 2);
+    } else {
+        $initials = substr($user->lastname, 0, 2);
+    }
+    return strtoupper($initials);
+}
+
+function getAsterisks($tva, $arr) {
+    $count = 0;
+    $asterisks = '';
+    if ($tva) {
+        foreach ($arr as $t) {
+            $count++;
+            if ($tva == $t) break;
+        }
+    }
+    for ($i = 0; $i < $count; $i++) {
+        $asterisks .= '*';
+    }
+    return $asterisks;
+}
+
+function concatChart($c, $numTimes) {
+    $str = '';
+    for ($i = 0; $i < $numTimes; $i++) {
+        $str .= $c;
+    }
+    return $str;
 }
 
 // Load object
 if ($facid > 0 || ! empty($ref)) {
 	$ret = $object->fetch($facid, $ref);
 }
+
+// Demo data
+$telephone = '01 (449) 9779901';
+$rfc = 'TAA121024V48';
+$folio = $object->ref;
+$today = date('d/m/Y');
+$time = date('h:i:s a');
+$total_weight = 0;
+$cashier = getInitials($user);
+$tva = [];
 
 if ($ret) {
     $lines_str = '';
@@ -75,7 +110,12 @@ if ($ret) {
     if ($ticket_type === 'cash') {
         $lines_str .= separator();
         foreach ($object->lines as $line) {
-            $lines_str .= '<p>'.fitString($line->libelle).'</p>';
+            $temp_prod->fetch($line->fk_product);      
+            $total_weight += $temp_prod->weight ? $temp_prod->weight : 0;
+            if (!in_array($line->tva_tx, $tva)) {
+                $tva[] = $line->tva_tx;
+            }
+            $lines_str .= '<p>'.fitString($line->libelle).(getAsterisks($line->tva_tx, $tva)).'</p>';
             $lines_str .= '<p class="d-flex">';
             $lines_str .= '<span class="flex right">'.number_format((float)$line->qty, 2, '.', '').'</span>';
             $lines_str .= '<span class="flex right">$'.price($line->total_ttc / $line->qty).'</span>';
@@ -93,7 +133,10 @@ if ($ret) {
         $lines_str .= '<br>';
         $lines_str .= '<p>('.strtoupper(price2letters(price($object->total_ttc))).')</p>';
         $lines_str .= '<br>';
-        $lines_str .= '<p class="center">* = Producto con I.V.A. tasa '.$tva.'%</p>';
+        $count = 0;
+        foreach ($tva as $t) {
+            $lines_str .= '<p class="center">'.(concatChart('*', ++$count)).' = Producto con I.V.A. tasa '.$t.'%</p>';            
+        }
         $lines_str .= '<p class="center">>>> CUIDE SU CREDITO, PAGUE A TIEMPO <<<</p>';
     } else if ($ticket_type === 'credit') {
       $lines_str = '';
