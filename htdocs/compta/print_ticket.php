@@ -169,13 +169,13 @@ if ($ret) {
     }
 
     if ($ticket_type === 'credit') {
-        $lines_str .= '<p class="center">Este documento ampara la cantidad que suman los cargos por el crédito que me(nos) fue otorgado y que corresponde al valor de las mercancías detalladas en la orden de venta con número de folio ' .$folio. ', mismas que recibí(recibimos) a mi(nuestra) entera satisfacción, por lo que la suscripción de este documento hace prueba de la recepción de las mercancías y del adeudo de su valor, mismo que deberá pagarse el día '.$payday_limit.'. La falta de pago oportuno del valor de las mercancías generará un interés moratorio del 3.00% mensual.</p>';
+        $lines_str .= '<p class="center justify">Este documento ampara la cantidad que suman los cargos por el crédito que me(nos) fue otorgado y que corresponde al valor de las mercancías detalladas en la orden de venta con número de folio ' .$folio. ', mismas que recibí(recibimos) a mi(nuestra) entera satisfacción, por lo que la suscripción de este documento hace prueba de la recepción de las mercancías y del adeudo de su valor, mismo que deberá pagarse el día '.$payday_limit.'. La falta de pago oportuno del valor de las mercancías generará un interés moratorio del 3.00% mensual.</p>';
         $lines_str .= '<p class="center">'.$societe->name.'</p>';
         $lines_str .= '<p class="center">'.$societe->address.'</p>';
         $lines_str .= '<p class="center">'.$societe->town.'</p>';
         $lines_str .= '<p class="center">'.$societe->phone.'</p>';
         $lines_str .= '<p class="center"> ________________________________</p>';
-        $lines_str .= '<p class="center">Por este Pagaré, me(nos) obligo(obligamos) a pagar incondicionalmente a la orden de TECNOLOGÍA Y APLICACIONES ALIMENTARIAS, S.A. DE C.V., en la ciudad de Aguascalientes, Ags., el día '.$payday_limit.', la cantidad de $'.price($object->total_ttc).'('.strtoupper(price2letters(price($object->total_ttc))).'). Este pagaré es el ___ de un serie de ____ pagarés. La falta de pago oportuno de este pagaré generará un interés moratorio del 3.00% mensual. Aguascalientes, Ags., a '.date('d').' de '.$monthName.' de '.date('Y').'</p>';
+        $lines_str .= '<p class="center justify">Por este Pagaré, me(nos) obligo(obligamos) a pagar incondicionalmente a la orden de TECNOLOGÍA Y APLICACIONES ALIMENTARIAS, S.A. DE C.V., en la ciudad de Aguascalientes, Ags., el día '.$payday_limit.', la cantidad de $'.price($object->total_ttc).'('.strtoupper(price2letters(price($object->total_ttc))).'). Este pagaré es el ___ de un serie de ____ pagarés. La falta de pago oportuno de este pagaré generará un interés moratorio del 3.00% mensual. Aguascalientes, Ags., a '.date('d').' de '.$monthName.' de '.date('Y').'</p>';
         $lines_str .= '<p class="center">'.$societe->name.'</p>';
         $lines_str .= '<p class="center">'.$societe->address.'</p>';
         $lines_str .= '<p class="center">'.$societe->town.'</p>';
@@ -214,6 +214,9 @@ if ($ret) {
       }
       .center {
         text-align: center;
+      }
+      .justify {
+        text-align: justify;
       }
       .right {
         text-align: right;
