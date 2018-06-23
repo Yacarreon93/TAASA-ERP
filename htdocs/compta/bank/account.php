@@ -55,8 +55,16 @@ $langs->load("trips");
 
 $id = (GETPOST('id','int') ? GETPOST('id','int') : GETPOST('account','int'));
 $ref = GETPOST('ref','alpha');
-$action=GETPOST('action','alpha');
-$confirm=GETPOST('confirm','alpha');
+$action = GETPOST('action','alpha');
+$confirm = GETPOST('confirm','alpha');
+$report = GETPOST('report', 'alpha');
+
+if ($report) {
+	$url_parts = explode('/', $_SERVER['PHP_SELF']);
+	array_pop($url_parts);
+	$current_folder = implode('/', $url_parts);
+	$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortecaja.php";
+}
 
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref :''));
@@ -116,6 +124,11 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
  */
 $dateop=-1;
 
+// No debería entrar a esta accion cuando hacer click en corte de caja:
+// Revisar la accion 'addline'
+// Posiblement quisiste que el pago se hiciera al hacer click en el botón,
+// si ese es el caso, sólo completa los dos datos faltantes.
+
 if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banque->modifier)
 {
 	$error = 0;
@@ -155,7 +168,9 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		if ($insertid > 0)
 		{
 			setEventMessage($langs->trans("RecordSaved"));
-			header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline");
+			// Replace the next line if you want to not create a report
+			// header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline");
+			header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline&report=true");
 			exit;
 		}
 		else
@@ -411,9 +426,9 @@ if ($id > 0 || ! empty($ref))
 			} else {
 				print '<a class="butActionRefused" title="'.$langs->trans("FeatureDisabled").'" href="#">'.$langs->trans("AddBankRecord").'</a>';
             }
-        }
-
-        	 //Checking of sales receipts against cash received
+		}
+		
+        //Checking of sales receipts against cash received
 
 		if ($user->rights->banque->modifier)
 		{
@@ -458,7 +473,12 @@ if ($id > 0 || ! empty($ref))
 			print '<br>';
 			print '</div>';
 
-		} 	
+		}
+
+		if ($report) {
+			print '<a target="_blank" class="butAction" href="'.$report_url.'?id='.$object->id.'">Generar Reporte</a>';
+		}
+		
         print '</div>';
     }
 	
@@ -1031,6 +1051,11 @@ if ($id > 0 || ! empty($ref))
 	print "</form>\n";
 
 	print '<br>';
+	
+	// This will trigger the report creation script
+	if ($report) {
+		print '<script>window.open("'.$report_url.'?id='.$object->id.'", "_blank")</script>';
+	}
 }
 else
 {
