@@ -63,7 +63,7 @@ if ($report) {
 	$url_parts = explode('/', $_SERVER['PHP_SELF']);
 	array_pop($url_parts);
 	$current_folder = implode('/', $url_parts);
-	$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortecaja.php";
+	$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortedecaja.php";
 }
 
 // Security check
