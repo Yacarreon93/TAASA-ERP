@@ -32,17 +32,15 @@ $pdf = new ReportPDF($db, $result, function ($db,$result) {
 });
 
 // Títulos de las columnas
-$header = array('Fecha', 'Tipo', 'Descripción', 'Tercero', 'Saldo');
+$header = array('Fecha', 'Tipo', utf8_decode('Descripción'), 'Tercero', 'Saldo');
 
 // Carga de datos
-print_r($pdf->data);
-// $pdf->SetFont('Arial','',14);
-// $pdf->AddPage();
+$pdf->SetFont('Arial', '', 14);
+$pdf->AddPage();
+$pdf->createHeader($header);
 // $pdf->BasicTable($header,$data);
 // $pdf->AddPage();
 // $pdf->ImprovedTable($header,$data);
 // $pdf->AddPage();
 // $pdf->FancyTable($header,$data);
-// $pdf->Output();
-
-echo '123123123';
+$pdf->Output();

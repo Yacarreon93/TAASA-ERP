@@ -1,16 +1,24 @@
 <?php
 
-require_once('../../../cfdimx/lib/fpdf/fpdf.php');
+require_once('tfpdf/tfpdf.php');
 
-class ReportPDF extends FPDF
+class ReportPDF extends tFPDF
 {
     // Recibe la función cargadora de datos
     function __construct($db, $result, closure $loader) {
+        parent::__construct();
         $this->data = $loader($db, $result);
     }
 
+    function createHeader($header) {
+        foreach($header as $col) {
+            $this->Cell(40, 7, $col, 1);
+        }
+        $this->Ln();
+    }
+
     // Tabla simple
-    function BasicTable($header, $data)
+    function basicTable($header, $data)
     {
         // Cabecera
         foreach($header as $col)
