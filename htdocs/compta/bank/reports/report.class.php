@@ -12,7 +12,12 @@ class ReportPDF extends tFPDF
 
     function createHeader($header) {
         foreach($header as $col) {
-            $this->Cell(40, 7, $col, 1);
+            $this->Cell(
+                $col['x'],
+                $col['y'],
+                utf8_decode($col['text']),
+                1
+            );
         }
         $this->Ln();
     }
