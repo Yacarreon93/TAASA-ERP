@@ -16,6 +16,7 @@ date_default_timezone_set('America/Mexico_City');
 define('CHAR_LIMIT', 41);
 
 $facid = (GETPOST('facid', 'int'));
+$copy = (GETPOST('copy', 'int'));
 
 $object = new Facture($db);
 $temp_prod = new Product($db);
@@ -123,7 +124,12 @@ if ($ret) {
     $lines_str .= '</p>';
     $lines_str .= '<p>HORA: '.$time.'</p>';
     $lines_str .= '<p class="d-flex">';
-    $lines_str .= '<span class="flex">*** ORIGINAL ***</span>';
+    if($copy) {
+      $lines_str .= '<span class="flex">*** COPIA ***</span>';
+    } else {
+       $lines_str .= '<span class="flex">*** ORIGINAL ***</span>';
+    }
+    
     if ($ticket_type === 'credit') {
        $lines_str .= '<span class="flex">'.$vendorInitials.'-2</span>';
     }
@@ -238,7 +244,7 @@ if ($ret) {
       }
     </style>  
   </head>
-  <body>
+  <body onload="window.print();">
     <div class="container">
       <p class="center">TECNOLOGIA Y APLICACIONES ALIMENTARIAS</p>
       <p class="center">S.A. DE C.V.</p>

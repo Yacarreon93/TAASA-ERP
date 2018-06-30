@@ -3909,7 +3909,9 @@ else if ($id > 0 || ! empty($ref))
 			{
 				if ($isTicket) {
 					$ticket_type = $object->cond_reglement_id == 1 ? 'cash' : 'credit';
-					print '<div class="inline-block divButAction"><a class="butAction" href="print_ticket.php?facid='.$object->id.'">Imprimir Ticket</a></div>';
+					print '<div class="inline-block divButAction"><a class="butAction" href="#" onclick="window.open(`print_ticket.php?facid='.$object->id.'`);
+    window.open(`print_ticket.php?facid='.$object->id.'&copy=1`);">Imprimir Ticket</a></div>';
+
 				}
 				// On verifie si les lignes de factures ont ete exportees en compta et/ou ventilees
 				$ventilExportCompta = $object->getVentilExportCompta();
