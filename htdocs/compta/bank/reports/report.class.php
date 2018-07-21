@@ -8,9 +8,35 @@ class ReportPDF extends tFPDF
     function __construct($db, $result, closure $loader) {
         parent::__construct();
         $this->data = $loader($db, $result);
+        // Ajustar la anchura de la página
+        $this->maxWidth = $this->w - 20;
+        $this->rowHeight = 7;
     }
 
+    function setTitle($title) {
+        $this->title = $title;
+    }
+
+    // Asignar el alto de las columnas
+    function setRowHeight($height) {
+        $this->rowHeight = $height;
+    }
+
+    function Header() {
+        $this->SetFontSize(14);
+        $this->Cell(0, 20, utf8_decode($this->title), 0, 0, 'C');
+        $this->Ln();
+    }
+
+    function Footer() {
+        $this->SetFontSize(12);
+        $this->SetY($this->h - $this->rowHeight);
+        $this->Cell(0, $this->setRowHeight, "Parte $this->page", 0, 0, 'C');
+    }
+
+    // Crea el encabezado con una anchura definida
     function createHeader($header) {
+        $this->SetFontSize(12);
         foreach($header as $col) {
             $this->Cell(
                 $col['x'],
@@ -18,6 +44,37 @@ class ReportPDF extends tFPDF
                 utf8_decode($col['text']),
                 1
             );
+        }
+        $this->Ln();
+    }
+
+    // Crea el encabezado con una anchura dinamica
+    function createDynamicHeader($header) {
+        $this->SetFontSize(12);
+        foreach($header as $col) {
+            $this->Cell(
+                $this->maxWidth / count($header),
+                $this->rowHeight,
+                utf8_decode($col),
+                1
+            );
+        }
+        $this->Ln();
+    }
+
+    // Crea las columnas con una anchura dinámica
+    function createDynamicRows() {
+        $this->SetFontSize(12);
+        foreach($this->data as $row) {
+            foreach ($row as $key => $value) {
+                $this->Cell(
+                    $this->maxWidth / count($this->data[0]),
+                    $this->rowHeight,
+                    utf8_decode($value),
+                    1
+                );
+            }
+            $this->Ln();
         }
         $this->Ln();
     }

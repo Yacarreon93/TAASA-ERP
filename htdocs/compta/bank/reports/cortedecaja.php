@@ -16,9 +16,9 @@ $pdf = new ReportPDF($db, $result, function ($db,$result) {
     $i = 0;
     $num = $db->num_rows($result);
     $data = array();
-    while ($i < $num)
+    while ($i < 100)
     {
-        $row = $db->fetch_object($result);
+        // $row = $db->fetch_object($result);
         $data[] = array(
             date    => '00/00/0000',
             type    => 'type',
@@ -33,40 +33,30 @@ $pdf = new ReportPDF($db, $result, function ($db,$result) {
 
 // Títulos de las columnas
 $header = array(
-    array(
-        x => 40,
-        y => 7,
-        text => 'Fecha',
-    ), 
-    array(
-        x => 40,
-        y => 7,
-        text => 'Tipo',
-    ), 
-    array(
-        x => 40,
-        y => 7,
-        text => 'Descripción',
-    ), 
-    array(
-        x => 40,
-        y => 7,
-        text => 'Tercero',
-    ), 
-    array(
-        x => 40,
-        y => 7,
-        text => 'Saldo',
-    ),
+    'Fecha',
+    'Tipo',
+    'Descripción',
+    'Tercero',
+    'Saldo',
 );
+
+$report_title = 'Reporte corte de caja';
     
 // Carga de datos
-$pdf->SetFont('Arial', '', 14);
+$pdf->SetFont('Arial', '', 12);
+
+// 7 es la altura por default
+// $pdf->setRowHeight(7);
+$pdf->SetTitle($report_title);
+$pdf->setTitle($report_title);
 $pdf->AddPage();
-$pdf->createHeader($header);
+$pdf->createDynamicHeader($header);
+$pdf->createDynamicRows();
+
 // $pdf->BasicTable($header,$data);
 // $pdf->AddPage();
 // $pdf->ImprovedTable($header,$data);
 // $pdf->AddPage();
 // $pdf->FancyTable($header,$data);
+
 $pdf->Output();
