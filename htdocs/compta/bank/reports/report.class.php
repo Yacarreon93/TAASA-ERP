@@ -2,6 +2,9 @@
 
 require_once('tfpdf/tfpdf.php');
 
+date_default_timezone_set('America/Mexico_City');
+setlocale(LC_TIME, 'es_ES');
+
 class ReportPDF extends tFPDF
 {
     // Recibe la función cargadora de datos
@@ -24,7 +27,8 @@ class ReportPDF extends tFPDF
 
     function Header() {
         $this->SetFontSize(14);
-        $this->Cell(0, 20, utf8_decode($this->title), 0, 0, 'C');
+        $this->Cell(100, 20, utf8_decode($this->title));
+        $this->Cell(90, 20, strftime('%A %d/%b/%G'), 0, 0, 'R');
         $this->Ln();
     }
 
