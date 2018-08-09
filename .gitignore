@@ -1,4 +1,6 @@
 htdocs/conf/conf.php
 documents/
 
+*.DS_STORE
+
 *.sublime-*
