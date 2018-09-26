@@ -57,14 +57,13 @@ $id = (GETPOST('id','int') ? GETPOST('id','int') : GETPOST('account','int'));
 $ref = GETPOST('ref','alpha');
 $action = GETPOST('action','alpha');
 $confirm = GETPOST('confirm','alpha');
-$report = GETPOST('report', 'alpha');
 
-if ($report) {
-	$url_parts = explode('/', $_SERVER['PHP_SELF']);
-	array_pop($url_parts);
-	$current_folder = implode('/', $url_parts);
-	$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortedecaja.php";
-}
+// @Y: Variables del reporte
+$report_enabled = false;
+$url_parts = explode('/', $_SERVER['PHP_SELF']);
+array_pop($url_parts);
+$current_folder = implode('/', $url_parts);
+$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortedecaja.php";
 
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref :''));
@@ -124,11 +123,6 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
  */
 $dateop=-1;
 
-// No debería entrar a esta accion cuando hacer click en corte de caja:
-// Revisar la accion 'addline'
-// Posiblement quisiste que el pago se hiciera al hacer click en el botón,
-// si ese es el caso, sólo completa los dos datos faltantes.
-
 if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banque->modifier)
 {
 	$error = 0;
@@ -167,11 +161,8 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		$insertid = $object->addline($dateop, $operation, $label, $amount, $num_chq, $cat1, $user);
 		if ($insertid > 0)
 		{
+			$report_enabled = true;
 			setEventMessage($langs->trans("RecordSaved"));
-			// Replace the next line if you want to not create a report
-			// header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline");
-			header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline&report=true");
-			exit;
 		}
 		else
 		{
@@ -496,7 +487,8 @@ if ($id > 0 || ! empty($ref))
 
 		}
 
-		if ($report) {
+		if ($report_enabled)
+		{			
 			print '<a target="_blank" class="butAction" href="'.$report_url.'?id='.$object->id.'">Generar Reporte</a>';
 		}
 		
@@ -1073,9 +1065,14 @@ if ($id > 0 || ! empty($ref))
 
 	print '<br>';
 	
-	// This will trigger the report creation script
-	if ($report) {
-		print '<script>window.open("'.$report_url.'?id='.$object->id.'", "_blank")</script>';
+	// @Y: This will trigger the report creation script
+	if ($report_enabled)
+	{
+		print '<script>';
+		print '(function() { ';
+		print 'window.open("'.$report_url.'?id='.$object->id.'", "_blank");';
+		print '})();';
+		print '</script>';
 	}
 }
 else
