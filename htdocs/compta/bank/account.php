@@ -428,8 +428,9 @@ if ($id > 0 || ! empty($ref))
             }
 		}
 		
-        //Checking of sales receipts against cash received
-
+		//Checking of sales receipts against cash received
+		
+		// @Y: Botón para hacer el corte de caja
 		if ($user->rights->banque->modifier)
 		{
 			print '<div style="float:right">';
@@ -451,24 +452,44 @@ if ($id > 0 || ! empty($ref))
 			print '<input type="hidden" name="req_enddtmonth"     value="'.$req_enddtmonth.'">';
 			print '<input type="hidden" name="req_enddtday"     value="'.$req_enddtday.'">';
 			print '<input type="hidden" name="req_enddtyear"     value="'.$req_enddtyear.'">';
-
-			//statement to get account total
+			
+			// @Y: Se obtiene el total hasta el momento
 			$sqlAccount = "SELECT SUM(amount) as amount";
 			$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
 			$sqlAccount.= " WHERE fk_account = ".$id;
-			$resultAccount = $db->query($sqlAccount);		
+			$resultAccount = $db->query($sqlAccount);
 			if ($resultAccount)
 			{
 				$objp = $db->fetch_object($resultAccount);
 			}
 
-			// Form to add a transaction with no invoice
-			print '<input id="op" name="op" type="hidden" value="'.date("Y-m-d H:i:s").'" onchange="dpChangeDay(\'op\',\'MM/dd/yyyy\'); ">';
-			print '<input id="selectoperation" name="operation" type="hidden" value="LIQ">';
-			print '<input name="num_chq" type="hidden" value=""></td>';
-			print '<input name="label" type="hidden"  value="Retiro por corte de caja">';
-			print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
-			print '<input type="submit" name="save" class="button" value="Corte de Caja" "><br>';
+			if ($objp->amount >= 0)
+			{
+				// @Y: Simula el formulario para agregar registros sin factura
+				print '<input name="opday" type="hidden" value="'.date("d").'">';
+				print '<input name="opmonth" type="hidden" value="'.date("m").'">';
+				print '<input name="opyear" type="hidden" value="'.date("Y").'">';
+				print '<input name="operation" type="hidden" value="LIQ">';
+				print '<input name="num_chq" type="hidden" value=""></td>';
+				print '<input name="label" type="hidden" value="Retiro por corte de caja">';
+				print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
+				if ($objp->amount > 0)
+				{
+					print '<input type="submit" name="save" class="button" value="Corte de Caja">';
+				}
+				else
+				{
+					print '<span class="butActionRefused">Corte de Caja</span>';
+				}
+			}
+			else
+			{
+				print '<span style="color:red">';
+				print 'Hay un problema con el monto para realizar el <b>Corte de Caja</b>';
+				print '</span>';
+			}
+
+			
 			print '</form>';
 			print '<br>';
 			print '</div>';
