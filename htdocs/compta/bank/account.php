@@ -184,6 +184,21 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 			if ($corte_de_caja)
 			{				
 				$report_enabled = true;
+				// @Y: Actualizar los registros
+				if ($corte_de_caja) {
+					$sqlAccount = "SELECT * FROM ".MAIN_DB_PREFIX."bank WHERE status = 0";
+					$resultAccount = $db->query($sqlAccount);
+					if ($resultAccount)
+					{
+						if ($db->fetch_object($resultAccount))
+						{
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 2 WHERE status = 1";
+							$resultAccount = $db->query($sqlAccount);
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1 WHERE status = 0";
+							$resultAccount = $db->query($sqlAccount);
+						}
+					}
+				}
 			}
 		}
 		else
