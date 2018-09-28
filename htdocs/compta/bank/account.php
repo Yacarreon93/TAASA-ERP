@@ -142,6 +142,9 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 	$label=$_POST["label"];
 	$cat1=$_POST["cat1"];
 
+	// @Y: Se obtiene del formulario al hacer click en Corte de Caja
+	$corte_de_caja=$_POST["corte_de_caja"];
+
 	if (! $dateop) {
 		$error++;
 		setEventMessage($langs->trans("ErrorFieldRequired",$langs->trans("Date")), 'errors');
@@ -161,8 +164,11 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		$insertid = $object->addline($dateop, $operation, $label, $amount, $num_chq, $cat1, $user);
 		if ($insertid > 0)
 		{
-			$report_enabled = true;
 			setEventMessage($langs->trans("RecordSaved"));
+			if ($corte_de_caja)
+			{
+				$report_enabled = true;
+			}
 		}
 		else
 		{
@@ -464,6 +470,7 @@ if ($id > 0 || ! empty($ref))
 				print '<input name="num_chq" type="hidden" value=""></td>';
 				print '<input name="label" type="hidden" value="Retiro por corte de caja">';
 				print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
+				print '<input name="corte_de_caja" type="hidden" value="1">';
 				if ($objp->amount > 0)
 				{
 					print '<input type="submit" name="save" class="button" value="Corte de Caja">';
