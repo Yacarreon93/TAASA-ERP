@@ -158,6 +158,22 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		setEventMessage($langs->trans("ErrorFieldRequired",$langs->trans("Amount")), 'errors');
 	}
 
+	if ($corte_de_caja) {
+		$sqlAccount = "SELECT SUM(amount) as amount";
+		$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
+		$sqlAccount.= " WHERE fk_account = ".$id;
+		$resultAccount = $db->query($sqlAccount);
+		if ($resultAccount)
+		{
+			$objp = $db->fetch_object($resultAccount);
+		}
+		if ($objp->amount <= 0)
+		{
+			$error++;
+			setEventMessage('El monto para el Corte de Caja no es correcto', 'errors');
+		}
+	}
+
 	if (! $error)
 	{
 		$object->fetch($id);
@@ -166,7 +182,7 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		{
 			setEventMessage($langs->trans("RecordSaved"));
 			if ($corte_de_caja)
-			{
+			{				
 				$report_enabled = true;
 			}
 		}
