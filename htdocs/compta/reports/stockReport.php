@@ -1,6 +1,6 @@
 <?php
 
-require_once('../../../main.inc.php');
+require_once('../../main.inc.php');
 require_once('./report.class.php');
 
 $stockId=GETPOST('stockId','int');
