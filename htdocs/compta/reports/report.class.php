@@ -8,9 +8,8 @@ setlocale(LC_TIME, 'es_ES');
 class ReportPDF extends tFPDF
 {
     // Recibe la función cargadora de datos
-    function __construct($db, $result, $orientation='p', closure $loader) {
+    function __construct($orientation='p') {
         parent::__construct($orientation);
-        $this->data = $loader($db, $result);
         // Ajustar la anchura de la página
         $this->maxWidth = $this->w - 20;
         $this->rowHeight = 7;
@@ -67,12 +66,12 @@ class ReportPDF extends tFPDF
     }
 
     // Crea las columnas con una anchura dinámica
-    function createDynamicRows() {
+    function createDynamicRows($data) {
         $this->SetFontSize(8);
-        foreach($this->data as $row) {
+        foreach($data as $row) {
             foreach ($row as $key => $value) {
                 $this->Cell(
-                    $this->maxWidth / count($this->data[0]),
+                    $this->maxWidth / count($data[0]),
                     $this->rowHeight,
                     utf8_decode($value),
                     1
