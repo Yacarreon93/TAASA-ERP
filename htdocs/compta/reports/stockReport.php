@@ -13,59 +13,48 @@ $sql = 'SELECT
     pfp.price,
     pfp.datec,
     (ps.reel * pfp.price) AS total
-FROM
-    llx_product AS p
-LEFT JOIN llx_product_stock AS ps ON ps.fk_product = p.rowid
-LEFT JOIN (
-    SELECT
-        fk_product,
-        MAX(datec) AS datec,
-        price
     FROM
-        llx_product_fournisseur_price
-    GROUP BY
-        fk_product
-) AS pfp ON pfp.fk_product = p.rowid
-WHERE
-    ps.fk_entrepot = 1 -- Numero de almacen
-ORDER BY
-    p.rowid;';
-
-$result = $db->query($sql);
+        llx_product AS p
+    LEFT JOIN llx_product_stock AS ps ON ps.fk_product = p.rowid
+    LEFT JOIN (
+        SELECT
+            fk_product,
+            MAX(datec) AS datec,
+            price
+        FROM
+            llx_product_fournisseur_price
+        GROUP BY
+            fk_product
+    ) AS pfp ON pfp.fk_product = p.rowid
+    WHERE
+        ps.fk_entrepot = 1 -- Numero de almacen
+    ORDER BY
+        p.rowid';
 
 if (!$result) { 
     echo 'Error: '.$db->lasterror;
     die;
 }
 
+$i = 0;
 $total = 0;
- $num = $db->num_rows($result);
- $i = 0;
-  while ($i < $num)
-    {
-        $row = $db->fetch_object($result);
-        $total+= $row->total;
-        $i++;            
-    }
+$result = $db->query($sql);
+$data = array();
+while ($row = $db->fetch_object($result))
+{
+    $data[] = array(
+        id => $i,
+        label => $row->label,
+        stock => $row->reel,
+        price => $row->price,
+        total => $row->total,
+    );
+    $total += $row->total;
+    $i++;
+}
+
 // Crear una instancia del pdf con una función para generar los datos
-$pdf = new ReportPDF($db, $result, 'l', function ($db,$result) {
-    $i = 0;
-    $num = $db->num_rows($result);
-    $data = array();
-    while ($i < $num)
-    {
-        $row = $db->fetch_object($result);
-        $data[] = array(
-            id => $i,
-            label    => $row->label,
-            stock  => $row->reel,
-            price => $row->price,
-            total => $row->total,
-        );
-        $i++;            
-    }
-    return $data;
-});
+$pdf = new ReportPDF('l');
 
 // Títulos de las columnas
 $header = array(
@@ -87,10 +76,10 @@ $pdf->SetTitle($report_title);
 $pdf->setTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
-$pdf->createDynamicRows();
+$pdf->createDynamicRows($data);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Write("Total","Total en inventario");
-$pdf->Write("Total",$total);
+$pdf->Write("Total", "Total en inventario");
+$pdf->Write("Total", $total);
 
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();
