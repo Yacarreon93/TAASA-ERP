@@ -50,6 +50,7 @@ $total = 0;
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF($db, $result, 'l', function ($db,$result) {
     $i = 0;
+    $num = $db->num_rows($result);
     $data = array();
     while ($i < $num)
     {
