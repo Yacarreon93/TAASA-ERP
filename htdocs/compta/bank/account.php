@@ -63,7 +63,7 @@ $report_enabled = false;
 $url_parts = explode('/', $_SERVER['PHP_SELF']);
 array_pop($url_parts);
 $current_folder = implode('/', $url_parts);
-$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/corte_de_caja.php";
+$corte_de_caja_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/corte_de_caja.php";
 
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref :''));
@@ -186,15 +186,15 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 				$report_enabled = true;
 				// @Y: Actualizar los registros
 				if ($corte_de_caja) {
-					$sqlAccount = "SELECT * FROM ".MAIN_DB_PREFIX."bank WHERE status = 0";
+					$sqlAccount = "SELECT * FROM ".MAIN_DB_PREFIX."bank WHERE status = 0 AND fk_account = ".$object->id;
 					$resultAccount = $db->query($sqlAccount);
 					if ($resultAccount)
 					{
 						if ($db->fetch_object($resultAccount))
 						{
-							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 2 WHERE status = 1";
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 2 WHERE status = 1 AND fk_account = ".$object->id;
 							$resultAccount = $db->query($sqlAccount);
-							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1 WHERE status = 0";
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1 WHERE status = 0 AND fk_account = ".$object->id;
 							$resultAccount = $db->query($sqlAccount);
 						}
 					}
@@ -527,7 +527,7 @@ if ($id > 0 || ! empty($ref))
 
 		if ($report_enabled)
 		{			
-			print '<a target="_blank" class="butAction" href="'.$report_url.'?id='.$object->id.'">Generar Reporte</a>';
+			print '<a target="_blank" class="butAction" href="'.$corte_de_caja_url.'?account_id='.$object->id.'">Generar Reporte</a>';
 		}
 		
         print '</div>';
@@ -1108,7 +1108,7 @@ if ($id > 0 || ! empty($ref))
 	{
 		print '<script>';
 		print '(function() { ';
-		print 'window.open("'.$report_url.'?id='.$object->id.'", "_blank");';
+		print 'window.open("'.$corte_de_caja_url.'?account_id='.$object->id.'", "_blank");';
 		print '})();';
 		print '</script>';
 	}
