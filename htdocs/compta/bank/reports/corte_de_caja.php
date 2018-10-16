@@ -65,29 +65,31 @@ if (!$resultAccount) {
 $i = 0;
 $num = $db->num_rows($resultAccount);
 $data = array();
+$debe = 0; 
+$haber = 0;
+$total = 0;
 while ($i < $num)
 {
     $row = $db->fetch_object($resultAccount);
     $type = $langs->trans('PaymentTypeShort'.$row->fk_type) != 'PaymentTypeShort'.$row->fk_type ? $langs->trans('PaymentTypeShort'.$row->fk_type): $row->fk_type;
     $description = dol_trunc($row->label, 23);
-    $debe = 0;
-    $haber = 0;
     if ($row->amount < 0)
     {
-        $debe = '$'.price($row->amount * -1);
+        $debe = $row->amount * -1;
     }
     else
     {
-        $haber = '$'.price($row->amount);
+        $haber = $row->amount;
     }
+    $total += $row->amount;
     $data[] = array(
         dateo   => dol_print_date($db->jdate($row->do),"day"),
         datev   => dol_print_date($db->jdate($row->dv),"day"),
         type    => $type,
-        description => $description,
-        thirdparty  => $row->thirdparty,
-        debe    => $debe,
-        haber   => $haber,
+        description => dol_trunc($description, 23),
+        thirdparty  => dol_trunc($row->thirdparty, 23),
+        debe    => '$'.price($debe),
+        haber   => '$'.price($haber),
     );
     $i++;            
 }
@@ -111,4 +113,5 @@ $pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header, 10);
 $pdf->createDynamicRows($data, 7);
+$pdf->showTotal($data, '$'.price($debe), '$'.price($haber), '$'.price($total));
 $pdf->Output();

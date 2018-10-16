@@ -65,17 +65,67 @@ class ReportPDF extends tFPDF
     function createDynamicRows($data, $size) {
         $this->SetFontSize($size);
         foreach($data as $row) {
+            $i = 0;
             foreach ($row as $key => $value) {
                 $this->Cell(
                     $this->maxWidth / count($data[0]),
                     $this->rowHeight,
                     utf8_decode($value),
-                    1
+                    1,
+                    0,
+                    'L'
                 );
+                $i++;
             }
             $this->Ln();
         }
         $this->Ln();
+    }
+
+    function showTotal($data, $total_debe, $total_haber, $total_general) {
+        $this->SetX(($this->maxWidth / count($data[0])) * (count($data[0]) - 3) + 10);
+        $this->Cell(
+            $this->maxWidth / count($data[0]),
+            $this->rowHeight,
+            utf8_decode('Totales'),
+            1,
+            0,
+            'L'
+        );
+        $this->Cell(
+            $this->maxWidth / count($data[0]),
+            $this->rowHeight,
+            utf8_decode($total_debe),
+            1,
+            0,
+            'L'
+        );
+        $this->Cell(
+            $this->maxWidth / count($data[0]),
+            $this->rowHeight,
+            utf8_decode($total_haber),
+            1,
+            0,
+            'L'
+        );
+        $this->Ln();
+        $this->SetX(($this->maxWidth / count($data[0])) * (count($data[0]) - 2) + 10);
+        $this->Cell(
+            $this->maxWidth / count($data[0]),
+            $this->rowHeight,
+            utf8_decode("Total"),
+            1,
+            0,
+            'L'
+        );
+        $this->Cell(
+            $this->maxWidth / count($data[0]),
+            $this->rowHeight,
+            utf8_decode($total_general),
+            1,
+            0,
+            'L'
+        );
     }
 
     // Tabla simple

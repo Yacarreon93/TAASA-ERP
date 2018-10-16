@@ -194,7 +194,7 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 						{
 							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 2 WHERE status = 1 AND fk_account = ".$object->id;
 							$resultAccount = $db->query($sqlAccount);
-							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1 WHERE status = 0 AND fk_account = ".$object->id;
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1, fecha_de_corte = NOW() WHERE status = 0 AND fk_account = ".$object->id;
 							$resultAccount = $db->query($sqlAccount);
 						}
 					}
