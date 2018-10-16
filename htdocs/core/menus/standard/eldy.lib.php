@@ -1073,6 +1073,8 @@ function print_left_eldy_menu($db,$menu_array_before,$menu_array_after,&$tabMenu
 				if (! empty($conf->stock->enabled))
 				{
 					$newmenu->add("/product/reassort.php?type=0", $langs->trans("Stocks"), 1, $user->rights->produit->lire && $user->rights->stock->lire);
+					// @Y: Link en el menú
+					$newmenu->add("/product/cierre_de_inventario.php", "Cierre de inventario", 2, $user->rights->produit->lire && $user->rights->stock->lire);
 				}
 				if (! empty($conf->productbatch->enabled))
 				{
