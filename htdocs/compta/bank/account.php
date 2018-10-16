@@ -57,14 +57,13 @@ $id = (GETPOST('id','int') ? GETPOST('id','int') : GETPOST('account','int'));
 $ref = GETPOST('ref','alpha');
 $action = GETPOST('action','alpha');
 $confirm = GETPOST('confirm','alpha');
-$report = GETPOST('report', 'alpha');
 
-if ($report) {
-	$url_parts = explode('/', $_SERVER['PHP_SELF']);
-	array_pop($url_parts);
-	$current_folder = implode('/', $url_parts);
-	$report_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/cortedecaja.php";
-}
+// @Y: Variables del reporte
+$report_enabled = false;
+$url_parts = explode('/', $_SERVER['PHP_SELF']);
+array_pop($url_parts);
+$current_folder = implode('/', $url_parts);
+$corte_de_caja_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/corte_de_caja.php";
 
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref :''));
@@ -124,11 +123,6 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
  */
 $dateop=-1;
 
-// No debería entrar a esta accion cuando hacer click en corte de caja:
-// Revisar la accion 'addline'
-// Posiblement quisiste que el pago se hiciera al hacer click en el botón,
-// si ese es el caso, sólo completa los dos datos faltantes.
-
 if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banque->modifier)
 {
 	$error = 0;
@@ -148,6 +142,9 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 	$label=$_POST["label"];
 	$cat1=$_POST["cat1"];
 
+	// @Y: Se obtiene del formulario al hacer click en Corte de Caja
+	$corte_de_caja=$_POST["corte_de_caja"];
+
 	if (! $dateop) {
 		$error++;
 		setEventMessage($langs->trans("ErrorFieldRequired",$langs->trans("Date")), 'errors');
@@ -161,6 +158,22 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		setEventMessage($langs->trans("ErrorFieldRequired",$langs->trans("Amount")), 'errors');
 	}
 
+	if ($corte_de_caja) {
+		$sqlAccount = "SELECT SUM(amount) as amount";
+		$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
+		$sqlAccount.= " WHERE fk_account = ".$id;
+		$resultAccount = $db->query($sqlAccount);
+		if ($resultAccount)
+		{
+			$objp = $db->fetch_object($resultAccount);
+		}
+		if ($objp->amount <= 0)
+		{
+			$error++;
+			setEventMessage('El monto para el Corte de Caja no es correcto', 'errors');
+		}
+	}
+
 	if (! $error)
 	{
 		$object->fetch($id);
@@ -168,10 +181,25 @@ if ($action == 'add' && $id && ! isset($_POST["cancel"]) && $user->rights->banqu
 		if ($insertid > 0)
 		{
 			setEventMessage($langs->trans("RecordSaved"));
-			// Replace the next line if you want to not create a report
-			// header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline");
-			header("Location: ".$_SERVER['PHP_SELF']."?id=".$id."&action=addline&report=true");
-			exit;
+			if ($corte_de_caja)
+			{				
+				$report_enabled = true;
+				// @Y: Actualizar los registros
+				if ($corte_de_caja) {
+					$sqlAccount = "SELECT * FROM ".MAIN_DB_PREFIX."bank WHERE status = 0 AND fk_account = ".$object->id;
+					$resultAccount = $db->query($sqlAccount);
+					if ($resultAccount)
+					{
+						if ($db->fetch_object($resultAccount))
+						{
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 2 WHERE status = 1 AND fk_account = ".$object->id;
+							$resultAccount = $db->query($sqlAccount);
+							$sqlAccount = "UPDATE ".MAIN_DB_PREFIX."bank SET status = 1, fecha_de_corte = NOW() WHERE status = 0 AND fk_account = ".$object->id;
+							$resultAccount = $db->query($sqlAccount);
+						}
+					}
+				}
+			}
 		}
 		else
 		{
@@ -428,8 +456,9 @@ if ($id > 0 || ! empty($ref))
             }
 		}
 		
-        //Checking of sales receipts against cash received
-
+		//Checking of sales receipts against cash received
+		
+		// @Y: Botón para hacer el corte de caja
 		if ($user->rights->banque->modifier)
 		{
 			print '<div style="float:right">';
@@ -451,32 +480,54 @@ if ($id > 0 || ! empty($ref))
 			print '<input type="hidden" name="req_enddtmonth"     value="'.$req_enddtmonth.'">';
 			print '<input type="hidden" name="req_enddtday"     value="'.$req_enddtday.'">';
 			print '<input type="hidden" name="req_enddtyear"     value="'.$req_enddtyear.'">';
-
-			//statement to get account total
+			
+			// @Y: Se obtiene el total hasta el momento
 			$sqlAccount = "SELECT SUM(amount) as amount";
 			$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
 			$sqlAccount.= " WHERE fk_account = ".$id;
-			$resultAccount = $db->query($sqlAccount);		
+			$resultAccount = $db->query($sqlAccount);
 			if ($resultAccount)
 			{
 				$objp = $db->fetch_object($resultAccount);
 			}
 
-			// Form to add a transaction with no invoice
-			print '<input id="op" name="op" type="hidden" value="'.date("Y-m-d H:i:s").'" onchange="dpChangeDay(\'op\',\'MM/dd/yyyy\'); ">';
-			print '<input id="selectoperation" name="operation" type="hidden" value="LIQ">';
-			print '<input name="num_chq" type="hidden" value=""></td>';
-			print '<input name="label" type="hidden"  value="Retiro por corte de caja">';
-			print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
-			print '<input type="submit" name="save" class="button" value="Corte de Caja" "><br>';
+			if ($objp->amount >= 0)
+			{
+				// @Y: Simula el formulario para agregar registros sin factura
+				print '<input name="opday" type="hidden" value="'.date("d").'">';
+				print '<input name="opmonth" type="hidden" value="'.date("m").'">';
+				print '<input name="opyear" type="hidden" value="'.date("Y").'">';
+				print '<input name="operation" type="hidden" value="LIQ">';
+				print '<input name="num_chq" type="hidden" value=""></td>';
+				print '<input name="label" type="hidden" value="Retiro por corte de caja">';
+				print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
+				print '<input name="corte_de_caja" type="hidden" value="1">';
+				if ($objp->amount > 0)
+				{
+					print '<input type="submit" name="save" class="button" value="Corte de Caja">';
+				}
+				else
+				{
+					print '<span class="butActionRefused">Corte de Caja</span>';
+				}
+			}
+			else
+			{
+				print '<span style="color:red">';
+				print 'Hay un problema con el monto para realizar el <b>Corte de Caja</b>';
+				print '</span>';
+			}
+
+			
 			print '</form>';
 			print '<br>';
 			print '</div>';
 
 		}
 
-		if ($report) {
-			print '<a target="_blank" class="butAction" href="'.$report_url.'?id='.$object->id.'">Generar Reporte</a>';
+		if ($report_enabled)
+		{			
+			print '<a target="_blank" class="butAction" href="'.$corte_de_caja_url.'?account_id='.$object->id.'">Generar Reporte</a>';
 		}
 		
         print '</div>';
@@ -1052,9 +1103,14 @@ if ($id > 0 || ! empty($ref))
 
 	print '<br>';
 	
-	// This will trigger the report creation script
-	if ($report) {
-		print '<script>window.open("'.$report_url.'?id='.$object->id.'", "_blank")</script>';
+	// @Y: This will trigger the report creation script
+	if ($report_enabled)
+	{
+		print '<script>';
+		print '(function() { ';
+		print 'window.open("'.$corte_de_caja_url.'?account_id='.$object->id.'", "_blank");';
+		print '})();';
+		print '</script>';
 	}
 }
 else
