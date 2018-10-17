@@ -140,7 +140,7 @@ if ($_resql && $resql)
         print '<form action="'.$_SERVER["PHP_SELF"].'" method="get" name="formulaire">';
         print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
         print '<input type="hidden" name="page" value="'.($page - 1).'">';
-        print '<input class="button" style="float:right;margin:10px 10px 0 0;" type="submit" value="< Página '.($page - 1).'">';
+        print '<input class="button" style="float:right;margin:10px 10px 0 0;" type="submit" value="Página '.($page - 1).' <">';
         print '</form>';
     }
 
