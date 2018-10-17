@@ -13,30 +13,19 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 if (! empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
-$langs->load("products");
 $langs->load("stocks");
+$langs->load("products");
 $langs->load("suppliers");
 
-$action = GETPOST('action');
-$page = GETPOST('page', 'int');
+$page     = GETPOST('page', 'int');
+$action   = GETPOST('action');
+$column   = GETPOST('column', 'int');
+$stock_id = GETPOST('stock_id', 'int');
 
-$limit = $conf->liste_limit;
+if (!$page) $page = 1;
+if (!$stock_id) $stock_id = 1;
 
-// Get object canvas (By default, this is not defined, so standard usage of dolibarr)
-$canvas=GETPOST("canvas");
-$objcanvas=null;
-if (! empty($canvas))
-{
-    require_once DOL_DOCUMENT_ROOT.'/core/class/canvas.class.php';
-    $objcanvas = new Canvas($db,$action);
-    $objcanvas->getCanvas('product','list',$canvas);
-}
-
-// Security check
-if ($type=='0') $result=restrictedArea($user,'produit','','','','','',$objcanvas);
-else if ($type=='1') $result=restrictedArea($user,'service','','','','','',$objcanvas);
-else $result=restrictedArea($user,'produit|service','','','','','',$objcanvas);
-
+// @TODO: Security check
 
 /*
  * Actions
@@ -52,44 +41,47 @@ $form=new Form($db);
     
 $title = 'Cierre de inventario';
 
-// TEMP:
-$page = 2;
-$stock_id = 1;
-
 $numero_de_columnas = 3;
-$productos_por_columna = 10;
+$productos_por_columna = 15;
 $limit = $productos_por_columna * $numero_de_columnas;
 $offset = $limit * ($page - 1);
 
 $sql = 'SELECT DISTINCT p.rowid, p.ref, p.label';
 $sql.= ' FROM '.MAIN_DB_PREFIX.'product as p';
-$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_stock as ps ON ps.fk_product = p.rowid';
+$sql.= ' JOIN '.MAIN_DB_PREFIX.'product_stock as ps ON ps.fk_product = p.rowid';
 $sql.= ' WHERE fk_entrepot = '.$stock_id;
+
+$_resql = $db->query($sql);
+
 $sql.= $db->plimit($limit, $offset);
 
-// echo $sql; die;
-
 $resql = $db->query($sql);
+
 $product_static = new Product($db);
 
-if ($resql)
+if ($_resql && $resql)
 {
     llxHeader('', $title, '', '');
-    
-    $num = $db->num_rows($resql);
-    $count = 0;
 
-    // print_barre_liste($texte, $page, "list.php", $param, $sortfield, $sortorder, '', $num, $nbtotalofrecords,'title_products.png');
-    
+    $num = $db->num_rows($_resql);
+    $local_num = $db->num_rows($resql);
+    $count = $offset;
+    $local_count = 0;
+
+    print_fiche_titre($title, '', 'title_products.png');
+
     print '<div style="display:flex;">';
 
     for ($c = 0; $c < $numero_de_columnas; $c++)
     {
-        print '<div style="flex-grow:1; '.($c==0?'margin-right:5px':($c==$numero_de_columnas-1?'margin-left:5px':'margin:0 5px')).'">';
+        print '<div style="flex-grow:1; '.($c==0?'margin-right:10px':($local_count+$productos_por_columna==$local_num?'margin-left:10px':'margin:0 10px')).'">';
 
         print '<form action="'.$_SERVER["PHP_SELF"].'" method="post" name="formulaire">';
         print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-        print '<input type="hidden" name="action" value="list">';
+        print '<input type="hidden" name="action" value="guardar_entradas">';
+        print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
+        print '<input type="hidden" name="column" value="'.$c.'">';
+        print '<input type="hidden" name="page" value="'.$page.'">';
 
         print '<table class="liste" >';
 
@@ -100,7 +92,6 @@ if ($resql)
         print "</tr>\n";
 
         $var = true;
-        $stop = false;
 
         for ($p = 0; $p < $productos_por_columna; $p++)
         {
@@ -124,21 +115,50 @@ if ($resql)
             print '<td>'.dol_trunc($objp->label, 40).'</td>';
 
             // @Y: 
-            print '<td>';
-            print '<input class="flat" type="text" name="sref" size="8" value="">';
+            print '<td style="text-align:center;">';
+            print '<input class="flat" style="min-width:80%;" type="text" name="stock[]" size="8" value="">';
             print '</td>';
 
             print "</tr>\n";
 
             $count++;
+            $local_count++;
         }
         
         print "</table>";
+        print '<input class="button" style="float:right;margin-top:10px;" type="submit" value="Guardar">';
         print '</form>';
-        
+            
         print '</div>';
-        if ($count === $num) break;
-        
+        if ($count >= $num) break;
+    }
+
+    print '</div>';
+    print '<div style="display:flex;flex-direction:row;float:right">';
+
+    if ($page > 1) {
+        print '<form action="'.$_SERVER["PHP_SELF"].'" method="get" name="formulaire">';
+        print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
+        print '<input type="hidden" name="page" value="'.($page - 1).'">';
+        print '<input class="button" style="float:right;margin:10px 10px 0 0;" type="submit" value="< Página '.($page - 1).'">';
+        print '</form>';
+    }
+
+    if (($offset + $limit) >= $num)
+    {
+        print '<form action="'.$_SERVER["PHP_SELF"].'" method="get" name="formulaire">';
+        print '<input type="hidden" name="action" value="cierre_de_inventario">';
+        print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
+        print '<input class="button" style="float:right;margin-top:10px;" type="submit" value="Terminar cierre de inventario">';
+        print '</form>';
+    }
+    else
+    {
+        print '<form action="'.$_SERVER["PHP_SELF"].'" method="get" name="formulaire">';
+        print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
+        print '<input type="hidden" name="page" value="'.($page + 1).'">';
+        print '<input class="button" style="float:right;margin-top:10px;" type="submit" value="> Página '.($page + 1).'">';
+        print '</form>';
     }
 
     print '</div>';
