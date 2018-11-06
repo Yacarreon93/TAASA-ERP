@@ -17,10 +17,12 @@ $langs->load("stocks");
 $langs->load("products");
 $langs->load("suppliers");
 
-$page     = GETPOST('page', 'int');
-$action   = GETPOST('action');
-$column   = GETPOST('column', 'int');
-$stock_id = GETPOST('stock_id', 'int');
+$page           = GETPOST('page', 'int');
+$action         = GETPOST('action');
+$column         = GETPOST('column', 'int');
+$stock_id       = GETPOST('stock_id', 'int');
+$product_ids    = GETPOST('product_ids');
+$stock          = GETPOST('stock');
 
 if (!$page) $page = 1;
 if (!$stock_id) $stock_id = 1;
@@ -31,6 +33,19 @@ if (!$stock_id) $stock_id = 1;
  * Actions
  */
 
+if ($action === 'guardar_entradas')
+{
+    $contador = 0;
+    $datos = array();
+    foreach ($product_ids as $product_id)
+    {
+        $datos[$product_id] = $stock[$contador++];
+    }
+
+    echo 'resultado: ';
+    print_r($datos);
+    echo '</br>';
+}
 
 /*
  * View
@@ -79,6 +94,7 @@ if ($_resql && $resql)
         print '<form action="'.$_SERVER["PHP_SELF"].'" method="post" name="formulaire">';
         print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
         print '<input type="hidden" name="action" value="guardar_entradas">';
+        
         print '<input type="hidden" name="stock_id" value="'.$stock_id.'">';
         print '<input type="hidden" name="column" value="'.$c.'">';
         print '<input type="hidden" name="page" value="'.$page.'">';
@@ -116,6 +132,7 @@ if ($_resql && $resql)
 
             // @Y: 
             print '<td style="text-align:center;">';
+            print '<input type="hidden" name="product_ids[]" value="'.$product_static->id.'">';
             print '<input class="flat" style="min-width:80%;" type="text" name="stock[]" size="8" value="">';
             print '</td>';
 
