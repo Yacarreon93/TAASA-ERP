@@ -474,12 +474,12 @@ if ($id > 0 || ! empty($ref))
 			print '<input type="hidden" name="thirdparty"   value="'.$thirdparty.'">';
 			print '<input type="hidden" name="nbpage"       value="'.$totalPages.'">';
 			print '<input type="hidden" name="id"           value="'.$object->id.'">';
-			print '<input type="hidden" name="req_stdtmonth"     value="'.$req_stdtmonth.'">';
-			print '<input type="hidden" name="req_stdtyear"     value="'.$req_stdtyear.'">';
-			print '<input type="hidden" name="req_stdtday"     value="'.$req_stdtday.'">';
-			print '<input type="hidden" name="req_enddtmonth"     value="'.$req_enddtmonth.'">';
-			print '<input type="hidden" name="req_enddtday"     value="'.$req_enddtday.'">';
-			print '<input type="hidden" name="req_enddtyear"     value="'.$req_enddtyear.'">';
+			print '<input type="hidden" name="req_stdtmonth"  value="'.$req_stdtmonth.'">';
+			print '<input type="hidden" name="req_stdtyear" 	value="'.$req_stdtyear.'">';
+			print '<input type="hidden" name="req_stdtday"    value="'.$req_stdtday.'">';
+			print '<input type="hidden" name="req_enddtmonth"	value="'.$req_enddtmonth.'">';
+			print '<input type="hidden" name="req_enddtday"   value="'.$req_enddtday.'">';
+			print '<input type="hidden" name="req_enddtyear"  value="'.$req_enddtyear.'">';
 			
 			// @Y: Se obtiene el total hasta el momento
 			$sqlAccount = "SELECT SUM(amount) as amount";
