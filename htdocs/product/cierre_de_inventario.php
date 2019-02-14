@@ -7,11 +7,13 @@
  */
 
 require '../main.inc.php';
+
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 if (! empty($conf->categorie->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/service/TableManagerService.php';
 
 $langs->load("stocks");
 $langs->load("products");
@@ -26,14 +28,19 @@ $stock          = GETPOST('stock');
 
 if (!$page) $page = 1;
 if (!$stock_id) $stock_id = 1;
+if (!$action) $action = 'crear_tabla';
 
 // @TODO: Security check
 
 /*
  * Actions
  */
-
-if ($action === 'guardar_entradas')
+if ($action === 'crear_tabla')
+{
+     $tableManager = new TableManagerService();
+     $tableManager->CreateTemporaryTable($db);
+}
+else if ($action === 'guardar_entradas')
 {
     $contador = 0;
     $datos = array();
@@ -42,9 +49,18 @@ if ($action === 'guardar_entradas')
         $datos[$product_id] = $stock[$contador++];
     }
 
-    echo 'resultado: ';
-    print_r($datos);
-    echo '</br>';
+    //echo 'resultado: ';
+    //print_r($datos);
+    //echo '</br>';
+    //die();
+
+    $tableManager = new TableManagerService();
+    $tableManager->InsertColumn($datos, $stock_id, $db);
+
+   //$tableManager->DeleteColumn($datos, $stock_id, $db);
+    //$tableManager->UpdateProductArray($datos, $stock_id, $db);
+    //$tableManager->ClearTable($db);
+    //print_r($tableManager->IsColumnAlreadySaved($datos, $stock_id, $db));
 }
 
 /*
@@ -61,10 +77,11 @@ $productos_por_columna = 15;
 $limit = $productos_por_columna * $numero_de_columnas;
 $offset = $limit * ($page - 1);
 
-$sql = 'SELECT DISTINCT p.rowid, p.ref, p.label';
+$sql = 'SELECT DISTINCT p.rowid, p.ref, p.label, llx_inventory_closing_temp.reel as reel';
 $sql.= ' FROM '.MAIN_DB_PREFIX.'product as p';
 $sql.= ' JOIN '.MAIN_DB_PREFIX.'product_stock as ps ON ps.fk_product = p.rowid';
-$sql.= ' WHERE fk_entrepot = '.$stock_id;
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'inventory_closing_temp ON '.MAIN_DB_PREFIX.'inventory_closing_temp.fk_product = p.rowid';
+$sql.= ' WHERE ps.fk_entrepot = '.$stock_id;
 
 $_resql = $db->query($sql);
 
@@ -124,6 +141,7 @@ if ($_resql && $resql)
             $product_static->ref = $objp->ref;
             $product_static->label = $objp->label;
             $product_static->type = $objp->fk_product_type;
+            $product_static->reel = $objp->reel;
             print $product_static->getNomUrl(1,'',24);
             print "</td>\n";
 
@@ -133,7 +151,7 @@ if ($_resql && $resql)
             // @Y: 
             print '<td style="text-align:center;">';
             print '<input type="hidden" name="product_ids[]" value="'.$product_static->id.'">';
-            print '<input class="flat" style="min-width:80%;" type="text" name="stock[]" size="8" value="">';
+            print '<input class="flat" autocomplete="off" style="min-width:80%;" type="text" name="stock[]" size="8" value="'.$product_static->reel.'">';
             print '</td>';
 
             print "</tr>\n";
