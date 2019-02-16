@@ -40,6 +40,11 @@ if ($action === 'crear_tabla')
      $tableManager = new TableManagerService();
      $tableManager->CreateTemporaryTable($db);
 }
+else if ($action === 'limpiar_tabla')
+{
+     $tableManager = new TableManagerService();
+     $tableManager->ClearTable($db);
+}
 else if ($action === 'guardar_entradas')
 {
     $contador = 0;
@@ -55,8 +60,8 @@ else if ($action === 'guardar_entradas')
     //die();
 
     $tableManager = new TableManagerService();
-    $tableManager->InsertColumn($datos, $stock_id, $db);
-
+    
+    $tableManager->UpdateProductColumn($datos, $stock_id, $db);
    //$tableManager->DeleteColumn($datos, $stock_id, $db);
     //$tableManager->UpdateProductArray($datos, $stock_id, $db);
     //$tableManager->ClearTable($db);
