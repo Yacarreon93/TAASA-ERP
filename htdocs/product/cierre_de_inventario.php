@@ -54,18 +54,20 @@ else if ($action === 'guardar_entradas')
         $datos[$product_id] = $stock[$contador++];
     }
 
-    //echo 'resultado: ';
-    //print_r($datos);
-    //echo '</br>';
-    //die();
-
     $tableManager = new TableManagerService();
-    
     $tableManager->UpdateProductColumn($datos, $stock_id, $db);
-   //$tableManager->DeleteColumn($datos, $stock_id, $db);
-    //$tableManager->UpdateProductArray($datos, $stock_id, $db);
-    //$tableManager->ClearTable($db);
-    //print_r($tableManager->IsColumnAlreadySaved($datos, $stock_id, $db));
+}
+else if ($action === 'cierre_de_inventario')
+{
+    $tableManager = new TableManagerService();
+    $tableManager->SaveInventoryClosing($db);
+    print'<script>
+
+    window.onload = function(){
+         window.open("reports/inventoryClosingReport.php", "_blank"); 
+         window.open("reports/currentStockReport.php?stockId='.$stock_id.'", "_blank");
+    }
+    </script>';
 }
 
 /*
