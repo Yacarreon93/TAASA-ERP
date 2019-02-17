@@ -64,8 +64,7 @@ else if ($action === 'cierre_de_inventario')
     print'<script>
 
     window.onload = function(){
-         window.open("reports/inventoryClosingReport.php", "_blank"); 
-         window.open("reports/currentStockReport.php?stockId='.$stock_id.'", "_blank");
+         window.open("reports/inventoryDifferencesReport.php?stockId='.$stock_id.'", "_blank");
     }
     </script>';
 }
