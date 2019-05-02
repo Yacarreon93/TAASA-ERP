@@ -53,7 +53,7 @@ $header = array(
     'Diferencia'
 );
 
-$report_title = 'Reporte de difrencias en inventario';
+$report_title = 'Reporte de diferencias en inventario';
     
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
