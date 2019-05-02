@@ -113,9 +113,9 @@ class InventoryClosingDao {
 
 	function CopyTableContent() {
 		$sql = 'INSERT INTO '.INVENTORY_CLOSING_FINAL_TABLE .' (
-		fk_product, reel, fk_entrepot)
+		fk_product, tms, reel, fk_entrepot)
 		SELECT
-		fk_product, reel, fk_entrepot
+		fk_product, now(), reel, fk_entrepot
 		FROM '.INVENTORY_CLOSING_TABLE;
 		$this->ExecuteQuery($sql);
 	}

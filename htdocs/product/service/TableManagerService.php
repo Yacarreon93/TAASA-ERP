@@ -52,7 +52,9 @@ class TableManagerService {
 			$ids[$counter++] = $row->rowid;
 		}
 		if(!$savedIds->num_rows) {
-			$inventoryDao->Delete($blankSpaceArray);
+			if(count($blankSpaceArray) > 0){
+				$inventoryDao->Delete($blankSpaceArray);
+			}
 			$inventoryDao->Insert($data_array, $fk_entrepot);
 		} else {
 			$counter = 0;

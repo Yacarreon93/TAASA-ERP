@@ -203,12 +203,27 @@ if ($_resql && $resql)
     }
 
     print '</div>';
+    $current_url = $_SERVER["REQUEST_URI"];
+    if ($action === 'cierre_de_inventario') {
+         $current_url = str_replace("action=cierre_de_inventario", "", $current_url);
+    }
+    if ($action === 'limpiar_tabla') {
+         $current_url = str_replace("action=limpiar_tabla", "", $current_url);
+    }
+    if (strpos($current_url, '?') !== false) {
+        $target_url = $current_url . '&action=limpiar_tabla';
+    } else {
+        $target_url = $current_url . '?action=limpiar_tabla';
+    }
+    print "<button class='button' onclick='window.location.href =\"". $target_url ."\"'>Reiniciar cierre</button>";
     $db->free($resql);
 }
 else
 {
     dol_print_error($db);
 }
+
+
 
 llxFooter();
 $db->close();
