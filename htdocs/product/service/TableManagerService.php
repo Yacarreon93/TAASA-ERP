@@ -63,9 +63,15 @@ class TableManagerService {
 					}
 				}
 			}
-			$inventoryDao->Delete($blankSpaceArray);
-			$inventoryDao->Delete($recordsToDelete);
-			$inventoryDao->Insert($data_array, $fk_entrepot);
+			if(count($blankSpaceArray) > 0){
+				$inventoryDao->Delete($blankSpaceArray);
+			}
+			if(count($recordsToDelete) > 0){
+				$inventoryDao->Delete($recordsToDelete);
+			}
+			if(count($data_array) > 0) {
+				$inventoryDao->Insert($data_array, $fk_entrepot);
+			}
 		}
 	}
 }
