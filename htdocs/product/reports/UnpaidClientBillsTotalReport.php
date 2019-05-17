@@ -3,21 +3,22 @@
 require_once('../../main.inc.php');
 require_once('./report.class.php');
 
-$stockId=GETPOST('stockId','int');
-if (!$stock_id) $stock_id = 1;
-
 $sql = 'SELECT
-    p.rowid,
-    p.label,
-    ps.reel,
-    ps.fk_entrepot
-    FROM
-        llx_product AS p
-    LEFT JOIN llx_product_stock AS ps ON ps.fk_product = p.rowid
-    WHERE
-        ps.fk_entrepot ='.$stock_id.' 
-    ORDER BY
-        p.rowid';
+    llx_societe.nom as nom,
+    sum(total_ttc) as total
+FROM
+    llx_facture AS f
+JOIN llx_societe ON f.fk_soc = llx_societe.rowid
+JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+WHERE
+    f.paye = 0
+AND f.fk_statut = 1
+AND f.entity = 1
+AND (
+    fe.isticket != 1
+    OR ISNULL(fe.isticket)
+)
+GROUP BY nom';
 
 if (!$result) { 
     echo 'Error: '.$db->lasterror;
@@ -31,11 +32,9 @@ $data = array();
 while ($row = $db->fetch_object($result))
 {
     $data[] = array(
-        id => $row->rowid,
-        label => $row->label,
-        stock => $row->reel,
+        nom => $row->nom,
+        total => $row->total,
     );
-    $total += $row->total;
     $i++;
 }
 
@@ -44,12 +43,11 @@ $pdf = new ReportPDF('l');
 
 // Títulos de las columnas
 $header = array(
-    'Id',
-    'Producto',
-    'Cantidad',
+    'Nom',
+    'Total'
 );
 
-$report_title = 'Reporte de inventario virtual';
+$report_title = 'Reporte de total de facturas pendientes de cobro';
     
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
@@ -57,12 +55,11 @@ $pdf->SetFont('Arial', '', 11);
 // 7 es la altura por default
 // $pdf->setRowHeight(7);
 $pdf->SetTitle($report_title);
-$pdf->setTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Write("Total", "Total en inventario ");
+$pdf->Write("Total", "Total en inventario");
 $pdf->Write("Total", $total);
 
  //$pdf->BasicTable($header,$data);

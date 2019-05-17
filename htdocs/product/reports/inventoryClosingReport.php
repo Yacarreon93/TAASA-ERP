@@ -57,7 +57,7 @@ $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Write("Total", "Total en inventario");
+$pdf->Write("Total", "Total en inventario ");
 $pdf->Write("Total", $total);
 
  //$pdf->BasicTable($header,$data);
