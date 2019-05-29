@@ -4110,7 +4110,12 @@ else if ($id > 0 || ! empty($ref))
 				} elseif ($object->getSommePaiement()) {
 					print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="' . $langs->trans("DisabledBecausePayments") . '">' . $langs->trans('Delete') . '</a></div>';
 				} else {
-					print '<div class="inline-block divButAction"><a class="butActionDelete" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=delete">' . $langs->trans('Delete') . '</a></div>';
+					if($isTicket) {
+						print '<div class="inline-block divButAction"><a class="butActionDelete" href="' . $_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id . '&amp;action=delete">' . $langs->trans('Delete') . '</a></div>';
+					} else {
+						print '<div class="inline-block divButAction"><a class="butActionDelete" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=delete">' . $langs->trans('Delete') . '</a></div>';
+					}
+					
 				}
 			} else {
 				print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="' . $langs->trans("NotAllowed") . '">' . $langs->trans('Delete') . '</a></div>';
