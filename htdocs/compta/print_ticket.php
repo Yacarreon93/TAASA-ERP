@@ -11,9 +11,14 @@ require_once DOL_DOCUMENT_ROOT . '/core/lib/price2letters.lib.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
 
+
+
 date_default_timezone_set('America/Mexico_City');
 
+
+
 define('CHAR_LIMIT', 41);
+
 
 $facid = (GETPOST('facid', 'int'));
 $copy = (GETPOST('copy', 'int'));
@@ -109,7 +114,7 @@ $payday_limit = date('d/m/Y', $object->date_lim_reglement);
 setlocale(LC_TIME, 'spanish');  
 $monthName=strftime("%B",mktime(0, 0, 0, date('m'), date('d'), date('Y'))); 
 $total_weight = 0;
-$tva = [];
+$tva = array();
 
 if ($ret) {
     $lines_str = '';
