@@ -497,7 +497,7 @@ if ($id > 0 || ! empty($ref))
 			print '<input name="opyear" type="hidden" value="'.date("Y").'">';
 			print '<input name="operation" type="hidden" value="LIQ">';
 			print '<input name="num_chq" type="hidden" value=""></td>';
-			print '<input name="label" type="hidden" value="Retiro por corte de caja">';
+			print '<input name="label" type="hidden" value="Corte de caja">';
 			print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
 			print '<input name="corte_de_caja" type="hidden" value="1">';
 			if ($objp->amount > 0)

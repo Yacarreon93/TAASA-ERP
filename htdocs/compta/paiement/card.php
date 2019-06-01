@@ -388,6 +388,8 @@ if ($user->societe_id == 0 && $action == '')
 {
 	if ($user->rights->facture->paiement)
 	{
+		print '<a class="butAction" target="_blank" href="/compta/paiement/ticket.php?id='.$id.'">Imprimir Recibo</a>';
+
 		if (! $disable_delete)
 		{
 			print '<a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?id='.$id.'&amp;action=delete">'.$langs->trans('Delete').'</a>';
