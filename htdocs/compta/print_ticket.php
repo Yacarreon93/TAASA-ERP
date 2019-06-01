@@ -125,6 +125,8 @@ if ($ret) {
     $lines_str .= '</p>';
     $lines_str .= '<p class="d-flex">';
     $lines_str .= '<span class="flex auto">FECHA: '.$today.'</span>';
+    $lines_str .= '</p>';
+    $lines_str .= '<p class="d-flex">';
     $lines_str .= '<span class="flex auto">No. FOLIO: '.$folio.'</span>';
     $lines_str .= '</p>';
     $lines_str .= '<p>HORA: '.$time.'</p>';
