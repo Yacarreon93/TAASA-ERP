@@ -3,6 +3,10 @@
 require_once('../../main.inc.php');
 require_once('./report.class.php');
 
+$vendor     = GETPOST('vendor');
+if(!$vendor) {
+    $vendor = 1;
+}
 $sql = 'SELECT
     f.facnumber,
     s.nom AS NAME,
@@ -24,6 +28,7 @@ JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 WHERE
     f.fk_soc = s.rowid
 AND f.entity = 1
+AND fe.vendor = '.$vendor.' 
 AND f.fk_statut = 1
 AND (
     fe.isticket != 1
@@ -68,7 +73,7 @@ while ($row = $db->fetch_object($result))
         importe_total => price($row->importe_total),
         fecha_emision => $row->fecha_emision,
         fecha_limite => $row->fecha_limite,
-         dias_credito => $row->limit_days,
+        dias_credito => $row->limit_days,
         dias_transcurridos=>$row->days_p,
         abonado => price($row->abonado)
     );
@@ -102,6 +107,7 @@ $pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
+$pdf->SetFont('Arial', '', 11);
 
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();

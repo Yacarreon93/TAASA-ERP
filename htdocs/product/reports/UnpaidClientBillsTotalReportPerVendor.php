@@ -3,6 +3,11 @@
 require_once('../../main.inc.php');
 require_once('./report.class.php');
 
+$vendor     = GETPOST('vendor');
+if(!$vendor) {
+    $vendor = 1;
+}
+
 $sql = 'SELECT
     llx_societe.nom as nom,
     sum(total_ttc) as total
@@ -14,6 +19,7 @@ WHERE
     f.paye = 0
 AND f.fk_statut = 1
 AND f.entity = 1
+AND fe.vendor = '.$vendor.' 
 AND (
     fe.isticket != 1
     OR ISNULL(fe.isticket)
@@ -59,7 +65,6 @@ $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
 $pdf->SetFont('Arial', '', 11);
-
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();
 // $pdf->ImprovedTable($header,$data);
