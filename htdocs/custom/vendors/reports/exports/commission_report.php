@@ -43,7 +43,7 @@ JOIN llx_societe AS s ON f.fk_soc = s.rowid
 JOIN llx_societe_extrafields AS se ON se.fk_object = s.rowid
 JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 WHERE
-	f.fk_statut != 3 AND fe.vendor = '.$id.' AND (p.datep < f.date_lim_reglement OR DATE(p.datep) = DATE(f.date_lim_reglement))';
+	f.fk_statut = 1 AND fe.vendor = '.$id.' AND (p.datep < f.date_lim_reglement OR DATE(p.datep) = DATE(f.date_lim_reglement))';
 
 if ($fromDate && $toDate) {
     $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
