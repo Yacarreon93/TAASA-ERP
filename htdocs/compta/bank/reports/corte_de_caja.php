@@ -68,6 +68,9 @@ $data = array();
 $total = 0;
 $total_debe = 0;
 $total_haber = 0;
+$total_efectivo = 0;
+$total_transf = 0;
+$total_cheque = 0;
 while ($i < $num)
 {
     $debe = 0; 
@@ -90,15 +93,23 @@ while ($i < $num)
         dateo   => dol_print_date($db->jdate($row->do),"day"),
         datev   => dol_print_date($db->jdate($row->dv),"day"),
         type    => $type,
-        description => dol_trunc($description, 23),
         thirdparty  => dol_trunc($row->thirdparty, 23),
         debe    => '$'.price($debe),
         haber   => '$'.price($haber),
     );
+    if($type == 'Efectivo') {
+        $total_efectivo += $haber;
+    }
+    else if($type == 'Cheque') {
+        $total_cheque += $haber;
+    }
+    else if($type == 'Transferencia') {
+        $total_transf += $haber;
+    }
     $i++;            
 }
 
-$pdf = new ReportPDF();
+$pdf = new ReportPDF('l');
 
 $report_title = 'Reporte corte de caja';
 
@@ -107,15 +118,29 @@ $header = array(
     'F. Operación',
     'F. Valor',
     'Tipo',
-    'Descripción',
     'Tercero',
     'Debe',
     'Haber',
 );
 
-$pdf->SetTitle($report_title);
+$header2 = array(
+    'Efectivo',
+    'Cheque',
+    'Transferencia'
+);
+ $data2[] = array(
+        efectivo   => '$'.price($total_efectivo),
+        cheque   =>  '$'.price($total_cheque),
+        transferencia    => '$'.price($total_transf)
+    );
+
+$pdf->SetTitle($report_title, 10);
 $pdf->AddPage();
+$pdf->SetFont('Arial', '', 11);
 $pdf->createDynamicHeader($header, 10);
 $pdf->createDynamicRows($data, 7);
 $pdf->showTotal($data, '$'.price($total_debe), '$'.price($total_haber), '$'.price($total));
+$pdf->AddPage();
+$pdf->createDynamicHeader($header2, 10);
+$pdf->createDynamicRows($data2, 7);
 $pdf->Output();

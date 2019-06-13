@@ -63,7 +63,7 @@ $report_enabled = false;
 $url_parts = explode('/', $_SERVER['PHP_SELF']);
 array_pop($url_parts);
 $current_folder = implode('/', $url_parts);
-$corte_de_caja_url = "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]$current_folder/reports/corte_de_caja.php";
+$corte_de_caja_url = "/compta/bank/reports/corte_de_caja.php";
 
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref :''));
@@ -459,71 +459,68 @@ if ($id > 0 || ! empty($ref))
 		//Checking of sales receipts against cash received
 		
 		// @Y: Botón para hacer el corte de caja
-		if ($user->rights->banque->modifier)
-		{
-			print '<div style="float:right">';
-			print '<form action="'.$_SERVER["PHP_SELF"].'" name="newpage" method="POST">';
-			print '<input type="hidden" name="token"        value="'.$_SESSION['newtoken'].'">';
-			print '<input type="hidden" name="action"       value="add">';
-			print '<input type="hidden" name="vline"        value="'.$vline.'">';
-			print '<input type="hidden" name="paiementtype" value="'.$paiementtype.'">';
-			print '<input type="hidden" name="req_nb"       value="'.$req_nb.'">';
-			print '<input type="hidden" name="req_desc"     value="'.$req_desc.'">';
-			print '<input type="hidden" name="req_debit"    value="'.$req_debit.'">';
-			print '<input type="hidden" name="req_credit"   value="'.$req_credit.'">';
-			print '<input type="hidden" name="thirdparty"   value="'.$thirdparty.'">';
-			print '<input type="hidden" name="nbpage"       value="'.$totalPages.'">';
-			print '<input type="hidden" name="id"           value="'.$object->id.'">';
-			print '<input type="hidden" name="req_stdtmonth"  value="'.$req_stdtmonth.'">';
-			print '<input type="hidden" name="req_stdtyear" 	value="'.$req_stdtyear.'">';
-			print '<input type="hidden" name="req_stdtday"    value="'.$req_stdtday.'">';
-			print '<input type="hidden" name="req_enddtmonth"	value="'.$req_enddtmonth.'">';
-			print '<input type="hidden" name="req_enddtday"   value="'.$req_enddtday.'">';
-			print '<input type="hidden" name="req_enddtyear"  value="'.$req_enddtyear.'">';
+		print '<div style="float:right">';
+		print '<form action="'.$_SERVER["PHP_SELF"].'" name="newpage" method="POST">';
+		print '<input type="hidden" name="token"        value="'.$_SESSION['newtoken'].'">';
+		print '<input type="hidden" name="action"       value="add">';
+		print '<input type="hidden" name="vline"        value="'.$vline.'">';
+		print '<input type="hidden" name="paiementtype" value="'.$paiementtype.'">';
+		print '<input type="hidden" name="req_nb"       value="'.$req_nb.'">';
+		print '<input type="hidden" name="req_desc"     value="'.$req_desc.'">';
+		print '<input type="hidden" name="req_debit"    value="'.$req_debit.'">';
+		print '<input type="hidden" name="req_credit"   value="'.$req_credit.'">';
+		print '<input type="hidden" name="thirdparty"   value="'.$thirdparty.'">';
+		print '<input type="hidden" name="nbpage"       value="'.$totalPages.'">';
+		print '<input type="hidden" name="id"           value="'.$object->id.'">';
+		print '<input type="hidden" name="req_stdtmonth"  value="'.$req_stdtmonth.'">';
+		print '<input type="hidden" name="req_stdtyear" 	value="'.$req_stdtyear.'">';
+		print '<input type="hidden" name="req_stdtday"    value="'.$req_stdtday.'">';
+		print '<input type="hidden" name="req_enddtmonth"	value="'.$req_enddtmonth.'">';
+		print '<input type="hidden" name="req_enddtday"   value="'.$req_enddtday.'">';
+		print '<input type="hidden" name="req_enddtyear"  value="'.$req_enddtyear.'">';
 			
-			// @Y: Se obtiene el total hasta el momento
-			$sqlAccount = "SELECT SUM(amount) as amount";
-			$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
-			$sqlAccount.= " WHERE fk_account = ".$id;
-			$resultAccount = $db->query($sqlAccount);
-			if ($resultAccount)
-			{
-				$objp = $db->fetch_object($resultAccount);
-			}
+		// @Y: Se obtiene el total hasta el momento
+		$sqlAccount = "SELECT SUM(amount) as amount";
+		$sqlAccount.= " FROM ".MAIN_DB_PREFIX."bank";
+		$sqlAccount.= " WHERE fk_account = ".$id;
+		$resultAccount = $db->query($sqlAccount);
+		if ($resultAccount)
+		{
+			$objp = $db->fetch_object($resultAccount);
+		}
 
-			if ($objp->amount >= 0)
+		if ($objp->amount >= 0)
+		{
+			// @Y: Simula el formulario para agregar registros sin factura
+			print '<input name="opday" type="hidden" value="'.date("d").'">';
+			print '<input name="opmonth" type="hidden" value="'.date("m").'">';
+			print '<input name="opyear" type="hidden" value="'.date("Y").'">';
+			print '<input name="operation" type="hidden" value="LIQ">';
+			print '<input name="num_chq" type="hidden" value=""></td>';
+			print '<input name="label" type="hidden" value="Corte de caja">';
+			print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
+			print '<input name="corte_de_caja" type="hidden" value="1">';
+			if ($objp->amount > 0)
 			{
-				// @Y: Simula el formulario para agregar registros sin factura
-				print '<input name="opday" type="hidden" value="'.date("d").'">';
-				print '<input name="opmonth" type="hidden" value="'.date("m").'">';
-				print '<input name="opyear" type="hidden" value="'.date("Y").'">';
-				print '<input name="operation" type="hidden" value="LIQ">';
-				print '<input name="num_chq" type="hidden" value=""></td>';
-				print '<input name="label" type="hidden" value="Retiro por corte de caja">';
-				print '<input name="debit" type="hidden" value="'.$objp->amount.'">';
-				print '<input name="corte_de_caja" type="hidden" value="1">';
-				if ($objp->amount > 0)
-				{
-					print '<input type="submit" name="save" class="button" value="Corte de Caja">';
-				}
-				else
-				{
-					print '<span class="butActionRefused">Corte de Caja</span>';
-				}
+				print '<input type="submit" name="save" class="button" value="Corte de Caja">';
 			}
 			else
 			{
-				print '<span style="color:red">';
-				print 'Hay un problema con el monto para realizar el <b>Corte de Caja</b>';
-				print '</span>';
+				print '<span class="butActionRefused">Corte de Caja</span>';
 			}
+		}
+		else
+		{
+			print '<span style="color:red">';
+			print 'Hay un problema con el monto para realizar el <b>Corte de Caja</b>';
+			print '</span>';
+		}
 
 			
-			print '</form>';
-			print '<br>';
-			print '</div>';
-
-		}
+		print '</form>';
+		print '<br>';
+		print '</div>';
+	
 
 		if ($report_enabled)
 		{			
