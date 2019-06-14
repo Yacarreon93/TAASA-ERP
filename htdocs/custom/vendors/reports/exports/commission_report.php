@@ -42,8 +42,7 @@ JOIN llx_paiement AS p ON pf.fk_paiement = p.rowid
 JOIN llx_societe AS s ON f.fk_soc = s.rowid
 JOIN llx_societe_extrafields AS se ON se.fk_object = s.rowid
 JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
-WHERE
-	f.fk_statut = 1 AND fe.vendor = '.$id.' AND (p.datep < f.date_lim_reglement OR DATE(p.datep) = DATE(f.date_lim_reglement))';
+WHERE fe.vendor = '.$id.' AND (p.datep < f.date_lim_reglement OR DATE(p.datep) = DATE(f.date_lim_reglement))';
 
 if ($fromDate && $toDate) {
     $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
@@ -75,7 +74,6 @@ else if ($year_lim > 0)
     $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,1,false))."' AND '".$db->idate(dol_get_last_day($year_lim,12,false))."'";
 }
 $sql.= $db->order($sortfield,$sortorder);
-
 
 $result = $db->query($sql);
 $num = $db->num_rows($result);
