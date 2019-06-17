@@ -1510,7 +1510,7 @@ if (empty($reshook))
 							$outputlangs->setDefaultLang($newlang);
 						}
 
-						$desc = (! empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["description"] : $prod->description;
+						$desc = (! empty($prod->multilangs [$outputlangs->defaultlang] ["description"])) ? $prod->multilangs [$outputlangs->defaultlang] ["Description"] : $prod->description;
 					} else {
 						$desc = $prod->description;
 					}
@@ -3788,7 +3788,7 @@ else if ($id > 0 || ! empty($ref))
 	$result = $object->getLinesArray();
 
 	if($isTicket) {
-		print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?isTicket=true&id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
+		print '	<form name="addproduct" id="addproduct" onsubmit="document.getElementById(\'addline\').disabled=true" action="' . $_SERVER["PHP_SELF"] . '?isTicket=true&id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
 		<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
 		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 		<input type="hidden" name="mode" value="">
@@ -3796,7 +3796,7 @@ else if ($id > 0 || ! empty($ref))
 		<input type="hidden" name="isTicket" value="true">
 		';
 	} else {
-		print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
+		print '	<form name="addproduct" onsubmit="document.getElementById(\'addline\').disabled=true" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
 		<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
 		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 		<input type="hidden" name="mode" value="">
@@ -3944,9 +3944,20 @@ else if ($id > 0 || ! empty($ref))
 			{
 				if (! $objectidnext && $object->close_code != 'replaced') 				// Not replaced by another invoice
 				{
-					print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=reopen">' . $langs->trans('ReOpen') . '</a></div>';
+					if($isTicket) {
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=reopen">' . $langs->trans('ReOpen') . '</a></div>';
+					}
+					else {
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=reopen">' . $langs->trans('ReOpen') . '</a></div>';
+					}
 				} else {
-					print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseReplacedInvoice") . '">' . $langs->trans('ReOpen') . '</span></div>';
+					if($isTicket) {
+						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseReplacedInvoice") . '">' . $langs->trans('ReOpen') . '</span></div>';
+					}
+					else {
+						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseReplacedInvoice") . '">' . $langs->trans('ReOpen') . '</span></div>';
+					}
+					
 				}
 			}
 
@@ -4362,6 +4373,7 @@ else if ($id > 0 || ! empty($ref))
 	document.getElementsByName("options_isticket")[0].disabled = true;
 	document.getElementsByName("fk_account")[0].disabled = true;
 	}, false);
+
 
 </script>
 
