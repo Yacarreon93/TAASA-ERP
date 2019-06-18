@@ -3372,7 +3372,7 @@ class Form
             $formconfirm.= '<td class="valid">';
             $formconfirm.= $this->selectyesno("confirm",$newselectedchoice);
             $formconfirm.= '</td>';
-            $formconfirm.= '<td class="valid" align="center"><input class="button" type="submit" value="'.$langs->trans("Validate").'"></td>';
+            $formconfirm.= '<td class="valid" align="center"><input class="button" id="confirm_payment" type="submit" value="'.$langs->trans("Validate").'"></td>';
             $formconfirm.= '</tr>'."\n";
 
             $formconfirm.= '</table>'."\n";

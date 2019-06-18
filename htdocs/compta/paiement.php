@@ -412,7 +412,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 			print '	</script>'."\n";
 		}
 
-		print '<form id="payment_form" name="add_paiement" action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+		print '<form id="payment_form" name="add_paiement" onsubmit="document.getElementById(\'confirm_payment\').disabled=true" action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 		print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 		print '<input type="hidden" name="action" value="add_paiement">';
 		print '<input type="hidden" name="facid" value="'.$facture->id.'">';
