@@ -203,7 +203,7 @@ llxHeader('',$langs->trans("UserCard"));
 
         // Show tabs
         $head = user_prepare_head_for_vendors($object);
-        $title = "Vendedores";        
+        $title = "Vendedores";
 
         /*
          * Fiche en mode visu
@@ -341,6 +341,7 @@ llxHeader('',$langs->trans("UserCard"));
                 //die();
 
 			    $param='&socid='.$socid;
+					$param='&id='.$id;
 			    if ($month)              $param.='&month='.$month;
 			    if ($year)               $param.='&year=' .$year;
 			    if ($search_ref)         $param.='&search_ref=' .$search_ref;
@@ -400,7 +401,7 @@ llxHeader('',$langs->trans("UserCard"));
                 echo '<select id="weekSelector" class="flat" style="width:100px">';
                 echo '</select>';
                 echo '<input type="hidden" value="" name="month_week" id="month_week">';
-                
+
                 $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
                 echo '<div id="theHidden" style="position:absolute">';
                 echo '</div>';
@@ -433,7 +434,7 @@ llxHeader('',$langs->trans("UserCard"));
                 $k = 0;
                 foreach ($arrayWeekSelector as $helpIterator) {
                     $k++;
-                    echo    '<script>  
+                    echo    '<script>
                            $("#weekSelector").append($("<option>", {
                             value: '.$k.',
                             text: "' . $helpIterator .' "
@@ -441,7 +442,7 @@ llxHeader('',$langs->trans("UserCard"));
                         </script>';
                 }
                 */
-                
+
 
                 echo '<script>
                         jQuery("#selectMonthWeek").change(function(){
@@ -459,7 +460,7 @@ llxHeader('',$langs->trans("UserCard"));
                         var contador = 0;
 
                         function myFunction(item) {
-                            
+
                             $("#weekSelector").append($("<option>", {
                                 value: item.from+"/"+item.to,
                                 text: "del "+item.from+" al "+item.to
@@ -490,13 +491,13 @@ llxHeader('',$langs->trans("UserCard"));
                                 value: dates[0]
                             }));
 
-                        </script>';   
+                        </script>';
 
 			    print '<table class="liste" width="100%">';
 
 			 	// If the user can view prospects other than his'
 			    $moreforfilter='';
-			 	
+
 
 			    if ($moreforfilter)
 			    {
@@ -672,7 +673,7 @@ llxHeader('',$langs->trans("UserCard"));
 ?>
                 <form action="sales_report.php" method="post">
                     <?php foreach( $_GET as $key => $val ): ?>
-                        <input type="hidden" name="<?= htmlspecialchars($key, ENT_COMPAT, 'UTF-8') ?>" value="<?= htmlspecialchars($val, ENT_COMPAT, 'UTF-8') ?>">                        
+                        <input type="hidden" name="<?= htmlspecialchars($key, ENT_COMPAT, 'UTF-8') ?>" value="<?= htmlspecialchars($val, ENT_COMPAT, 'UTF-8') ?>">
                     <?php endforeach; ?>
                     <input type="submit" value="Generar reporte">
                 </form>
@@ -688,10 +689,10 @@ llxHeader('',$langs->trans("UserCard"));
 			else
 			{
 			    dol_print_error($db);
-			}         	          
-           
+			}
+
         }
-	}	
+	}
 }
 
 llxFooter();
