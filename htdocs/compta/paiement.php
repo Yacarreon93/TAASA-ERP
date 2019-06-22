@@ -475,7 +475,11 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
             if ($facture->type != 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToCredit').'</span></td>';
             if ($facture->type == 2) print '<td><span class="fieldrequired">'.$langs->trans('AccountToDebit').'</span></td>';
             print '<td>';
-            $form->select_comptes($accountid, 'accountid', 0, $filter, 2); 
+            if($user->id == '1' || $user->id == '18') {
+            	$form->select_comptes($accountid, 'accountid', 0, $filter, 2);
+            } else {
+            	$form->select_comptes_limited($accountid, 'accountid', 0, $filter, 2, '', $user->id); 
+            }
             print '</td>';
         }
         else
