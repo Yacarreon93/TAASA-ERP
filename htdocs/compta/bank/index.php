@@ -1,4 +1,4 @@
-<?php
+}<?php
 /* Copyright (C) 2001-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004-2014 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
@@ -57,11 +57,22 @@ print_fiche_titre($langs->trans("AccountsArea"),$link, 'title_bank.png');
 // On charge tableau des comptes financiers (ouverts par defaut)
 $accounts = array();
 
-$sql  = "SELECT rowid, courant, rappro";
-$sql.= " FROM ".MAIN_DB_PREFIX."bank_account";
-$sql.= " WHERE entity IN (".getEntity('bank_account', 1).")";
-if ($statut != 'all') $sql.= " AND clos = 0";
-$sql.= $db->order('label', 'ASC');
+
+ if($user->id == '1' || $user->id == '18') {
+ 	$sql  = "SELECT rowid, courant, rappro";
+	$sql.= " FROM ".MAIN_DB_PREFIX."bank_account";
+	$sql.= " WHERE entity IN (".getEntity('bank_account', 1).")";
+	if ($statut != 'all') $sql.= " AND clos = 0";
+	$sql.= $db->order('label', 'ASC');
+ } else {
+ 	$sql  = "SELECT b.rowid, courant, rappro";
+	$sql.= " FROM ".MAIN_DB_PREFIX."bank_account as b";
+	$sql.=" JOIN llx_user_relations as ur ON b.rowid = ur.fk_bank_account";
+	$sql.= " WHERE entity IN (".getEntity('bank_account', 1).")";
+	if ($statut != 'all') $sql.= " AND clos = 0";
+	$sql.=" AND ur.fk_user = ".$user->id;
+	$sql.= $db->order('label', 'ASC');
+ }
 
 $resql = $db->query($sql);
 if ($resql)
