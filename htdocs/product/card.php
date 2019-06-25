@@ -88,6 +88,7 @@ if (! empty($canvas))
     $objcanvas->getCanvas('product','card',$canvas);
 }
 
+
 // Security check
 $fieldvalue = (! empty($id) ? $id : (! empty($ref) ? $ref : ''));
 $fieldtype = (! empty($ref) ? 'ref' : 'rowid');
@@ -774,6 +775,7 @@ else
 				$modBarCodeProduct =new $module();
         	}
 		}
+
 
         print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
         print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
@@ -1600,6 +1602,7 @@ if (($action == 'clone' && (empty($conf->use_javascript_ajax) || ! empty($conf->
 
 
 
+
 /* ************************************************************************** */
 /*                                                                            */
 /* Barre d'action                                                             */
@@ -1659,6 +1662,17 @@ if (empty($reshook))
 }
 
 print "\n</div>\n";
+
+if($user->id == '1' || $user->id == '18') {
+} else {
+	print '<script type="text/javascript" language="javascript">
+	function blockContent(){
+		document.getElementById("price").href="#";
+		document.getElementById("suppliers").href="#";
+	}
+	window.onload = blockContent;
+	</script>';
+}
 
 
 /*
@@ -1758,7 +1772,7 @@ if ($object->id && ($action == '' || $action == 'view') && $object->status)
     	print '<input type="hidden" name="action" value="addin">';
 
 	    print load_fiche_titre($langs->trans("Add"),'','');
-		
+
 		dol_fiche_head('');
 
     	$html .= '<tr><td class="nowrap">'.$langs->trans("Quantity").' ';
@@ -1769,7 +1783,7 @@ if ($object->id && ($action == '' || $action == 'view') && $object->status)
     	print '<table width="100%" class="border">';
         print $html;
         print '</table>';
-		
+
 		dol_fiche_end();
 
         print '<div class="center">';
