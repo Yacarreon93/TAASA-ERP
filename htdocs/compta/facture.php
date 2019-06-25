@@ -78,7 +78,7 @@ if ($id > 0 || ! empty($ref)) {
 
 //Checking if it's ticket or facture
 	if(!$isTicket) {
-		
+
 		$sqlTicket = 'SELECT fe.isticket
 					  FROM llx_facture AS f
 					  JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
@@ -95,7 +95,7 @@ if ($id > 0 || ! empty($ref)) {
 					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&id='.$id.'&action=ask_deleteline'.'&lineid='. $lineid);
 				}
 				 else {
-					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);	
+					header("Location: " . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $id);
 				}
   				exit;
 			}
@@ -214,7 +214,7 @@ if (empty($reshook))
 				$document_mode = 'F';
 				$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 				$result = 1;
-				
+
 			}
 			if ($result >= 0) {
 				if($isTicket) {
@@ -222,7 +222,7 @@ if (empty($reshook))
 				} else {
 					header('Location: ' . $_SERVER["PHP_SELF"] . '?facid=' . $id);
 				}
-				
+
 				exit();
 			}
 		} else {
@@ -299,7 +299,7 @@ if (empty($reshook))
 		    } else {
 		    	header('Location: '.$_SERVER["PHP_SELF"].'?facid='.$id.'&action=editinvoicedate');
 		    }
-		    
+
 		    exit;
 		}
 	    $object->date=$date;
@@ -463,7 +463,7 @@ if (empty($reshook))
 					$model=$object->modelpdf;
 					$ret = $object->fetch($id); // Reload to get new records
 
-					
+
 					// $result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref);
 					$result = 1;
 
@@ -1275,7 +1275,7 @@ if (empty($reshook))
 				header('Location: ' . $_SERVER["PHP_SELF"] . '?&isTicket=1&facid=' . $id);
 			} else {
 				header('Location: ' . $_SERVER["PHP_SELF"] . '?facid=' . $id);
-			}				
+			}
 			exit();
 		}
 		else
@@ -1323,7 +1323,7 @@ if (empty($reshook))
 			setEventMessage($langs->trans('ErrorSomeRequiredExtrafieldsAreEmpty'), 'errors');
 			$error ++;
 		}
-			
+
 		if (empty($idprod) && ($price_ht < 0) && ($qty < 0)) {
 			setEventMessage($langs->trans('ErrorBothFieldCantBeNegative', $langs->transnoentitiesnoconv('UnitPriceHT'), $langs->transnoentitiesnoconv('Qty')), 'errors');
 			$error ++;
@@ -1349,7 +1349,7 @@ if (empty($reshook))
 			$langs->load("errors");
 			setEventMessage($langs->trans('ErrorQtyForCustomerInvoiceCantBeNegative'), 'errors');
 			$error ++;
-		}		
+		}
 		if (! $error && ($qty >= 0) && (! empty($product_desc) || ! empty($idprod))) {
 			$ret = $object->fetch($id);
 			if ($ret < 0) {
@@ -1397,7 +1397,7 @@ if (empty($reshook))
 						// Pay attention to these flags
 						define('MXN_INDEX', '1');
 						define('USD_INDEX', '3');
-						
+
 						if ($object->array_options['options_currency'] == 'MXN') {
 							$currency_index = MXN_INDEX;
 						} else if ($object->array_options['options_currency'] == 'USD') {
@@ -1428,7 +1428,7 @@ if (empty($reshook))
 								if (isset($prod->multiprices_recuperableonly[$object->client->price_level])) $tva_npr=$prod->multiprices_recuperableonly[$object->client->price_level];
 								$tva_tx=$prod->multiprices_tva_tx[2];
 								$tva_npr=$prod->multiprices_recuperableonly[2];
-							
+
 							}
 
 						}
@@ -1581,7 +1581,7 @@ if (empty($reshook))
 						$document_mode = 'F';
 						$result = $object->generateDocument($model, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 						$result = 1;
-						
+
 						if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 					}
 
@@ -1751,7 +1751,7 @@ if (empty($reshook))
 					}
 
 					$ret = $object->fetch($id); // Reload to get new records
-					
+
 					$document_mode = 'F';
 					$object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 				}
@@ -1842,7 +1842,7 @@ if (empty($reshook))
 	$mode='emailfrominvoice';
 	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 
-	
+
 	/*
 	* Generate document
 	*/
@@ -1871,9 +1871,9 @@ if (empty($reshook))
 			$outputlangs = new Translate("", $conf);
 			$outputlangs->setDefaultLang($newlang);
 		}
-		
+
 		$document_mode = 'F';
-		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);		
+		$result = $object->generateDocument($object->modelpdf, $outputlangs, $hidedetails, $hidedesc, $hideref, $document_mode);
 
 		if ($result <= 0)
 		{
@@ -1903,10 +1903,10 @@ if (empty($reshook))
 
 		// Fill array 'array_options' with data from add form
 
-		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);		
+		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
 		$ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
 		if ($ret < 0) $error++;
-		
+
 		if (! $error) {
 			// Actions on extra fields (by external module or standard code)
 			// TODO le hook fait double emploi avec le trigger !!
@@ -1929,13 +1929,13 @@ if (empty($reshook))
 		}
 	}
 
-	
+
 	if ($action == 'update_extras_fixed') {
-	
+
 		$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
 		$ret = $extrafields->setOptionalsFromPost($extralabels, $object, GETPOST('attribute'));
 		if ($ret < 0) $error++;
-			
+
 		if (! $error) {
 
 			$res = $object->update_extrafields();
@@ -1968,7 +1968,7 @@ if (empty($reshook))
 				header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $object->id);
 				exit();
 			}
-			
+
 		} else {
 			if ($object->error == 'DB_ERROR_RECORD_ALREADY_EXISTS') {
 				$langs->load("errors");
@@ -1978,7 +1978,7 @@ if (empty($reshook))
 			}
 		}
 	}
-	
+
 	// bascule du statut d'un contact
 	else if ($action == 'swapstatut')
 	{
@@ -2495,7 +2495,7 @@ if ($action == 'create')
 			print '</td></tr>';
 		}
 
-	
+
 		// Other attributes
 		$parameters = array('objectsrc' => $objectsrc,'colspan' => ' colspan="3"');
 		$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $object, $action); // Note that $action and $object may have been modified by
@@ -2521,17 +2521,17 @@ if ($action == 'create')
 		if (empty($reshook) && ! empty($extrafields->attribute_label)) {
 
 			//Getting vendors list
-			$sqlVendors = 'SELECT u.firstname, u.rowid 
-					FROM ' . MAIN_DB_PREFIX . 'user as u 
-					LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s 
-					ON u.fk_soc = s.rowid 
-					LEFT JOIN ' . MAIN_DB_PREFIX . 'user as u2 
-					ON u.fk_user = u2.rowid 
-					JOIN ' . MAIN_DB_PREFIX . 'user_extrafields as ef 
-					ON ef.fk_object = u.rowid 
-					WHERE u.entity IN (0,1) 
-					AND (u.statut=1) 
-					AND ef.rol = 1 
+			$sqlVendors = 'SELECT u.firstname, u.rowid
+					FROM ' . MAIN_DB_PREFIX . 'user as u
+					LEFT JOIN ' . MAIN_DB_PREFIX . 'societe as s
+					ON u.fk_soc = s.rowid
+					LEFT JOIN ' . MAIN_DB_PREFIX . 'user as u2
+					ON u.fk_user = u2.rowid
+					JOIN ' . MAIN_DB_PREFIX . 'user_extrafields as ef
+					ON ef.fk_object = u.rowid
+					WHERE u.entity IN (0,1)
+					AND (u.statut=1)
+					AND ef.rol = 1
 					ORDER BY u.login ASC';
 			$resultVendors = $db->query($sqlVendors);
 			// print'<pre>';
@@ -2539,7 +2539,7 @@ if ($action == 'create')
 			// print'</pre>';
 			// die();
 			print'
-			<!-- showOptionalsInput --> 
+			<!-- showOptionalsInput -->
 			<tr >
 			   <td><span class="fieldrequired">Vendedor</span></td>
 			   <td colspan="3">
@@ -2760,36 +2760,36 @@ else if ($id > 0 || ! empty($ref))
 		dol_print_error($db, $object->error);
 		exit();
 	}
-	
+
 	// fetch optionals attributes and labels
 	$extralabels = $extrafields->fetch_name_optionals_label($object->table_element);
 
 	if ($user->societe_id > 0 && $user->societe_id != $object->socid)
 	accessforbidden('', 0);
-	
+
 	$result = $object->fetch_thirdparty();
-	
+
 	$soc = new Societe($db);
 	$result=$soc->fetch($object->socid);
 	if ($result < 0) dol_print_error($db);
 	$selleruserevenustamp = $mysoc->useRevenueStamp();
-	
+
 	$totalpaye = $object->getSommePaiement();
 	$totalcreditnotes = $object->getSumCreditNotesUsed();
 	$totaldeposits = $object->getSumDepositsUsed();
 	// print "totalpaye=".$totalpaye." totalcreditnotes=".$totalcreditnotes." totaldeposts=".$totaldeposits."
 	// selleruserrevenuestamp=".$selleruserevenustamp;
-	
+
 	// We can also use bcadd to avoid pb with floating points
 	// For example print 239.2 - 229.3 - 9.9; does not return 0.
 	// $resteapayer=bcadd($object->total_ttc,$totalpaye,$conf->global->MAIN_MAX_DECIMALS_TOT);
 	// $resteapayer=bcadd($resteapayer,$totalavoir,$conf->global->MAIN_MAX_DECIMALS_TOT);
 	$resteapayer = price2num($object->total_ttc - $totalpaye - $totalcreditnotes - $totaldeposits, 'MT');
-	
+
 	if ($object->paye)
 	$resteapayer = 0;
 	$resteapayeraffiche = $resteapayer;
-	
+
 	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) {
 		$filterabsolutediscount = "fk_facture_source IS NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
 		$filtercreditnote = "fk_facture_source IS NOT NULL"; // If we want deposit to be substracted to payments only and not to total of final invoice
@@ -2797,38 +2797,38 @@ else if ($id > 0 || ! empty($ref))
 		$filterabsolutediscount = "fk_facture_source IS NULL OR (fk_facture_source IS NOT NULL AND description='(DEPOSIT)')";
 		$filtercreditnote = "fk_facture_source IS NOT NULL AND description <> '(DEPOSIT)'";
 	}
-	
+
 	$absolute_discount = $soc->getAvailableDiscounts('', $filterabsolutediscount);
 	$absolute_creditnote = $soc->getAvailableDiscounts('', $filtercreditnote);
 	$absolute_discount = price2num($absolute_discount, 'MT');
 	$absolute_creditnote = price2num($absolute_creditnote, 'MT');
-	
+
 	$author = new User($db);
 	if ($object->user_author) {
 		$author->fetch($object->user_author);
 	}
-	
+
 	$objectidnext = $object->getIdReplacingInvoice();
-	
+
 	if($isTicket) {
 		$head = facture_prepare_head_ticket($object);
 	} else {
 		$head = facture_prepare_head($object);
 	}
 	dol_fiche_head($head, 'compta', $langs->trans('InvoiceCustomer'), 0, 'bill');
-	
+
 	$formconfirm = '';
-	
-	// Confirmation de la conversion de l'avoir en reduc     
+
+	// Confirmation de la conversion de l'avoir en reduc
 	if ($action == 'converttoreduc') {
 		$text = $langs->trans('ConfirmConvertToReduc');
 		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);	
+			$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);
 		} else {
 			$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('ConvertToReduc'), $text, 'confirm_converttoreduc', '', "yes", 2);
 		}
 	}
-	
+
 	// Confirmation to delete invoice
 	if ($action == 'delete') {
 		$text = $langs->trans('ConfirmDeleteBill', $object->ref);
@@ -2861,10 +2861,10 @@ else if ($id > 0 || ! empty($ref))
 
 		} else {
 			if($isTicket) {
-				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('DeleteBill'), $text, 'confirm_delete', '', '', 1);	
+				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('DeleteBill'), $text, 'confirm_delete', '', '', 1);
 			} else {
-				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('DeleteBill'), $text, 'confirm_delete', '', '', 1);	
-			}		
+				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('DeleteBill'), $text, 'confirm_delete', '', '', 1);
+			}
 		}
 	}
 
@@ -2908,10 +2908,15 @@ else if ($id > 0 || ! empty($ref))
 			require_once DOL_DOCUMENT_ROOT . '/product/stock/class/entrepot.class.php';
 			$formproduct = new FormProduct($db);
 			$warehouse = new Entrepot($db);
-			$warehouse_array = $warehouse->list_array();
+			if($user->id == '1' || $user->id == '18') {
+					$warehouse_array = $warehouse->list_array();
+			} else {
+				$warehouse->fetchByUserId($user->id);
+					$warehouse_array = $warehouse;
+			}
 			if (count($warehouse_array) == 1) {
-				$label = $object->type == Facture::TYPE_CREDIT_NOTE ? $langs->trans("WarehouseForStockIncrease", current($warehouse_array)) : $langs->trans("WarehouseForStockDecrease", current($warehouse_array));
-				$value = '<input type="hidden" id="idwarehouse" name="idwarehouse" value="' . key($warehouse_array) . '">';
+				$label = $object->type == Facture::TYPE_CREDIT_NOTE ? $langs->trans("WarehouseForStockIncrease", $warehouse->libelle) : $langs->trans("WarehouseForStockDecrease", $warehouse->libelle);
+				$value = '<input type="hidden" id="idwarehouse" name="idwarehouse" value="' . $warehouse->id . '">';
 			} else {
 				$label = $object->type == Facture::TYPE_CREDIT_NOTE ? $langs->trans("SelectWarehouseForStockIncrease") : $langs->trans("SelectWarehouseForStockDecrease");
 				$value = $formproduct->selectWarehouses(GETPOST('idwarehouse')?GETPOST('idwarehouse'):'ifone', 'idwarehouse', '', 1);
@@ -2933,7 +2938,7 @@ else if ($id > 0 || ! empty($ref))
 		} else {
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
 		}
-		
+
 	}
 
 	// Confirm back to draft status
@@ -3047,22 +3052,22 @@ else if ($id > 0 || ! empty($ref))
 			// Cree un tableau formulaire
 			$formquestion = array('text' => $langs->trans("ConfirmCancelBillQuestion"),array('type' => 'radio','name' => 'close_code','label' => $langs->trans("Reason"),'values' => $arrayreasons),array('type' => 'text','name' => 'close_note','label' => $langs->trans("Comment"),'value' => '','size' => '100'));
 			if($isTicket) {
-				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('CancelBill'), $langs->trans('ConfirmCancelBill', $object->ref), 'confirm_canceled', $formquestion, "yes");				
+				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id, $langs->trans('CancelBill'), $langs->trans('ConfirmCancelBill', $object->ref), 'confirm_canceled', $formquestion, "yes");
 			} else {
-				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('CancelBill'), $langs->trans('ConfirmCancelBill', $object->ref), 'confirm_canceled', $formquestion, "yes");				
+				$formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?facid=' . $object->id, $langs->trans('CancelBill'), $langs->trans('ConfirmCancelBill', $object->ref), 'confirm_canceled', $formquestion, "yes");
 			}
-			
+
 		}
 	}
 
 	// Confirmation de la suppression d'une ligne produit
 	if ($action == 'ask_deleteline') {
 		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 'no', 1);	
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 'no', 1);
 		} else {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 'no', 1);	
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&lineid=' . $lineid, $langs->trans('DeleteProductLine'), $langs->trans('ConfirmDeleteProductLine'), 'confirm_deleteline', '', 'no', 1);
 		}
-		
+
 	}
 
 	// Clone confirmation
@@ -3078,7 +3083,7 @@ else if ($id > 0 || ! empty($ref))
 		} else {
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?facid=' . $object->id, $langs->trans('CloneInvoice'), $langs->trans('ConfirmCloneInvoice', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
 		}
-		
+
 	}
 
 	if (! $formconfirm) {
@@ -3232,11 +3237,11 @@ else if ($id > 0 || ! empty($ref))
 			// Remise dispo de type remise fixe (not credit note)
 			print '<br>';
 			if($isTicket) {
-				$form->form_remise_dispo($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, GETPOST('discountid'), 'remise_id', $soc->id, $absolute_discount, $filterabsolutediscount, $resteapayer, ' (' . $addabsolutediscount . ')');	
+				$form->form_remise_dispo($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, GETPOST('discountid'), 'remise_id', $soc->id, $absolute_discount, $filterabsolutediscount, $resteapayer, ' (' . $addabsolutediscount . ')');
 			} else {
-				$form->form_remise_dispo($_SERVER["PHP_SELF"] . '?facid=' . $object->id, GETPOST('discountid'), 'remise_id', $soc->id, $absolute_discount, $filterabsolutediscount, $resteapayer, ' (' . $addabsolutediscount . ')');	
+				$form->form_remise_dispo($_SERVER["PHP_SELF"] . '?facid=' . $object->id, GETPOST('discountid'), 'remise_id', $soc->id, $absolute_discount, $filterabsolutediscount, $resteapayer, ' (' . $addabsolutediscount . ')');
 			}
-			
+
 		}
 	} else {
 		if ($absolute_creditnote > 0) 		// If not, link will be added later
@@ -3582,20 +3587,20 @@ else if ($id > 0 || ! empty($ref))
 	if ($action == 'editmode')
 	{
 		if($isTicket) {
-			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?isTicket=1&facid='.$object->id, $object->mode_reglement_id, 'mode_reglement_id', 'CRDT');	
+			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?isTicket=1&facid='.$object->id, $object->mode_reglement_id, 'mode_reglement_id', 'CRDT');
 		} else {
-			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?facid='.$object->id, $object->mode_reglement_id, 'mode_reglement_id', 'CRDT');	
+			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?facid='.$object->id, $object->mode_reglement_id, 'mode_reglement_id', 'CRDT');
 		}
-		
+
 	}
 	else
 	{
 		if($isTicket) {
-			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?isTicket&facid='.$object->id, $object->mode_reglement_id, 'none', 'CRDT');	
+			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?isTicket&facid='.$object->id, $object->mode_reglement_id, 'none', 'CRDT');
 		} else {
-			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?facid='.$object->id, $object->mode_reglement_id, 'none', 'CRDT');	
+			$form->form_modes_reglement($_SERVER['PHP_SELF'].'?facid='.$object->id, $object->mode_reglement_id, 'none', 'CRDT');
 		}
-		
+
 	}
 	print '</td></tr>';
 
@@ -3804,7 +3809,7 @@ else if ($id > 0 || ! empty($ref))
 		';
 	}
 
-	
+
 
 	if (! empty($conf->use_javascript_ajax) && $object->statut == 0) {
 		include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
@@ -3901,11 +3906,11 @@ else if ($id > 0 || ! empty($ref))
 		if(!$isTicket) {
 			$reshook = $hookmanager->executeHooks('addMoreActionsButtons', $parameters, $object, $action); // Note that $action and $object may have been
 		}
-		
+
 		                                                                                          // modified by hook
 		if (empty($reshook)) {
 			// Editer une facture deja validee, sans paiement effectue et pas exporte en compta
-			if ($object->statut == 1) 
+			if ($object->statut == 1)
 			{
 				if ($isTicket) {
 					$ticket_type = $object->cond_reglement_id == 1 ? 'cash' : 'credit';
@@ -3916,10 +3921,10 @@ else if ($id > 0 || ! empty($ref))
 				// On verifie si les lignes de factures ont ete exportees en compta et/ou ventilees
 				$ventilExportCompta = $object->getVentilExportCompta();
 
-				if ($resteapayer == $object->total_ttc && empty($object->paye) && $ventilExportCompta == 0) 
+				if ($resteapayer == $object->total_ttc && empty($object->paye) && $ventilExportCompta == 0)
 				{
-					if (! $objectidnext && $object->is_last_in_cycle()) 
-					{						
+					if (! $objectidnext && $object->is_last_in_cycle())
+					{
 					    if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->creer))
        						|| (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->unvalidate)))
 						{
@@ -3957,7 +3962,7 @@ else if ($id > 0 || ! empty($ref))
 					else {
 						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseReplacedInvoice") . '">' . $langs->trans('ReOpen') . '</span></div>';
 					}
-					
+
 				}
 			}
 
@@ -3967,11 +3972,11 @@ else if ($id > 0 || ! empty($ref))
           	    || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->validate)))
 				{
 					if($isTicket) {
-						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id . '&amp;action=valid">' . $langs->trans('Validate') . '</a></div>';	
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id . '&amp;action=valid">' . $langs->trans('Validate') . '</a></div>';
 					} else {
-						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=valid">' . $langs->trans('Validate') . '</a></div>';	
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=valid">' . $langs->trans('Validate') . '</a></div>';
 					}
-					
+
 				}
 			}
 
@@ -4010,11 +4015,11 @@ else if ($id > 0 || ! empty($ref))
 						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseRemainderToPayIsZero") . '">' . $langs->trans('DoPayment') . '</span></div>';
 					} else {
 						if($isTicket) {
-							print '<div class="inline-block divButAction"><a class="butAction" href="paiement.php?isTicket=1&facid=' . $object->id . '&amp;action=create&amp;accountid='.$object->fk_account.'&amp;currency='.$object->array_options['options_currency'].'">' . $langs->trans('DoPayment') . '</a></div>';							
+							print '<div class="inline-block divButAction"><a class="butAction" href="paiement.php?isTicket=1&facid=' . $object->id . '&amp;action=create&amp;accountid='.$object->fk_account.'&amp;currency='.$object->array_options['options_currency'].'">' . $langs->trans('DoPayment') . '</a></div>';
 						} else {
 							print '<div class="inline-block divButAction"><a class="butAction" href="paiement.php?facid=' . $object->id . '&amp;action=create&amp;accountid='.$object->fk_account.'&amp;currency='.$object->array_options['options_currency'].'">' . $langs->trans('DoPayment') . '</a></div>';
 						}
-						
+
 					}
 				}
 			}
@@ -4051,11 +4056,11 @@ else if ($id > 0 || ! empty($ref))
 			)
 			{
 				if($isTicket) {
-					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?isTicket=1&facid='.$object->id.'&amp;action=paid">'.$langs->trans('ClassifyPaid').'</a></div>';	
+					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?isTicket=1&facid='.$object->id.'&amp;action=paid">'.$langs->trans('ClassifyPaid').'</a></div>';
 				} else {
-					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;action=paid">'.$langs->trans('ClassifyPaid').'</a></div>';	
+					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;action=paid">'.$langs->trans('ClassifyPaid').'</a></div>';
 				}
-				
+
 			}
 
 			// Classify 'closed not completely paid' (possible si validee et pas encore classee payee)
@@ -4065,11 +4070,11 @@ else if ($id > 0 || ! empty($ref))
 				{
 					// If one payment or one credit note was linked to this invoice
 					if($isTicket) {
-						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=paid">' . $langs->trans('ClassifyPaidPartially') . '</a></div>';	
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=paid">' . $langs->trans('ClassifyPaidPartially') . '</a></div>';
 					} else {
-						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=paid">' . $langs->trans('ClassifyPaidPartially') . '</a></div>';	
+						print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=paid">' . $langs->trans('ClassifyPaidPartially') . '</a></div>';
 					}
-					
+
 				}
 				else
 				{
@@ -4077,10 +4082,10 @@ else if ($id > 0 || ! empty($ref))
 						print '<div class="inline-block divButAction"><span class="butActionRefused" title="' . $langs->trans("DisabledBecauseReplacedInvoice") . '">' . $langs->trans('ClassifyCanceled') . '</span></div>';
 					} else {
 						if($isTicket) {
-							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=canceled">' . $langs->trans('ClassifyCanceled') . '</a></div>';	
+							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?isTicket=1&facid=' . $object->id . '&amp;action=canceled">' . $langs->trans('ClassifyCanceled') . '</a></div>';
 						} else {
-							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=canceled">' . $langs->trans('ClassifyCanceled') . '</a></div>';	
-						}		
+							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=canceled">' . $langs->trans('ClassifyCanceled') . '</a></div>';
+						}
 					}
 				}
 			}
@@ -4126,7 +4131,7 @@ else if ($id > 0 || ! empty($ref))
 					} else {
 						print '<div class="inline-block divButAction"><a class="butActionDelete" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=delete">' . $langs->trans('Delete') . '</a></div>';
 					}
-					
+
 				}
 			} else {
 				print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="' . $langs->trans("NotAllowed") . '">' . $langs->trans('Delete') . '</a></div>';
@@ -4309,7 +4314,7 @@ else if ($id > 0 || ! empty($ref))
 		} else {
 			$formmail->param['returnurl'] = $_SERVER["PHP_SELF"] . '?id=' . $object->id;
 		}
-		
+
 
 		// Init list of files
 		if (GETPOST("mode") == 'init') {
@@ -4339,7 +4344,7 @@ else if ($id > 0 || ! empty($ref))
 	        url: "../scripts/commande/getClientData.php",
 	        type: "post",
 	        dataType: "json",
-	        success:  function (data) 
+	        success:  function (data)
 	        {
 	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
@@ -4356,7 +4361,7 @@ else if ($id > 0 || ! empty($ref))
 	    });
 	});
 
-	jQuery(function ($) {        
+	jQuery(function ($) {
 	  $('form').bind('submit', function () { //function to enable fields before the submit
 	    document.getElementById("selectmode_reglement_id").disabled = false;
 	    document.getElementById("options_vendor").disabled = false;

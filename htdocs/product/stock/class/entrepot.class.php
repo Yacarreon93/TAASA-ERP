@@ -293,6 +293,54 @@ class Entrepot extends CommonObject
 		}
 	}
 
+	/**
+	 *	Load warehouse data by user id according to llx_user_relations table
+	 *
+	 *	@param		int		$id     User id
+	 *	@return		int				>0 if OK, <0 if KO
+	 */
+	function fetchByUserId($id, $ref='')
+	{
+		global $conf;
+
+		$sql  = "SELECT e.rowid, label, description, statut, lieu, address, zip, town, fk_pays as country_id";
+		$sql .= " FROM ".MAIN_DB_PREFIX."entrepot as e";
+		$sql .= " JOIN ".MAIN_DB_PREFIX."user_relations as ur";
+	  $sql .= " ON e.rowid = ur.fk_entrepot";
+		$sql .= " WHERE ur.fk_user = ".$id;
+
+		dol_syslog(get_class($this)."::fetch", LOG_DEBUG);
+
+		$result = $this->db->query($sql);
+		if ($result)
+		{
+				$obj=$this->db->fetch_object($result);
+
+				$this->id             = $obj->rowid;
+				$this->ref            = $obj->rowid;
+				$this->libelle        = $obj->label;
+				$this->description    = $obj->description;
+				$this->statut         = $obj->statut;
+				$this->lieu           = $obj->lieu;
+				$this->address        = $obj->address;
+				$this->zip            = $obj->zip;
+				$this->town           = $obj->town;
+				$this->country_id     = $obj->country_id;
+
+				include_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
+	            $tmp=getCountry($this->country_id,'all');
+				$this->country=$tmp['label'];
+				$this->country_code=$tmp['code'];
+
+				return 1;
+		}
+		else
+		{
+			$this->error=$this->db->error();
+			return -1;
+		}
+	}
+
 
 	/**
 	 * 	Load warehouse info data
