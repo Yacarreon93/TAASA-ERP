@@ -58,7 +58,7 @@ else if ($month > 0)
 }
 else if ($year > 0)
 {
-    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
 }
 if ($month_lim > 0)
 {
@@ -73,6 +73,7 @@ else if ($year_lim > 0)
 {
     $sql.= " AND f.date_lim_reglement BETWEEN '".$db->idate(dol_get_first_day($year_lim,1,false))."' AND '".$db->idate(dol_get_last_day($year_lim,12,false))."'";
 }
+
 $sql.= $db->order($sortfield,$sortorder);
 
 $result = $db->query($sql);
