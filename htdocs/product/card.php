@@ -1669,6 +1669,7 @@ if($user->id == '1' || $user->id == '18') {
 	function blockContent(){
 		document.getElementById("price").href="#";
 		document.getElementById("suppliers").href="#";
+		document.getElementById("stock").href="#";
 	}
 	window.onload = blockContent;
 	</script>';
