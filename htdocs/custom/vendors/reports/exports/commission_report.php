@@ -45,16 +45,16 @@ JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 WHERE fe.vendor = '.$id.' AND (p.datep < f.date_lim_reglement OR DATE(p.datep) = DATE(f.date_lim_reglement))';
 
 if ($fromDate && $toDate) {
-    $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
+    $sql.= " AND p.datep BETWEEN '".$fromDate."' AND '".$toDate."'";
 }
 else if ($month > 0)
 {
     if ($year > 0 && empty($day))
-    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
     else if ($year > 0 && ! empty($day))
-    $sql.= " AND f.datef BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
+    $sql.= " AND p.datep BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
     else
-    $sql.= " AND date_format(f.datef, '%m') = '".$month."'";
+    $sql.= " AND date_format(p.datep, '%m') = '".$month."'";
 }
 else if ($year > 0)
 {
