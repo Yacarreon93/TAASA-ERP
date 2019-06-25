@@ -56,12 +56,24 @@ $year = strftime("%Y",time());
 $form=new Form($db);
 $warehouse=new Entrepot($db);
 
-$sql = "SELECT e.rowid, e.label as ref, e.statut, e.lieu, e.address, e.zip, e.town, e.fk_pays,";
-$sql.= " SUM(p.pmp * ps.reel) as estimatedvalue, SUM(p.price * ps.reel) as sellvalue";
-$sql.= " FROM ".MAIN_DB_PREFIX."entrepot as e";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_stock as ps ON e.rowid = ps.fk_entrepot";
-$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON ps.fk_product = p.rowid";
-$sql.= " WHERE e.entity IN (".getEntity('stock', 1).")";
+if($user->id == '1' || $user->id == '18') {
+	$sql = "SELECT e.rowid, e.label as ref, e.statut, e.lieu, e.address, e.zip, e.town, e.fk_pays,";
+	$sql.= " SUM(p.pmp * ps.reel) as estimatedvalue, SUM(p.price * ps.reel) as sellvalue";
+	$sql.= " FROM ".MAIN_DB_PREFIX."entrepot as e";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_stock as ps ON e.rowid = ps.fk_entrepot";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON ps.fk_product = p.rowid";
+	$sql.= " WHERE e.entity IN (".getEntity('stock', 1).")";
+}
+else {
+	$sql = "SELECT e.rowid, e.label as ref, e.statut, e.lieu, e.address, e.zip, e.town, e.fk_pays,";
+	$sql.= " SUM(p.pmp * ps.reel) as estimatedvalue, SUM(p.price * ps.reel) as sellvalue";
+	$sql.= " FROM ".MAIN_DB_PREFIX."entrepot as e";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product_stock as ps ON e.rowid = ps.fk_entrepot";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON ps.fk_product = p.rowid";
+	$sql.= " JOIN llx_user_relations AS ur ON e.rowid = ur.fk_entrepot";
+	$sql.= " WHERE e.entity IN (".getEntity('stock', 1).")";
+	$sql.= " AND ur.fk_user =".$user->id;
+}
 
 if ($search_ref) $sql.= natural_search("e.label", $search_ref);			// ref
 if ($search_label) $sql.= natural_search("e.lieu", $search_label);		// label
