@@ -1668,8 +1668,11 @@ if($user->id == '1' || $user->id == '18') {
 	print '<script type="text/javascript" language="javascript">
 	function blockContent(){
 		document.getElementById("price").href="#";
+		document.getElementById("price").style="color:#aaa";
 		document.getElementById("suppliers").href="#";
+		document.getElementById("suppliers").style="color:#aaa";
 		document.getElementById("stock").href="#";
+		document.getElementById("stock").style="color:#aaa";
 	}
 	window.onload = blockContent;
 	</script>';
