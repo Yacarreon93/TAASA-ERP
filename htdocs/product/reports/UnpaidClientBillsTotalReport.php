@@ -14,13 +14,9 @@ WHERE
     f.paye = 0
 AND f.fk_statut = 1
 AND f.entity = 1
-AND (
-    fe.isticket != 1
-    OR ISNULL(fe.isticket)
-)
 GROUP BY nom';
 
-if (!$result) { 
+if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
@@ -48,7 +44,7 @@ $header = array(
 );
 
 $report_title = 'Reporte de total de facturas pendientes de cobro';
-    
+
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 

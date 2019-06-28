@@ -25,10 +25,6 @@ WHERE
     f.fk_soc = s.rowid
 AND f.entity = 1
 AND f.fk_statut = 1
-AND (
-    fe.isticket != 1
-    OR ISNULL(fe.isticket)
-)
 GROUP BY
     f.rowid,
     f.facnumber,
@@ -51,7 +47,7 @@ ORDER BY
     s.nom ASC,
     f.rowid DESC';
 
-if (!$result) { 
+if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
@@ -92,7 +88,7 @@ $header = array(
 );
 
 $report_title = 'Reporte de facturas pendientes de cobro';
-    
+
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 
