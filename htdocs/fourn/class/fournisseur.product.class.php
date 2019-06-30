@@ -332,6 +332,197 @@ class ProductFournisseur extends Product
     }
 
     /**
+     *    Modify the purchase price for a supplier with currency
+     *
+     *    @param    int         $qty                Min quantity for which price is valid
+     *    @param    float       $buyprice           Purchase price for the quantity min
+     *    @param    User        $user               Object user user made changes
+     *    @param    string      $price_base_type    HT or TTC
+     *    @param    Societe     $fourn              Supplier
+     *    @param    int         $availability       Product availability
+     *    @param    string      $ref_fourn          Supplier ref
+     *    @param    float       $tva_tx             VAT rate
+     *    @param    string      $charges            costs affering to product
+     *    @param    float       $remise_percent     Discount  regarding qty (percent)
+     *    @param    float       $remise             Discount  regarding qty (amount)
+     *    @param    int         $newnpr             Set NPR or not
+     *    @param    int         $delivery_time_days Delay in days for delivery (max). May be '' if not defined.
+     *    @param    string      $currency           Currency value (MXN or USD)
+     *    @return   int                             <0 if KO, >=0 if OK
+     */
+    function update_buyprice_with_currency($qty, $buyprice, $user, $price_base_type, $fourn, $availability, $ref_fourn, $tva_tx, $charges=0, $remise_percent=0, $remise=0, $newnpr=0, $delivery_time_days=0, $currency)
+    {
+        global $conf, $langs;
+        //global $mysoc;
+
+        // Clean parameter
+        if (empty($currency)) $currency='MXN';
+        if (empty($qty)) $qty=0;
+        if (empty($buyprice)) $buyprice=0;
+        if (empty($charges)) $charges=0;
+        if (empty($availability)) $availability=0;
+        if (empty($remise_percent)) $remise_percent=0;
+        if ($delivery_time_days != '' && ! is_numeric($delivery_time_days)) $delivery_time_days = '';
+        if ($price_base_type == 'TTC')
+        {
+            //$ttx = get_default_tva($fourn,$mysoc,$this->id);  // We must use the VAT rate defined by user and not calculate it
+            $ttx = $tva_tx;
+            $buyprice = $buyprice/(1+($ttx/100));
+        }
+        $buyprice=price2num($buyprice,'MU');
+        $charges=price2num($charges,'MU');
+        $qty=price2num($qty);
+        $error=0;
+
+        $unitBuyPrice = price2num($buyprice/$qty,'MU');
+        $unitCharges = price2num($charges/$qty,'MU');
+
+        $now=dol_now();
+
+        $this->db->begin();
+
+        if ($this->product_fourn_price_id)
+        {
+            $sql = "UPDATE ".MAIN_DB_PREFIX."product_fournisseur_price";
+            $sql.= " SET fk_user = " . $user->id." ,";
+            $sql.= " ref_fourn = '" . $this->db->escape($ref_fourn) . "',";
+            $sql.= " price = ".price2num($buyprice).",";
+            $sql.= " quantity = ".$qty.",";
+            $sql.= " remise_percent = ".$remise_percent.",";
+            $sql.= " remise = ".$remise.",";
+            $sql.= " unitprice = ".$unitBuyPrice.",";
+            $sql.= " unitcharges = ".$unitCharges.",";
+            $sql.= " tva_tx = ".$tva_tx.",";
+            $sql.= " fk_availability = ".$availability.",";
+            $sql.= " entity = ".$conf->entity.",";
+            $sql.= " info_bits = ".$newnpr.",";
+            $sql.= " charges = ".$charges.",";
+            $sql.= " currency = '".$currency."',";;
+            $sql.= " delivery_time_days = ".($delivery_time_days != '' ? $delivery_time_days : 'null');
+            $sql.= " WHERE rowid = ".$this->product_fourn_price_id;
+
+            // TODO Add price_base_type and price_ttc
+
+            dol_syslog(get_class($this).'::update_buyprice', LOG_DEBUG);
+            $resql = $this->db->query($sql);
+            if ($resql)
+            {
+                // Call trigger
+                $result=$this->call_trigger('SUPPLIER_PRODUCT_BUYPRICE_UPDATE',$user);
+                if ($result < 0) $error++;
+                // End call triggers
+
+                if (empty($error))
+                {
+                    $this->db->commit();
+                    return 0;
+                }
+                else
+                {
+                    $this->db->rollback();
+                    return 1;
+                }
+            }
+            else
+            {
+                $this->error=$this->db->error()." sql=".$sql;
+                $this->db->rollback();
+                return -2;
+            }
+        }
+
+        else
+        {
+                // Delete price for this quantity
+                $sql = "DELETE FROM  ".MAIN_DB_PREFIX."product_fournisseur_price";
+                $sql.= " WHERE fk_soc = ".$fourn->id." AND ref_fourn = '".$this->db->escape($ref_fourn)."' AND quantity = ".$qty." AND entity = ".$conf->entity;
+                dol_syslog(get_class($this).'::update_buyprice', LOG_DEBUG);
+                $resql=$this->db->query($sql);
+                if ($resql)
+                {
+                    // Add price for this quantity to supplier
+                    $sql = "INSERT INTO ".MAIN_DB_PREFIX."product_fournisseur_price(";
+                    $sql.= "datec, fk_product, fk_soc, ref_fourn, fk_user, price, quantity, remise_percent, remise, unitprice, tva_tx, charges, unitcharges, fk_availability, info_bits, entity, delivery_time_days)";
+                    $sql.= " values('".$this->db->idate($now)."',";
+                    $sql.= " ".$this->id.",";
+                    $sql.= " ".$fourn->id.",";
+                    $sql.= " '".$this->db->escape($ref_fourn)."',";
+                    $sql.= " ".$user->id.",";
+                    $sql.= " ".$buyprice.",";
+                    $sql.= " ".$qty.",";
+                    $sql.= " ".$remise_percent.",";
+                    $sql.= " ".$remise.",";
+                    $sql.= " ".$unitBuyPrice.",";
+                    $sql.= " ".$tva_tx.",";
+                    $sql.= " ".$charges.",";
+                    $sql.= " ".$unitCharges.",";
+                    $sql.= " ".$availability.",";
+                    $sql.= " ".$newnpr.",";
+                    $sql.= $conf->entity.",";
+                    $sql.= $delivery_time_days;
+                    $sql.=")";
+
+                    dol_syslog(get_class($this)."::update_buyprice", LOG_DEBUG);
+                    if (! $this->db->query($sql))
+                    {
+                        $error++;
+                    }
+
+                    if (! $error  && !empty($cong->global->PRODUCT_PRICE_SUPPLIER_NO_LOG))
+                    {
+                        // Add record into log table
+                        $sql = "INSERT INTO ".MAIN_DB_PREFIX."product_fournisseur_price_log(";
+                        $sql.= "datec, fk_product_fournisseur,fk_user,price,quantity)";
+                        $sql.= "values('".$this->db->idate($now)."',";
+                        $sql.= " ".$this->product_fourn_id.",";
+                        $sql.= " ".$user->id.",";
+                        $sql.= " ".price2num($buyprice).",";
+                        $sql.= " ".$qty;
+                        $sql.=")";
+
+                        $resql=$this->db->query($sql);
+                        if (! $resql)
+                        {
+                            $error++;
+                        }
+                    }
+
+
+                    if (! $error)
+                    {
+                        // Call trigger
+                        $result=$this->call_trigger('SUPPLIER_PRODUCT_BUYPRICE_CREATE',$user);
+                        if ($result < 0) $error++;
+                        // End call triggers
+
+                        if (empty($error))
+                        {
+                            $this->db->commit();
+                            return 0;
+                        }
+                        else
+                        {
+                            $this->db->rollback();
+                            return 1;
+                        }
+                    }
+                    else
+                    {
+                        $this->error=$this->db->error()." sql=".$sql;
+                        $this->db->rollback();
+                        return -2;
+                    }
+                }
+                else
+                {
+                    $this->error=$this->db->error()." sql=".$sql;
+                    $this->db->rollback();
+                    return -1;
+                }
+            }
+    }
+
+    /**
      *    Loads the price information of a provider
      *
      *    @param    int     $rowid              Line id
@@ -341,7 +532,7 @@ class ProductFournisseur extends Product
     function fetch_product_fournisseur_price($rowid, $ignore_expression = 0)
     {
         $sql = "SELECT pfp.rowid, pfp.price, pfp.quantity, pfp.unitprice, pfp.remise_percent, pfp.remise, pfp.tva_tx, pfp.fk_availability,";
-        $sql.= " pfp.fk_soc, pfp.ref_fourn, pfp.fk_product, pfp.charges, pfp.unitcharges, pfp.fk_supplier_price_expression, pfp.delivery_time_days"; // , pfp.recuperableonly as fourn_tva_npr";  FIXME this field not exist in llx_product_fournisseur_price
+        $sql.= " pfp.fk_soc, pfp.ref_fourn, pfp.fk_product, pfp.charges, pfp.unitcharges, pfp.fk_supplier_price_expression, pfp.delivery_time_days, pfp.currency"; // , pfp.recuperableonly as fourn_tva_npr";  FIXME this field not exist in llx_product_fournisseur_price
         $sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
         $sql.= " WHERE pfp.rowid = ".$rowid;
 
@@ -367,6 +558,7 @@ class ProductFournisseur extends Product
             	$this->fk_product				= $obj->fk_product;
             	$this->fk_availability			= $obj->fk_availability;
 				$this->delivery_time_days		= $obj->delivery_time_days;
+                $this->currency                 = $obj->currency;
             	//$this->fourn_tva_npr			= $obj->fourn_tva_npr; // TODO this field not exist in llx_product_fournisseur_price. We should add it ?
                 $this->fk_supplier_price_expression      = $obj->fk_supplier_price_expression;
 
@@ -416,7 +608,7 @@ class ProductFournisseur extends Product
 
         $sql = "SELECT s.nom as supplier_name, s.rowid as fourn_id,";
         $sql.= " pfp.rowid as product_fourn_pri_id, pfp.ref_fourn, pfp.fk_product as product_fourn_id, pfp.fk_supplier_price_expression,";
-        $sql.= " pfp.price, pfp.quantity, pfp.unitprice, pfp.remise_percent, pfp.remise, pfp.tva_tx, pfp.fk_availability, pfp.charges, pfp.unitcharges, pfp.info_bits, pfp.delivery_time_days";
+        $sql.= " pfp.price, pfp.quantity, pfp.unitprice, pfp.remise_percent, pfp.remise, pfp.tva_tx, pfp.fk_availability, pfp.charges, pfp.unitcharges, pfp.info_bits, pfp.delivery_time_days, pfp.currency";
         $sql.= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price as pfp";
         $sql.= ", ".MAIN_DB_PREFIX."societe as s";
         $sql.= " WHERE pfp.entity IN (".getEntity('product', 1).")";
@@ -452,6 +644,7 @@ class ProductFournisseur extends Product
                 $prodfourn->fk_availability			= $record["fk_availability"];
 				$prodfourn->delivery_time_days		= $record["delivery_time_days"];
                 $prodfourn->id						= $prodid;
+                $prodfourn->currency                = $record["currency"];
                 $prodfourn->fourn_tva_npr					= $record["info_bits"];
                 $prodfourn->fk_supplier_price_expression    = $record["fk_supplier_price_expression"];
 

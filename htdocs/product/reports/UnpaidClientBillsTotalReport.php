@@ -32,6 +32,7 @@ while ($row = $db->fetch_object($result))
         total => price($row->total),
     );
     $i++;
+    $total+=$row->total;
 }
 
 // Crear una instancia del pdf con una función para generar los datos
@@ -61,5 +62,9 @@ $pdf->SetFont('Arial', '', 11);
 // $pdf->ImprovedTable($header,$data);
 // $pdf->AddPage();
 // $pdf->FancyTable($header,$data);
+
+$pdf->AddPage();
+$pdf->SetFont('Arial','B',11);
+$pdf->Cell(80, 10, 'TOTAL POR COBRAR: $'.number_format($total, 2, '.', ','), 0, 0, 'L');
 
 $pdf->Output();

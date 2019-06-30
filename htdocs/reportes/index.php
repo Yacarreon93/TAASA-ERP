@@ -69,11 +69,49 @@ $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($sear
 print_fiche_titre("Reportes", $buttonviewhierarchy);
 
 	if($user->id == '1' || $user->id == '18') {
-    print'<a target="_blank" href="../product/reports/currentStockReport.php">Existencias en almacén</a><br>';
+    print'<select id="current_report_dynamic_select">
+        <option value="1">Aguascalientes Bodega</option>
+    <option value="2">Aguascalientes Produccion</option>
+    <option value="3">Leon</option>
+    <option value="4">Lagos</option>
+    </select>';
+print "<script>
+    $(function(){
+      // changes current stock link dinamicly
+      $('#current_report_dynamic_select').on('change', function () {
+          var stockId = $(this).val(); // get selected value
+          if (stockId) { // require a URL
+              var firstLinkPart = '../product/reports/currentStockReport.php?stockId=';
+              var finalReportLink = firstLinkPart.concat(stockId);
+              document.getElementById('currentReportLink').href = finalReportLink;
+          }
+          return false;
+      });
+      //changes inventory closing link dinamicly
+       $('#stock_closing_dynamic_select').on('change', function () {
+          var stockId = $(this).val(); // get selected value
+          if (stockId) { // require a URL
+              var firstLinkPart = '../product/cierre_de_inventario.php?stock_id=';
+              var finalReportLink = firstLinkPart.concat(stockId);
+              document.getElementById('inventoryClosingLink').href = finalReportLink;
+          }
+          return false;
+      });
+    });
+</script>";
+    print'<a id="currentReportLink" target="_blank" href="../product/reports/currentStockReport.php?stockId=1">Existencias en almacén</a><br>';
     print'<a target="_blank" href="../product/reports/SalesReport.php">Reporte de ventas</a><br>';
     print'<a>Antigüedad de saldos</a><br>';
-    print'<a>Cuentas por cobrar</a><br>';
-    print'<a target="_blank" href="../product/cierre_de_inventario.php">Ir a Cierre de inventario</a><br>';
+    print'<a target="_blank" href="../product/reports/UnpaidClientBillsReport.php">Cuentas por cobrar</a><br>';
+    print'<a target="_blank" href="../product/reports/UnpaidClientBillsTotalReport.php">Totales de cuentas por cobrar</a><br>';
+
+    print'<select id="stock_closing_dynamic_select">
+        <option value="1">Aguascalientes Bodega</option>
+    <option value="2">Aguascalientes Produccion</option>
+    <option value="3">Leon</option>
+    <option value="4">Lagos</option>
+    </select>';
+    print'<a id="inventoryClosingLink" target="_blank" href="../product/cierre_de_inventario.php?stock_id=1">Ir a Cierre de inventario</a><br>';
   } else {
     print'<p>olooo</p>';
   }

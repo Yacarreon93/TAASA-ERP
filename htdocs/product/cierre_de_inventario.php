@@ -75,8 +75,16 @@ else if ($action === 'cierre_de_inventario')
 
 $htmlother=new FormOther($db);
 $form=new Form($db);
-    
-$title = 'Cierre de inventario';
+
+if($stock_id == 1) {
+    $title = 'Cierre de inventario Aguascalientes ';
+} else if($stock_id == 2) {
+    $title = 'Cierre de inventario Aguascalientes Produccion ';
+} else if($stock_id == 3) {
+    $title = 'Cierre de inventario Leon ';
+} else if($stock_id == 4) {
+    $title = 'Cierre de inventario Lagos ';
+} 
 
 $numero_de_columnas = 3;
 $productos_por_columna = 15;
@@ -88,6 +96,7 @@ $sql.= ' FROM '.MAIN_DB_PREFIX.'product as p';
 $sql.= ' JOIN '.MAIN_DB_PREFIX.'product_stock as ps ON ps.fk_product = p.rowid';
 $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'inventory_closing_temp ON '.MAIN_DB_PREFIX.'inventory_closing_temp.fk_product = p.rowid';
 $sql.= ' WHERE ps.fk_entrepot = '.$stock_id;
+$sql.= ' ORDER BY p.label';
 
 $_resql = $db->query($sql);
 

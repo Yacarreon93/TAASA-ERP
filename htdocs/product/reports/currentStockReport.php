@@ -13,6 +13,7 @@ $sql = 'SELECT
     p.label,
     ps.reel,
     pfp.price,
+    pfp.currency,
     ps.reel * pfp.price AS total
     FROM
         llx_product AS p
@@ -34,11 +35,18 @@ $result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
+    if($row->currency == 'USD') {
+        $priceTemp = $row->price * $currency_value;
+    } else {
+        $priceTemp = $row->price;
+    }
+ 
     $data[] = array(
         label => $row->label,
         stock => $row->reel,
-        price => ($row->price * $currency_value),
-        total => ($row->price * $currency_value * $row->reel),
+        currency => $row->currency,
+        price => '$'.price($priceTemp),
+        total => '$'.price($priceTemp * $row->reel),
     );
     $total += $row->total;
     $i++;
@@ -51,11 +59,24 @@ $pdf = new ReportPDF('l');
 $header = array(
     'Producto',
     'Cantidad',
+    'Moneda',
     'Precio',
     'Total'
 );
 
-$report_title = 'Reporte de inventario virtual';
+if($stock_id == 1) {
+    $inventoryName = 'Aguascalientes Bodega';
+} else if($stock_id == 2) {
+    $inventoryName = 'Aguascalientes Produccion ';
+} else if($stock_id == 3) {
+     $inventoryName = 'Leon ';
+} else if($stock_id == 4) {
+     $inventoryName = 'Lagos ';
+} 
+
+$date = date('Y-m-d');
+
+$report_title = 'Reporte de inventario virtual '. $inventoryName. ' a  '.$date;
     
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);

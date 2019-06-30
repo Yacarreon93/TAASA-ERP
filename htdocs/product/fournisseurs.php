@@ -108,6 +108,7 @@ if (empty($reshook))
 		$ref_fourn=GETPOST("ref_fourn");
 		if (empty($ref_fourn)) $ref_fourn=GETPOST("search_ref_fourn");
 		$quantity=GETPOST("qty");
+		$currency = GETPOST("currency");
 		$remise_percent=price2num(GETPOST('remise_percent','alpha'));
 		$npr = preg_match('/\*/', $_POST['tva_tx']) ? 1 : 0 ;
 		$tva_tx = str_replace('*','', GETPOST('tva_tx','alpha'));
@@ -197,7 +198,7 @@ if (empty($reshook))
 				if (isset($_POST['ref_fourn_price_id']))
 					$product->fetch_product_fournisseur_price($_POST['ref_fourn_price_id']);
 
-				$ret=$product->update_buyprice($quantity, $_POST["price"], $user, $_POST["price_base_type"], $supplier, $_POST["oselDispo"], $ref_fourn, $tva_tx, $_POST["charges"], $remise_percent, 0, $npr, $delivery_time_days);
+				$ret=$product->update_buyprice_with_currency($quantity, $_POST["price"], $user, $_POST["price_base_type"], $supplier, $_POST["oselDispo"], $ref_fourn, $tva_tx, $_POST["charges"], $remise_percent, 0, $npr, $delivery_time_days, $currency);
 				if ($ret < 0)
 				{
 
@@ -453,8 +454,15 @@ if ($id || $ref)
 				print '<tr><td class="fieldrequired">'.$langs->trans("PriceQtyMin").'</td>';
 				print '<td><input class="flat" name="price" size="8" value="'.(GETPOST('price')?price(GETPOST('price')):(isset($product->fourn_price)?price($product->fourn_price):'')).'">';
 				print '&nbsp;';
+
 				print $form->selectPriceBaseType((GETPOST('price_base_type')?GETPOST('price_base_type'):$product->price_base_type), "price_base_type");
 				print '</td></tr>';
+
+				//select currency
+				print '<tr><td>Moneda</td>';
+				print '<td><input class="flat" name="currency" size="4" value="MXN">';
+				print '</td>';
+				print '</tr>';
 
 				// Discount qty min
 				print '<tr><td>'.$langs->trans("DiscountQtyMin").'</td>';
@@ -539,6 +547,7 @@ if ($id || $ref)
 				print_liste_field_titre($langs->trans("VATRate"));
 				print_liste_field_titre($langs->trans("PriceQtyMinHT"));
 				print_liste_field_titre($langs->trans("UnitPriceHT"),$_SERVER["PHP_SELF"],"pfp.unitprice","",$param,'align="right"',$sortfield,$sortorder);
+				print_liste_field_titre('Moneda');
 				print_liste_field_titre($langs->trans("DiscountQtyMin"));
 				print_liste_field_titre($langs->trans("NbDaysToDelivery"),$_SERVER["PHP_SELF"],"pfp.delivery_time_days","",$param,'align="right"',$sortfield,$sortorder);
 
@@ -606,6 +615,11 @@ if ($id || $ref)
 						print '<td align="right">';
 						print price($productfourn->fourn_unitprice);
 						//print $objp->unitprice? price($objp->unitprice) : ($objp->quantity?price($objp->price/$objp->quantity):"&nbsp;");
+						print '</td>';
+
+						// Moneda
+						print '<td align="right">';
+						print ($productfourn->currency);
 						print '</td>';
 
 						// Discount

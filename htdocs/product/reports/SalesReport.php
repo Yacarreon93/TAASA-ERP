@@ -17,6 +17,7 @@ $sql = 'SELECT
   DATEDIFF(f.date_lim_reglement, f.datef) AS limit_days,
   f.datef AS fecha_emision,
   fe.vendor,
+  f.fk_cond_reglement,
   f.date_lim_reglement AS fecha_limite,
   SUM(pf.amount) AS abonado,
   (SUM(total_ttc) - SUM(pf.amount)) AS restante
@@ -81,7 +82,7 @@ while ($row = $db->fetch_object($result))
         restante => price($row->restante)
     );
     $totalVendido += $row->importe_total; //Total vendido
-    if($row->limit_days > 0) { //Ventas a credito
+    if($row->fk_cond_reglement == 2) { //Ventas a credito
       $totalCredito += $row->importe_total; //Total vendido a credito
       $totalAbonado += $row->abonado; //Total abonado a credito
       if($row->isticket == 1) {
