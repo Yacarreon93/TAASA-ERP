@@ -101,7 +101,7 @@ print "<script>
 </script>";
     print'<a id="currentReportLink" target="_blank" href="../product/reports/currentStockReport.php?stockId=1">Existencias en almacén</a><br>';
     print'<a target="_blank" href="../product/reports/SalesReport.php">Reporte de ventas</a><br>';
-    print'<a>Antigüedad de saldos</a><br>';
+    print'<a target="_blank" href="../product/reports/BillsToPayReport.php">Antigüedad de saldos</a><br>';
     print'<a target="_blank" href="../product/reports/UnpaidClientBillsReport.php">Cuentas por cobrar</a><br>';
     print'<a target="_blank" href="../product/reports/UnpaidClientBillsTotalReport.php">Totales de cuentas por cobrar</a><br>';
 
