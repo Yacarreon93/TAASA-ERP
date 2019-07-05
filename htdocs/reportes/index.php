@@ -97,10 +97,35 @@ print "<script>
           }
           return false;
       });
+
+      //changes sales report link dinamicly
+       $('#sales_report_dynamic_select').on('change', function () {
+          var month = $(this).val(); // get selected value
+          if (month) { // require a URL
+              var firstLinkPart = '../product/reports/SalesReport.php?month=';
+              var finalReportLink = firstLinkPart.concat(month);
+              document.getElementById('salesReportLink').href = finalReportLink;
+          }
+          return false;
+      });
     });
 </script>";
     print'<a id="currentReportLink" target="_blank" href="../product/reports/currentStockReport.php?stockId=1">Existencias en almacén</a><br>';
-    print'<a target="_blank" href="../product/reports/SalesReport.php">Reporte de ventas</a><br>';
+    print'<select id="sales_report_dynamic_select">
+        <option value="1">Enero</option>
+    <option value="2">Febrero</option>
+    <option value="3">Marzo</option>
+    <option value="4">Abril</option>
+    <option value="5">Mayo</option>
+    <option value="6">Junio</option>
+    <option value="7">Julio</option>
+    <option value="8">Agosto</option>
+    <option value="9">Septiembre</option>
+    <option value="10">Octubre</option>
+    <option value="11">Noviembre</option>
+    <option value="12">Diciembre</option>
+    </select>';
+    print'<a id="salesReportLink" target="_blank" href="../product/reports/SalesReport.php">Reporte de ventas</a><br>';
     print'<a target="_blank" href="../product/reports/BillsToPayReport.php">Antigüedad de saldos</a><br>';
     print'<a target="_blank" href="../product/reports/UnpaidClientBillsReport.php">Cuentas por cobrar</a><br>';
     print'<a target="_blank" href="../product/reports/UnpaidClientBillsTotalReport.php">Totales de cuentas por cobrar</a><br>';
