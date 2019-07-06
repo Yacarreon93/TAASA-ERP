@@ -5,12 +5,9 @@ require_once('./report.class.php');
 
 require_once DOL_DOCUMENT_ROOT.'/product/service/FacturePaiementsService.php';
 
-$bank = GETPOST('bank');
 $account = GETPOST('account');
 $month = GETPOST('month');
-if(!$bank) {
-    $bank = 1;
-}
+
 if(!$account) {
     $account = 1;
 }
@@ -61,7 +58,7 @@ ORDER BY
     datef ASC,
     f.rowid DESC
 	 ) t1 ON t1.rowid = f.rowid
-WHERE MONTH(p.datep) = ".$month." AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$bank.")
+WHERE MONTH(p.datep) = ".$month." AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")
 ORDER BY
 p.datep ASC,
 p.amount DESC";
@@ -140,7 +137,18 @@ $header = array(
     'Abonado', //total de abonos a credito
 );
 
-$report_title = 'Reporte de ventas del mes';
+if($account == 1) 
+{
+    $accountName = 'Aguascalientes';
+} else if($account == 3) 
+{
+    $accountName = 'Lagos ';
+} else if($account == 5 )
+{
+     $accountName = 'Leon ';
+}
+
+$report_title = $accountName .' Reporte de ventas del mes';
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
