@@ -9,7 +9,7 @@ $bank = GETPOST('bank');
 $account = GETPOST('account');
 $month = GETPOST('month');
 if(!$bank) {
-    $bank = 3;
+    $bank = 1;
 }
 if(!$account) {
     $account = 1;
@@ -72,18 +72,22 @@ if (!$result) {
     die;
 }
 
-$noDias = count($result);
-$totalAbonosAcredito = array_fill(0,$noDias,0);
+$totalAbonosAcredito = array_fill(0,30,0);
+$importeContado = 0;
+$importeCredito = 0;
+$importeAbonos = 0;
 
 $dateArray = array();
 $fechaTemp = '';
 $i  = -1;
+$dayCounter = 0;
 $j = 0;
 while ($row = $db->fetch_object($result))
 {
     if($fechaTemp != $row->fecha_pago) {
       $fechaTemp = $row->fecha_pago;
       $i++;
+      $dayCounter++;
       $dateArray[$i] = $row->fecha_pago;
     }
     if($row->fk_cond_reglement == 2) { //facturas a credito
@@ -98,24 +102,25 @@ $VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $mo
 $IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $account);
 
 //CONTADO
-$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($db, $month, $account);
+$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
 $VendidoContadoConIVA = $factureService->getTotalFacturasConIVAAContado($db, $month, $account);
 $IVAContado = $factureService->getTotalIVAFacturasContado($db, $month, $account);
 
-for($i = 0, $i < $noDias; i++) {
-  $totals[] = array(
-    fecha => $dateArray[$i],
-      ventasCreditoSinIVA => $VendidoCreditoSinIVA[$i]['total'],
-      ventasCreditoConIVA => $VendidoCreditoConIVA[$i]['total'],
-       ventasContadoSinIVA => $VendidoContadoSinIVA[$i]['total'],
-       ventasContadoConIVA => $VendidoContadoConIVA[$i]['total'],
-      ventasCreditoSinIVA => $VendidoCreditoSinIVA[$i]['total'],
-      IVA => $IVAContado[$i]['total'] + $IVACredito[$i]['total'],
-      totalSinIVA => $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]['total'];
-      totalConIVA => $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
-      importeContado => $VendidoContadoSinIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
-      importeAbonos => $totalAbonosAcredito[$i];
-  );
+$totals = array();
+
+for($i = 0; $i < $dayCounter; $i++) {
+    $totals[$i]['fecha'] = $dateArray[$i];
+    $totals[$i]['ventasCreditoSinIVA'] = $VendidoCreditoSinIVA[$i]['total'];
+    $totals[$i]['ventasCreditoConIVA'] = $VendidoCreditoConIVA[$i]['total'];
+    $totals[$i]['ventasContadoSinIVA'] = $VendidoContadoSinIVA[$i]['total'];
+    $totals[$i]['ventasContadoConIVA'] = $VendidoContadoConIVA[$i]['total'];
+    $totals[$i]['IVA']  = $IVAContado[$i]['total'] + $IVACredito[$i]['total'];
+    $totals[$i]['totalSinIVA'] = $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]['total'];
+    $totals[$i]['totalConIVA']  = $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
+    $totals[$i]['importeAbonos'] = $totalAbonosAcredito[$i];
+  $importeContado += $VendidoContadoSinIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
+  $importeCredito += $VendidoCreditoSinIVA[$i]['total'] + $VendidoCreditoConIVA[$i]['total'];
+  $importeAbonos += $totalAbonosAcredito[$i];
 }
 
 
@@ -132,11 +137,10 @@ $header = array(
     'IVA', //total de IVA contado + credito
     'Sin IVA', //credito + contado sin iva
     'Con IVA', //subtotal credito + contado con iva
-    'Abonado', //
-    'Restante'
+    'Abonado', //total de abonos a credito
 );
 
-$report_title = 'Reporte de facturas del mes';
+$report_title = 'Reporte de ventas del mes';
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
@@ -145,23 +149,21 @@ $pdf->SetFont('Arial', '', 11);
 // $pdf->setRowHeight(7);
 $pdf->SetTitle($report_title);
 $pdf->AddPage();
-$pdf->Cell(80, 10, 'VENTAS CREDITO', 0, 0, 'L');
-$pdf->Cell(80, 10, 'VENTAS CONTADO', 0, 0, 'L');
+$pdf->Cell(40, 10, ' ', 0, 0, 'L');
+$pdf->Cell(60, 10, 'VENTAS CREDITO', 0, 0, 'L');
+$pdf->Cell(90, 10, 'VENTAS CONTADO', 0, 0, 'L');
 $pdf->Cell(80, 10, 'TOTAL DE VENTAS', 0, 0, 'L');
 $pdf->ln();
 $pdf->createDynamicHeader($header);
-$pdf->createDynamicRows($data);
-$pdf->AddPage();
+$pdf->createDynamicRows($totals);
 $pdf->SetFont('Arial','B',11);
-$pdf->Cell(80, 10, 'TOTAL VENDIDO: $'.number_format($totalVendido, 2, '.', ','), 0, 0, 'L');
+$pdf->Cell(80, 10, 'Importe Contado: $'.number_format($importeContado, 2, '.', ','), 0, 0, 'L');
   $pdf->ln();
-$pdf->Cell(80, 10, 'TOTAL CONTADO: $'.number_format($totalContado, 2, '.', ','), 0, 0, 'L');
+$pdf->Cell(80, 10, 'Importe Credito: $'.number_format($importeCredito, 2, '.', ','), 0, 0, 'L');
   $pdf->ln();
-$pdf->Cell(80, 10, 'TOTAL CREDITO: $'.number_format($totalCredito, 2, '.', ','), 0, 0, 'L');
+$pdf->Cell(80, 10, 'Importe de Abonos: $'.number_format($importeAbonos, 2, '.', ','), 0, 0, 'L');
   $pdf->ln();
-$pdf->Cell(80, 10, 'TOTAL ABONADO: $'.number_format($totalAbonado, 2, '.', ','), 0, 0, 'L');
-  $pdf->ln();
-$pdf->Cell(80, 10, 'TOTAL RECIBIDO: $'.number_format($totalAbonado+$totalContado, 2, '.', ','), 0, 0, 'L');
+$pdf->Cell(80, 10, 'TOTAL DEL CORTE: $'.number_format(($importeContado + $importeAbonos), 2, '.', ','), 0, 0, 'L');
 
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();

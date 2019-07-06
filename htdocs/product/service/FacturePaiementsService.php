@@ -1,7 +1,5 @@
 <?php
 
-//require_once DOL_DOCUMENT_ROOT.'/product/dao/InventoryClosingDao.php';
-
 class FacturePaiementsService {
 	public function getFacturePayments($db, $factureId, $date) {
 		$sql = "SELECT datep, p.amount
@@ -47,12 +45,32 @@ class FacturePaiementsService {
 	}
 
 	public function getTotalFacturasSinIVAACredito($db, $month, $account) {
-		$sql = "SELECT datef, SUM(total_ttc)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 2 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva = 0
-						GROUP BY datef
-						ORDER BY datef ASC";
-		$result = $db->query($sql);
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total_ttc
+FROM
+	llx_bank
+LEFT OUTER JOIN (
+	SELECT
+		datef,
+		SUM(total_ttc) AS total_ttc
+	FROM
+		llx_facture
+	WHERE
+		fk_cond_reglement = 2
+	AND fk_account = ".$account."
+		AND MONTH (datef) = ".$month."
+	AND YEAR (DATEf) = YEAR (CURDATE())
+	AND tva = 0
+	GROUP BY
+		datef
+	ORDER BY
+		datef ASC
+) t1 ON t1.datef = dateo
+WHERE
+	MONTH (dateo) = ".$month."
+AND YEAR (dateo) = YEAR (CURDATE())";
+		$result = $db->query($sql);	
 
 		if (!$result) {
 		    echo 'Error: '.$db->lasterror;
@@ -61,20 +79,45 @@ class FacturePaiementsService {
 
 		while ($row = $db->fetch_object($result))
 		{
+			if(!$row->total_ttc) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total_ttc;
+			}
 		    $data[] = array(
-						fecha=>$row->datef,
-		        total=> $row->total_ttc
+				fecha=>$row->datef,
+		        total=> $totalTemp
 		    );
 		}
 		return $data;
 	}
 
 	public function getTotalFacturasConIVAACredito($db, $month, $account) {
-		$sql = "SELECT datef, SUM(total)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 2 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva != 0
-						GROUP BY datef
-						ORDER BY datef ASC";
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total
+FROM
+	llx_bank
+LEFT OUTER JOIN (
+	SELECT
+		datef,
+		SUM(total) AS total
+	FROM
+		llx_facture
+	WHERE
+		fk_cond_reglement = 2
+	AND fk_account = ".$account."
+		AND MONTH (datef) = ".$month."
+	AND YEAR (DATEf) = YEAR (CURDATE())
+	AND tva != 0
+	GROUP BY
+		datef
+	ORDER BY
+		datef ASC
+) t1 ON t1.datef = dateo
+WHERE
+	MONTH (dateo) = ".$month."
+AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -84,20 +127,45 @@ class FacturePaiementsService {
 
 		while ($row = $db->fetch_object($result))
 		{
+			if(!$row->total) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total;
+			}
 		    $data[] = array(
 					fecha=>$row->datef,
-					total=> $row->total
+					total=> $totalTemp
 		    );
 		}
 		return $data;
 	}
 
 	public function getTotalIVAFacturasACredito($db, $month, $account) {
-		$sql = "SELECT datef, SUM(tva)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 2 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva != 0
-						GROUP BY datef
-						ORDER BY datef ASC";
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.tva
+FROM
+	llx_bank
+LEFT OUTER JOIN (
+	SELECT
+		datef,
+		SUM(tva) AS tva
+	FROM
+		llx_facture
+	WHERE
+		fk_cond_reglement = 2
+	AND fk_account = ".$account."
+		AND MONTH (datef) = ".$month."
+	AND YEAR (DATEf) = YEAR (CURDATE())
+	AND tva != 0
+	GROUP BY
+		datef
+	ORDER BY
+		datef ASC
+) t1 ON t1.datef = dateo
+WHERE
+	MONTH (dateo) = ".$month."
+AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -107,43 +175,93 @@ class FacturePaiementsService {
 
 		while ($row = $db->fetch_object($result))
 		{
+			if(!$row->tva) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->tva;
+			}
 				$data[] = array(
 					fecha=>$row->datef,
-					total=> $row->total
+					total=> $totalTemp
 				);
 		}
 		return $data;
 	}
 
-	public function getTotalFacturasSinIVAAContado($db, $month, $account) {
-		$sql = "SELECT datef, SUM(total_ttc)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 1 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva = 0
-						GROUP BY datef
-						ORDER BY datef ASC";
+	public function getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account) {
+		$sql = "SELECT DISTINCT
+		dateo,
+		t1.total_ttc
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(total_ttc) AS total_ttc
+		FROM
+			llx_facture
+		WHERE
+			fk_cond_reglement = 1
+		AND fk_account = ".$account."
+		AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = YEAR (CURDATE())
+		AND tva = 0
+		GROUP BY
+			datef
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
 		    echo 'Error: '.$db->lasterror;
 		    die;
 		}
+		$i = 0;
 
 		while ($row = $db->fetch_object($result))
 		{
+			for($j = 0; $j < sizeof($dateArray); $j++) {
+
+			}
+			if(!$row->total_ttc) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total_ttc;
+			}
 		    $data[] = array(
-						fecha=>$row->datef,
-		        total=> $row->total_ttc
+				fecha=>$row->datef,
+		        total=> $totalTemp
 		    );
 		}
 		return $data;
 	}
 
 	public function getTotalFacturasConIVAAContado($db, $month, $account) {
-		$sql = "SELECT datef, SUM(total)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 1 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva != 0
-						GROUP BY datef
-						ORDER BY datef ASC";
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total
+FROM
+	llx_bank
+LEFT OUTER JOIN (
+	SELECT
+		datef,
+		SUM(total) AS total
+	FROM
+		llx_facture
+	WHERE
+		fk_cond_reglement = 1
+	AND fk_account = ".$account."
+	AND MONTH (datef) = ".$month."
+	AND YEAR (DATEf) = YEAR (CURDATE())
+	AND tva != 0
+	GROUP BY
+		datef
+) t1 ON t1.datef = dateo
+WHERE
+	MONTH (dateo) = ".$month."
+AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -153,20 +271,45 @@ class FacturePaiementsService {
 
 		while ($row = $db->fetch_object($result))
 		{
+			if(!$row->total) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total;
+			}
 		    $data[] = array(
 					fecha=>$row->datef,
-					total=> $row->total
+					total=> $totalTemp
 		    );
 		}
 		return $data;
 	}
 
 	public function getTotalIVAFacturasContado($db, $month, $account) {
-		$sql = "SELECT datef, SUM(tva)
-						FROM llx_facture
-						WHERE fk_cond_reglement = 1 AND fk_account = ".$account." AND MONTH(datef) = ".$month." AND YEAR(DATEf) = YEAR(CURDATE()) AND tva != 0
-						GROUP BY datef
-						ORDER BY datef ASC";
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.tva
+FROM
+	llx_bank
+LEFT OUTER JOIN (
+	SELECT
+		datef,
+		SUM(tva) AS tva
+	FROM
+		llx_facture
+	WHERE
+		fk_cond_reglement = 1
+	AND fk_account = ".$account."
+	AND MONTH (datef) = ".$month."
+	AND YEAR (DATEf) = YEAR (CURDATE())
+	AND tva != 0
+	GROUP BY
+		datef
+	ORDER BY
+		datef ASC
+) t1 ON t1.datef = dateo
+WHERE
+	MONTH (dateo) = ".$month."
+AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -176,9 +319,14 @@ class FacturePaiementsService {
 
 		while ($row = $db->fetch_object($result))
 		{
+			if(!$row->tva) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->tva;
+			}
 				$data[] = array(
 					fecha=>$row->datef,
-					total=> $row->total
+					total=> $totalTemp
 				);
 		}
 		return $data;
