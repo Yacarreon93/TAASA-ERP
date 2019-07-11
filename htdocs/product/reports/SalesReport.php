@@ -70,6 +70,9 @@ if (!$result) {
 }
 
 $totalAbonosAcredito = array_fill(0,30,0);
+$totalAbonosContado = array_fill(0,30,0);
+$VendidoContadoConIVA = array_fill(0,30,0);
+$VendidoContadoSinIVA = array_fill(0,30,0);
 $importeContado = 0;
 $importeCredito = 0;
 $importeAbonos = 0;
@@ -80,8 +83,7 @@ $i  = -1;
 $dayCounter = 0;
 $j = 0;
 while ($row = $db->fetch_object($result))
-{
-    if($fechaTemp != $row->fecha_pago) {
+{   if($fechaTemp != $row->fecha_pago) {
       $fechaTemp = $row->fecha_pago;
       $i++;
       $dayCounter++;
@@ -89,6 +91,14 @@ while ($row = $db->fetch_object($result))
     }
     if($row->fk_cond_reglement == 2) { //facturas a credito
       $totalAbonosAcredito[$i] += $row->importe_pago;
+    } else { //facturas de contado
+        $totalAbonosContado[$i] += $row->importe_pago;
+        if($row->tva > 0) {
+          $IVAContado[$i]+= $row->tva;
+          $VendidoContadoConIVA[$i]+= $row->subtotal;
+        }else {
+          $VendidoContadoSinIVA[$i]+= $row->importe_pago;
+        }
     }
 }
 
@@ -99,9 +109,9 @@ $VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $mo
 $IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $account);
 
 //CONTADO
-$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
-$VendidoContadoConIVA = $factureService->getTotalFacturasConIVAAContado($db, $month, $account);
-$IVAContado = $factureService->getTotalIVAFacturasContado($db, $month, $account);
+//$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
+//$VendidoContadoConIVA = $factureService->getTotalFacturasConIVAAContado($db, $month, $account);
+//$IVAContado = $factureService->getTotalIVAFacturasContado($db, $month, $account);
 
 $totals = array();
 
@@ -109,13 +119,13 @@ for($i = 0; $i < $dayCounter; $i++) {
     $totals[$i]['fecha'] = $dateArray[$i];
     $totals[$i]['ventasCreditoSinIVA'] = $VendidoCreditoSinIVA[$i]['total'];
     $totals[$i]['ventasCreditoConIVA'] = $VendidoCreditoConIVA[$i]['total'];
-    $totals[$i]['ventasContadoSinIVA'] = $VendidoContadoSinIVA[$i]['total'];
-    $totals[$i]['ventasContadoConIVA'] = $VendidoContadoConIVA[$i]['total'];
-    $totals[$i]['IVA']  = $IVAContado[$i]['total'] + $IVACredito[$i]['total'];
-    $totals[$i]['totalSinIVA'] = $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]['total'];
-    $totals[$i]['totalConIVA']  = $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
+    $totals[$i]['ventasContadoSinIVA'] = $VendidoContadoSinIVA[$i];
+    $totals[$i]['ventasContadoConIVA'] = $VendidoContadoConIVA[$i];
+    $totals[$i]['IVA']  = $IVAContado[$i] + $IVACredito[$i]['total'];
+    $totals[$i]['totalSinIVA'] = $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i];
+    $totals[$i]['totalConIVA']  = $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i];
     $totals[$i]['importeAbonos'] = $totalAbonosAcredito[$i];
-  $importeContado += $VendidoContadoSinIVA[$i]['total'] + $VendidoContadoConIVA[$i]['total'];
+  $importeContado += $VendidoContadoSinIVA[$i] + $VendidoContadoConIVA[$i];
   $importeCredito += $VendidoCreditoSinIVA[$i]['total'] + $VendidoCreditoConIVA[$i]['total'];
   $importeAbonos += $totalAbonosAcredito[$i];
 }
@@ -137,10 +147,10 @@ $header = array(
     'Abonado', //total de abonos a credito
 );
 
-if($account == 1) 
+if($account == 1)
 {
     $accountName = 'Aguascalientes';
-} else if($account == 3) 
+} else if($account == 3)
 {
     $accountName = 'Lagos ';
 } else if($account == 5 )

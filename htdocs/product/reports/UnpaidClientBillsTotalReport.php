@@ -2,9 +2,10 @@
 
 require_once('../../main.inc.php');
 require_once('./report.class.php');
+require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 
 $sql = 'SELECT
-    llx_societe.nom as nom,
+    llx_societe.rowid, llx_societe.nom as nom,
     sum(total_ttc) as total
 FROM
     llx_facture AS f
@@ -21,27 +22,31 @@ if (!$result) {
     die;
 }
 
+$object = new Client($db);
 $i = 0;
 $total = 0;
 $result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
+  $object->fetch($row->rowid);
+  $outstandingBills = $object->get_OutstandingBill();
     $data[] = array(
         nom => $row->nom,
-        total => price($row->total),
+        total => price($object->get_OutstandingBill()),
     );
     $i++;
-    $total+=$row->total;
+    $total+=$outstandingBills;
 }
+
 
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 
 // Títulos de las columnas
 $header = array(
-    'Nom',
-    'Total'
+    'Nombre del cliente',
+    'Total de deuda'
 );
 
 $report_title = 'Reporte de total de facturas pendientes de cobro';
