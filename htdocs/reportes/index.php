@@ -68,13 +68,60 @@ $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($sear
 
 print_fiche_titre("Reportes", $buttonviewhierarchy);
 
-	if($user->id == '1' || $user->id == '18') {
-    print'<select id="current_report_dynamic_select">
-        <option value="1">Aguascalientes Bodega</option>
-    <option value="2">Aguascalientes Produccion</option>
-    <option value="3">Leon</option>
-    <option value="4">Lagos</option>
-    </select>';
+if($user->id == '1' || $user->id == '18') {
+print '<table class="noborder nohover" width="50%">';
+print "<tr class=\"liste_titre\">";
+print '<td colspan="2">Reportes de contabilidad</td></tr>';
+//Existencias en almacen
+print "<tr><td><a id='currentReportLink' target='_blank' href='../product/reports/currentStockReport.php?stockId=1'>Existencias en almacén</a><br></td>
+<td><select id='current_report_dynamic_select'>
+    <option value='1'>Aguascalientes Bodega</option>
+<option value='2'>Aguascalientes Produccion</option>
+<option value='3'>Leon</option>
+<option value='4'>Lagos</option>
+</select></td>'";
+//Reporte de ventas
+print "<tr><td><a id='salesReportLink' target='_blank' href='../product/reports/SalesReport.php'>Reporte de ventas</a></td>
+<td><select id='sales_report_dynamic_select'>
+    <option value='1'>Enero</option>
+<option value='2'>Febrero</option>
+<option value='3'>Marzo</option>
+<option value='4'>Abril</option>
+<option value='5'>Mayo</option>
+<option value='6'>Junio</option>
+<option value='7'>Julio</option>
+<option value='8'>Agosto</option>
+<option value='9'>Septiembre</option>
+<option value='10'>Octubre</option>
+<option value='11'>Noviembre</option>
+<option value='12'>Diciembre</option>
+</select></td>";
+//Antiguedad de saldos
+print "<tr><td><a target='_blank' href='../product/reports/BillsToPayReport.php'>Antigüedad de saldos</a><br></td>
+<td><br><br></td>'";
+//Cuentas por cobrar
+print "<tr><td><a target='_blank' href='../product/reports/UnpaidClientBillsReport.php'>Cuentas por cobrar</a><br></td>
+<td><br><br></td>'";
+//Total de cuentas por cobrar
+print "<tr><td><a target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>
+<td><br><br></td>'";
+
+print "</table></form><br>";
+
+
+print '<table class="noborder nohover" width="50%">';
+print "<tr class=\"liste_titre\">";
+print '<td colspan="2">Cierre de inventario</td></tr>';
+//Cierre de inventario
+print "<tr><td><a id='inventoryClosingLink' target='_blank' href='../product/cierre_de_inventario.php?stock_id=1'>Ir a Cierre de inventario</a><br></td>
+<td><select id='stock_closing_dynamic_select'>
+    <option value='1'>Aguascalientes Bodega</option>
+<option value='2'>Aguascalientes Produccion</option>
+<option value='3'>Leon</option>
+<option value='4'>Lagos</option>
+</select></td>'";
+print "</table></form><br>";
+
 print "<script>
     $(function(){
       // changes current stock link dinamicly
@@ -110,33 +157,6 @@ print "<script>
       });
     });
 </script>";
-    print'<a id="currentReportLink" target="_blank" href="../product/reports/currentStockReport.php?stockId=1">Existencias en almacén</a><br>';
-    print'<select id="sales_report_dynamic_select">
-        <option value="1">Enero</option>
-    <option value="2">Febrero</option>
-    <option value="3">Marzo</option>
-    <option value="4">Abril</option>
-    <option value="5">Mayo</option>
-    <option value="6">Junio</option>
-    <option value="7">Julio</option>
-    <option value="8">Agosto</option>
-    <option value="9">Septiembre</option>
-    <option value="10">Octubre</option>
-    <option value="11">Noviembre</option>
-    <option value="12">Diciembre</option>
-    </select>';
-    print'<a id="salesReportLink" target="_blank" href="../product/reports/SalesReport.php">Reporte de ventas</a><br>';
-    print'<a target="_blank" href="../product/reports/BillsToPayReport.php">Antigüedad de saldos</a><br>';
-    print'<a target="_blank" href="../product/reports/UnpaidClientBillsReport.php">Cuentas por cobrar</a><br>';
-    print'<a target="_blank" href="../product/reports/UnpaidClientBillsTotalReport.php">Totales de cuentas por cobrar</a><br>';
-
-    print'<select id="stock_closing_dynamic_select">
-        <option value="1">Aguascalientes Bodega</option>
-    <option value="2">Aguascalientes Produccion</option>
-    <option value="3">Leon</option>
-    <option value="4">Lagos</option>
-    </select>';
-    print'<a id="inventoryClosingLink" target="_blank" href="../product/cierre_de_inventario.php?stock_id=1">Ir a Cierre de inventario</a><br>';
   } else {
     print'<p>olooo</p>';
   }
