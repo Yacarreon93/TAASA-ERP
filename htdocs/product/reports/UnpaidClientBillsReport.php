@@ -3,6 +3,17 @@
 require_once('../../main.inc.php');
 require_once('./report.class.php');
 
+$month     = GETPOST('month');
+$year     = GETPOST('year');
+if(!$month) {
+    $month = date("M");
+}
+if(!$year) {
+    $year = date("Y");
+}
+
+$dateBefore = $year . "0" .$month . "01000000";
+
 $sql = 'SELECT
     f.facnumber,
     s.nom AS NAME,
@@ -25,6 +36,7 @@ WHERE
     f.fk_soc = s.rowid
 AND f.entity = 1
 AND f.fk_statut = 1
+AND DATE(datef) < "'.$dateBefore.'"
 GROUP BY
     f.rowid,
     f.facnumber,
@@ -58,6 +70,7 @@ $result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
+    $importeAPagar = ($row->importe_total - $row->abonado);
     $data[] = array(
         id => $row->facnumber,
         name => substr($row->NAME, 0, 18),
@@ -68,7 +81,7 @@ while ($row = $db->fetch_object($result))
         dias_transcurridos=>$row->days_p,
         abonado => price($row->abonado)
     );
-    $total += $row->total;
+    $total += $importeAPagar;
     $i++;
 }
 
@@ -98,6 +111,10 @@ $pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
+
+$pdf->AddPage();
+$pdf->SetFont('Arial','B',11);
+$pdf->Cell(80, 10, 'TOTAL POR COBRAR: $'.number_format($total, 2, '.', ','), 0, 0, 'L');
 
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();

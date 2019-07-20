@@ -3,13 +3,30 @@
 require_once('../../main.inc.php');
 require_once('./report.class.php');
 
+$month     = GETPOST('month');
+$year     = GETPOST('year');
+$currency = GETPOST('currency');
+if(!$month) {
+    $month = date("M");
+}
+if(!$year) {
+    $year = date("Y");
+}
+if(!$currency) {
+    $currency = 20;
+}
+
+$dateBefore = $year . "0" .$month . "01000000";
+
 $sql = 'SELECT s.rowid AS socid, s.nom AS name,
 fac.rowid AS facid, fac.ref AS ref, fac.datef AS date,
 fac.date_lim_reglement AS date_echeance, fac.total_ttc AS total,
-fac.paye AS paye, fac.fk_statut AS fk_statut, fac.libelle
+fac.paye AS paye, fac.fk_statut AS fk_statut, fac.libelle, fe.currency
 FROM llx_societe AS s, llx_facture_fourn AS fac
 LEFT JOIN llx_projet AS p ON p.rowid = fac.fk_projet
-WHERE fac.entity = 1 AND fac.fk_soc = s.rowid
+JOIN llx_facture_fourn_extrafields AS fe ON fac.rowid = fe.fk_object
+WHERE fac.entity = 1 AND fac.fk_soc = s.rowid AND DATE(fac.datef) < "'.$dateBefore.'"
+AND fac.paye != 1
 ORDER BY fac.datef DESC,fac.rowid DESC';
 
 if (!$result) {
@@ -30,16 +47,21 @@ while ($row = $db->fetch_object($result))
   } else {
     $status = 'Borrador';
   }
+   $importeFinal = $row->total;
+        if($row->currency == 'USD') {
+            $importeFinal *= $currency;
+        }
     $data[] = array(
         id => $row->ref,
         fecha => $row->date,
         fecha_vencimiento => $row->date_echeance,
         proveedor => substr($row->name, 0, 18),
-        importe => '$'.price($row->total),
+        importe => '$'.price($importeFinal),
+        moneda => $row->currency,
         estado => $status
     );
     if($row->fk_statut == 1) {
-        $total += $row->total;
+        $total += $importeFinal;
     }
     $i++;
 }
@@ -51,9 +73,10 @@ $pdf = new ReportPDF('l');
 $header = array(
     'Id',
     'Fecha',
-    'Fecha de Vencimiento',
+    'Vencimiento',
     'Proveedor',
-    'Importe',
+    'Importe (Pesos)',
+    'Moneda',
     'Estado'
 );
 

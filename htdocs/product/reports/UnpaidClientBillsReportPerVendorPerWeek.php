@@ -92,18 +92,7 @@ $header = array(
     'Abonado'
 );
 
-if($account == 1)
-{
-    $accountName = 'Aguascalientes';
-} else if($account == 3)
-{
-    $accountName = 'Lagos ';
-} else if($account == 5 )
-{
-     $accountName = 'Leon ';
-}
-
-$report_title = $accountName.' Reporte de facturas pendientes de cobro';
+$report_title = 'Reporte de facturas pendientes de cobro';
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);

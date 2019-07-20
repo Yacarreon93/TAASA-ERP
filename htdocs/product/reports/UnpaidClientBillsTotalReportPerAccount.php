@@ -6,11 +6,15 @@ require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 
 $month     = GETPOST('month');
 $year     = GETPOST('year');
+$account     = GETPOST('account');
 if(!$month) {
     $month = date("M");
 }
 if(!$year) {
     $year = date("Y");
+}
+if(!$account) {
+    $account = 1;
 }
 
 if($month == 1) {
@@ -22,11 +26,12 @@ setlocale(LC_ALL, 'es_ES');
 
 $dateObj   = DateTime::createFromFormat('!m', $month_temp);
 $month_name = strftime('%B', $dateObj->getTimestamp());
+
 $dateBefore = $year . "0" .$month . "01000000";
 
 $sql = 'SELECT
     llx_societe.rowid, llx_societe.nom as nom,
-    sum(total_ttc) as total, fk_account as account
+    sum(total_ttc) as total
 FROM
     llx_facture AS f
 JOIN llx_societe ON f.fk_soc = llx_societe.rowid
@@ -36,6 +41,7 @@ WHERE
 AND f.fk_statut = 1
 AND f.entity = 1
 AND DATE(datef) < "'.$dateBefore.'"
+AND f.fk_account = '.$account.'
 GROUP BY nom';
 
 if (!$result) {
@@ -46,20 +52,18 @@ if (!$result) {
 $object = new Client($db);
 $i = 0;
 $total = 0;
-$totalAgs = 0;
-$totalLeon = 0;
 $result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
   $object->fetch($row->rowid);
   $outstandingBills = $object->get_OutstandingBill($dateBefore);
-   $total+=$outstandingBills;
+  $total+=$outstandingBills;
     $data[] = array(
         nom => dol_trunc($row->nom,20),
-        total => price($object->get_OutstandingBill($dateBefore))
+        total => price($outstandingBills),
     );
-    $i++;  
+    $i++;
 }
 
 
@@ -72,7 +76,18 @@ $header = array(
     'Total de deuda',
 );
 
-$report_title = 'Reporte de total de facturas pendientes de cobro - '.$month_name;
+if($account == 1)
+{
+    $accountName = 'Aguascalientes';
+} else if($account == 3)
+{
+    $accountName = 'Lagos ';
+} else if($account == 5 )
+{
+     $accountName = 'Leon ';
+}
+
+$report_title = $accountName.' Reporte de totales pendientes de cobro - '.$month_name;
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
