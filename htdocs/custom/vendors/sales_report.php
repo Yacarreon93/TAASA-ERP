@@ -53,7 +53,7 @@ else if($search_type == 3) { //Seting dates to correct sql format
     if($month_week != '') $month = $month_week;
     if($year_week != '') $year = $year_week;
     $fromDate = $fromDate[6] . $fromDate[7] . $fromDate[8] . $fromDate[9] . $fromDate[3] . $fromDate[4] . $fromDate[0] . $fromDate[1] . "000000";
-    $toDate = $toDate[6] . $toDate[7] . $toDate[8] . $toDate[9] . $toDate[3] . $toDate[4] . $toDate[0] . $toDate[1] . "000000";
+    $toDate = $toDate[6] . $toDate[7] . $toDate[8] . $toDate[9] . $toDate[3] . $toDate[4] . $toDate[0] . $toDate[1] . "235900";
 }
 else {
     $fromDate = "";
@@ -259,10 +259,15 @@ else {
     }
         $sql.= ' AND label != "Retiro por corte de caja"
         AND vendor = '.$id.'
-        GROUP BY b.rowid';
+        GROUP BY pf.rowid';
+        $sql.= ' ORDER BY datec DESC,';
+        $sql.= ' f.rowid DESC ';
 
     $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
     $rows = $db->num_rows($res);
+
+    //print_r($sql);
+    //die();
 
     if ($rows > 0)
     {
