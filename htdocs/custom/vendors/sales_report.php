@@ -37,7 +37,9 @@
     if($year_general != '') $year = $year_general;
     $monthSelected =  GETPOST('monthSelected','int');
 $fromDate = GETPOST('fromDate');
+$fromDate2 = GETPOST('fromDate');
 $toDate = GETPOST('toDate');
+$toDate2 = GETPOST('toDate');
 if($search_type == 1) { //Search type refers to the date selected range (general, montlhy, weekly)
     $year = 2016;
     $month = "";
@@ -63,14 +65,25 @@ else {
     $year_lim   = GETPOST('year_lim','int');
     $filtre = GETPOST('filtre');
 
+    //TODO: jalar nombres de vendedores de db
+
+     $sql = 'SELECT * FROM llx_user WHERE rowid = '.$id;
+     $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+     $row = $db->fetch_object($res);
+     $vendedor = $row->firstname;
+
     // Incluir la librería
     require_once 'class/PHPExcel.php';
     $objPHPExcel = new PHPExcel();
     /////
+    //Titulo
+   $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'REPORTE '.$vendedor.'  DEL '. $fromDate2 . ' AL '. $toDate2);
     // Encabezado
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'REF. PRODUCTO');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', 'STOCK');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'UNIDAD DE MEDIDA');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', 'VENTAS ');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B3', 'FACTURA');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C3', 'FECHA');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D3', 'TERCERO');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E3', 'IMPORTE');
     /////
 
     $sql = 'SELECT';
@@ -178,11 +191,12 @@ else {
     {
 
         $facturestatic=new Facture($db);
-        $i = 2;
+        $i = 4;
+        $importeTotalVentas = 0;
 
         while($row = $db->fetch_object($res))
         {
-
+            $importeTotalVentas += $row->total_ttc;
             $datelimit=$db->jdate($objp->datelimite);
 
             $facturestatic->id=$objp->facid;
@@ -191,21 +205,88 @@ else {
             $notetoshow=dol_string_nohtmltag(($user->societe_id>0?$objp->note_public:$objp->note),1);
             $paiement = $facturestatic->getSommePaiement();
 
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$i, $row->ref_client);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, dol_print_date($db->jdate($row->df),'day'));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$i, $datelimit);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, $row->facnumber);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$i, dol_print_date($db->jdate($row->df),'day'));
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$i, $row->name);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $row->total_ht);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F'.$i, $row->total_ttc);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('G'.$i, $row->total_tva);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H'.$i, (! empty($paiement)?price($paiement,0,$langs):'&nbsp;'));
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('I'.$i, $row->fk_statut);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $row->total_ttc);
 
             $i++;
         }
-
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, 'TOTAL');
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $importeTotalVentas);
+        $i++;
+        $i++;
 
     }
+
+    //COBRANZA
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$i, 'COBRANZA');
+    $i++;
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, 'FACTURA');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$i, 'FECHA');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$i, 'TERCERO');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, 'IMPORTE');
+    $i++;
+
+    $sql = 'SELECT f.facnumber, b.datec, s.nom, pf.amount FROM llx_bank AS b 
+    JOIN llx_paiement AS p ON p.fk_bank = b.rowid
+    JOIN llx_paiement_facture AS pf ON pf.fk_paiement = p.rowid
+    JOIN llx_facture AS f ON f.rowid = pf.fk_facture
+    JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+    JOIN llx_societe AS s ON f.fk_soc = s.rowid
+    JOIN llx_user_relations AS ur ON ur.fk_user = vendor';
+    if($id == 15) { //Ventas Gerardo Lagos (id=3)
+        $sql.= ' WHERE (b.fk_account = ur.fk_bank_account OR b.fk_account = 3)';
+    } else {
+         $sql.= ' WHERE b.fk_account = ur.fk_bank_account';
+    }
+    
+     if ($fromDate && $toDate) {
+        $sql.= " AND b.datec BETWEEN '".$fromDate."' AND '".$toDate."'";
+    }
+    else if ($month > 0)
+    {
+        if ($year > 0 && empty($day))
+            $sql.= " AND b.datec BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+        else if ($year > 0 && ! empty($day))
+            $sql.= " AND b.datec BETWEEN '".$db->idate(dol_mktime(0, 0, 0, $month, $day, $year))."' AND '".$db->idate(dol_mktime(23, 59, 59, $month, $day, $year))."'";
+        else
+            $sql.= " AND date_format(b.datec, '%m') = '".$month."'";
+    }
+    else if ($year > 0)
+    {
+        $sql.= " AND b.datec BETWEEN '".$db->idate(dol_get_first_day($year,1,false))."' AND '".$db->idate(dol_get_last_day($year,12,false))."'";
+    }
+        $sql.= ' AND label != "Retiro por corte de caja"
+        AND vendor = '.$id.'
+        GROUP BY b.rowid';
+
+    $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+    $rows = $db->num_rows($res);
+
+    if ($rows > 0)
+    {
+        $importeTotalCobranza = 0;
+
+        while($row = $db->fetch_object($res))
+        {
+            $importeTotalCobranza += $row->amount;
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, $row->facnumber);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$i, dol_print_date($db->jdate($row->datec),'day'));
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$i, $row->nom);
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $row->amount);
+
+            $i++;
+        }
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, 'TOTAL');
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $importeTotalCobranza);
+        $i++;
+
+    }
+
+     $db->free($res);
+     $db->close();
+
 
     $date = getdate();
     $nom_archivo = 'inv_'.$date['mday'].'-'.$date['mon'].'_'.$date['hours'].'-'.$date['minutes'];
