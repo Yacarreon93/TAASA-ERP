@@ -1,5 +1,5 @@
 <?php
-    require '../../main.inc.php';   
+    require '../../main.inc.php';
     // Change this following line to use the correct relative path from htdocs
     include_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
@@ -70,7 +70,7 @@ else {
     // Encabezado
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'REF. PRODUCTO');
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', 'STOCK');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'UNIDAD DE MEDIDA');  
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'UNIDAD DE MEDIDA');
     /////
 
     $sql = 'SELECT';
@@ -96,7 +96,7 @@ else {
             $sql.= ' JOIN '.MAIN_DB_PREFIX.'facture_extrafields as ef ON ef.fk_object = f.rowid';
             $sql.= ' WHERE f.fk_soc = s.rowid';
             $sql.= ' AND ef.vendor = '.$id;
-            $sql.= ' AND f.fk_statut = 1';
+            $sql.= ' AND f.fk_statut != 3';
             $sql.= " AND f.entity = ".$conf->entity;
             if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
             if ($search_product_category > 0) $sql.=" AND cp.fk_categorie = ".$search_product_category;
@@ -171,16 +171,17 @@ else {
             foreach ($listfield as $key => $value) $sql.= $listfield[$key].' '.$sortorder.',';
             $sql.= ' f.rowid DESC ';
 
-    $res = $db->query($sql) or die('ERROR en la consulta: '.$sql); 
+    $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
     $rows = $db->num_rows($res);
 
-    if ($rows > 0) 
+    if ($rows > 0)
     {
 
         $facturestatic=new Facture($db);
+        $i = 2;
 
-        while($row = $db->fetch_object($res)) 
-        {                               
+        while($row = $db->fetch_object($res))
+        {
 
             $datelimit=$db->jdate($objp->datelimite);
 
@@ -191,7 +192,7 @@ else {
             $paiement = $facturestatic->getSommePaiement();
 
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$i, $row->ref_client);
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, dol_print_date($db->jdate($row->df),'day'));  
+            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B'.$i, dol_print_date($db->jdate($row->df),'day'));
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C'.$i, $datelimit);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D'.$i, $row->name);
             $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, $row->total_ht);
@@ -203,14 +204,14 @@ else {
             $i++;
         }
 
-       
+
     }
 
     $date = getdate();
     $nom_archivo = 'inv_'.$date['mday'].'-'.$date['mon'].'_'.$date['hours'].'-'.$date['minutes'];
     header("Content-Type: application/vnd.ms-excel; charset=utf-8");
     header("Content-Disposition: attachment; filename=$nom_archivo.xls");
-    header('Cache-Control: max-age=0');      
+    header('Cache-Control: max-age=0');
     $objWriter=PHPExcel_IOFactory::createWriter($objPHPExcel,'Excel2007');
     $objWriter->save('php://output');
     exit;
