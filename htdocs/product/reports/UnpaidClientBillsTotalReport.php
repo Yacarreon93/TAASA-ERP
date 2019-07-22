@@ -7,7 +7,7 @@ require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 $month     = GETPOST('month');
 $year     = GETPOST('year');
 if(!$month) {
-    $month = date("M");
+    $month = date("n");
 }
 if(!$year) {
     $year = date("Y");
@@ -18,7 +18,9 @@ if($month == 1) {
 } else {
     $month_temp = $month -1;
 }
+
 setlocale(LC_ALL, 'es_ES');
+
 
 $dateObj   = DateTime::createFromFormat('!m', $month_temp);
 $month_name = strftime('%B', $dateObj->getTimestamp());

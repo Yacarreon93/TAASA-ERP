@@ -100,12 +100,24 @@ print "<tr><td><a id='salesReportLink' target='_blank' href='../product/reports/
 print "<tr><td><a target='_blank' href='../product/reports/BillsToPayReport.php'>Antigüedad de saldos</a><br></td>
 <td><br><br></td>'";
 //Cuentas por cobrar
-print "<tr><td><a target='_blank' href='../product/reports/UnpaidClientBillsReport.php'>Cuentas por cobrar</a><br></td>
-<td><br><br></td>'";
-//Total de cuentas por cobrar
-print "<tr><td><a target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>
+print "<tr><td><a id='unpaid_client_bills_link' target='_blank' href='../product/reports/UnpaidClientBillsReport.php'>Cuentas por cobrar</a><br></td>
 <td><br><br></td>'";
 
+
+$sql = "SELECT rowid, firstname FROM llx_user WHERE job = 'Vendedor'";
+$res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+
+//Total de cuentas por cobrar
+print "<tr><td><a id='unpaid_client_bills_total_link' target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>
+<td><select id='unpaid_client_bills_total_select'>
+<option value='1'>General</option>";
+while ($row = $db->fetch_object($res))
+{
+  $vendor_id = $row->rowid;
+  $vendedor = $row->firstname;
+  print "<option value='".$vendor_id."'>".$vendedor."</option>";
+}
+print "</select></td>";
 print "</table></form><br>";
 
 
@@ -155,6 +167,22 @@ print "<script>
           }
           return false;
       });
+
+      //changes unpaid client bills report link dinamically
+       $('#unpaid_client_bills_total_select').on('change', function () {
+          var vendor = $(this).val(); // get selected value
+          if (vendor) {
+              if(vendor == 1) {
+                var finalReportLink = '../product/reports/UnpaidClientBillsTotalReport.php';
+              } else {
+                var firstLinkPart = '../product/reports/UnpaidClientBillsTotalReportPerVendor.php?vendor=';
+                var finalReportLink = firstLinkPart.concat(vendor);
+              }
+              document.getElementById('unpaid_client_bills_total_link').href = finalReportLink;
+          }
+          return false;
+        });
+
     });
 </script>";
   } else {
