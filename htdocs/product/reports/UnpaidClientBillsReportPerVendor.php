@@ -72,12 +72,12 @@ while ($row = $db->fetch_object($result))
     $data[] = array(
         id => $row->facnumber,
         name => substr($row->NAME, 0, 18),
-        importe_total => price($row->importe_total),
+        importe_total =>  '$'.price($row->importe_total),
         fecha_emision => $row->fecha_emision,
         fecha_limite => $row->fecha_limite,
         dias_credito => $row->limit_days,
         dias_transcurridos=>$row->days_p,
-        abonado => price($row->abonado)
+        abonado =>  '$'.price($row->abonado)
     );
     $total += $row->total;
     $i++;

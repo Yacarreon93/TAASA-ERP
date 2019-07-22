@@ -44,7 +44,7 @@ while ($row = $db->fetch_object($result))
   $outstandingBills = $object->get_OutstandingBill();
     $data[] = array(
         nom => $row->nom,
-        total => price($object->get_OutstandingBill()),
+        total => '$'.price($object->get_OutstandingBill()),
     );
     $i++;
     $total+=$outstandingBills;
@@ -73,7 +73,9 @@ $pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
-$pdf->SetFont('Arial', '', 11);
+$pdf->AddPage();
+$pdf->SetFont('Arial','B',11);
+$pdf->Cell(80, 10, 'TOTAL POR COBRAR: $'.number_format($total, 2, '.', ','), 0, 0, 'L');
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();
 // $pdf->ImprovedTable($header,$data);

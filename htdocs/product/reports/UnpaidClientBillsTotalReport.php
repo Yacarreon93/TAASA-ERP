@@ -57,7 +57,7 @@ while ($row = $db->fetch_object($result))
    $total+=$outstandingBills;
     $data[] = array(
         nom => dol_trunc($row->nom,20),
-        total => price($object->get_OutstandingBill($dateBefore))
+        total =>  '$'.price($object->get_OutstandingBill($dateBefore))
     );
     $i++;
 }
