@@ -14,7 +14,7 @@ $sql = 'SELECT
         ORDER BY
         p.rowid';
 
-if (!$result) { 
+if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
@@ -34,6 +34,9 @@ while ($row = $db->fetch_object($result))
     $i++;
 }
 
+$db->free($res);
+$db->close();
+
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 
@@ -45,7 +48,7 @@ $header = array(
 );
 
 $report_title = 'Reporte de inventario fisico';
-    
+
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 

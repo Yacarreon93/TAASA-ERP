@@ -7,6 +7,12 @@ $vendor     = GETPOST('vendor');
 if(!$vendor) {
     $vendor = 1;
 }
+
+$sql = 'SELECT * FROM llx_user WHERE rowid = '.$id;
+$res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+$row = $db->fetch_object($res);
+$vendedor = $row->firstname;
+
 $sql = 'SELECT
     f.facnumber,
     s.nom AS NAME,
@@ -77,6 +83,8 @@ while ($row = $db->fetch_object($result))
     $i++;
 }
 
+$db->free($res);
+$db->close();
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 
@@ -103,7 +111,7 @@ if($account == 1)
      $accountName = 'Leon ';
 }
 
-$report_title = $accountName.' Reporte de facturas pendientes de cobro';
+$report_title = $accountName.' Facturas pendientes de cobro '.$vendedor;
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);

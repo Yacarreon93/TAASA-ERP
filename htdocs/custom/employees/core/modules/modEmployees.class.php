@@ -291,4 +291,3 @@ class modEmployees extends DolibarrModules
 	}
 
 }
-

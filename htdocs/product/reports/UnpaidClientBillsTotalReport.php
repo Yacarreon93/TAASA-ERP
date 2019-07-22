@@ -59,8 +59,11 @@ while ($row = $db->fetch_object($result))
         nom => dol_trunc($row->nom,20),
         total => price($object->get_OutstandingBill($dateBefore))
     );
-    $i++;  
+    $i++;
 }
+
+$db->free($res);
+$db->close();
 
 
 // Crear una instancia del pdf con una función para generar los datos

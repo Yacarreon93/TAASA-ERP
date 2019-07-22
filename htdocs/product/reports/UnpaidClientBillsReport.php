@@ -85,6 +85,9 @@ while ($row = $db->fetch_object($result))
     $i++;
 }
 
+$db->free($res);
+$db->close();
+
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 

@@ -65,8 +65,6 @@ else {
     $year_lim   = GETPOST('year_lim','int');
     $filtre = GETPOST('filtre');
 
-    //TODO: jalar nombres de vendedores de db
-
      $sql = 'SELECT * FROM llx_user WHERE rowid = '.$id;
      $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
      $row = $db->fetch_object($res);
@@ -228,7 +226,7 @@ else {
     $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E'.$i, 'IMPORTE');
     $i++;
 
-    $sql = 'SELECT f.facnumber, b.datec, s.nom, pf.amount FROM llx_bank AS b 
+    $sql = 'SELECT f.facnumber, b.datec, s.nom, pf.amount FROM llx_bank AS b
     JOIN llx_paiement AS p ON p.fk_bank = b.rowid
     JOIN llx_paiement_facture AS pf ON pf.fk_paiement = p.rowid
     JOIN llx_facture AS f ON f.rowid = pf.fk_facture
@@ -240,7 +238,7 @@ else {
     } else {
          $sql.= ' WHERE b.fk_account = ur.fk_bank_account';
     }
-    
+
      if ($fromDate && $toDate) {
         $sql.= " AND b.datec BETWEEN '".$fromDate."' AND '".$toDate."'";
     }

@@ -10,7 +10,7 @@ $sql = 'SELECT
         p.rowid,
         p.label,
         ps.reel,
-        icp.reel as reel_icp    
+        icp.reel as reel_icp
         FROM
         llx_product AS p
         LEFT JOIN llx_product_stock AS ps ON ps.fk_product = p.rowid
@@ -20,7 +20,7 @@ $sql = 'SELECT
         ORDER BY
         p.rowid';
 
-if (!$result) { 
+if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
@@ -47,6 +47,9 @@ while ($row = $db->fetch_object($result))
     $i++;
 }
 
+$db->free($res);
+$db->close();
+
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 
@@ -67,12 +70,12 @@ if($stockId == 1) {
      $inventoryName = 'Leon ';
 } else if($stockId == 4) {
      $inventoryName = 'Lagos ';
-} 
+}
 
 $date = date('Y-m-d');
 
 $report_title = 'Reporte de diferencias en inventario '. $inventoryName. ' a  '.$date;
-    
+
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 

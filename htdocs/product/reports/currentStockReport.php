@@ -18,13 +18,13 @@ $sql = 'SELECT
     FROM
         llx_product AS p
     LEFT JOIN llx_product_stock AS ps ON ps.fk_product = p.rowid
-    LEFT JOIN llx_product_fournisseur_price AS pfp ON pfp.rowid = (SELECT ROWID FROM llx_product_fournisseur_price AS pfp WHERE pfp.fk_product = p.rowid ORDER BY datec DESC LIMIT 1 ) 
+    LEFT JOIN llx_product_fournisseur_price AS pfp ON pfp.rowid = (SELECT ROWID FROM llx_product_fournisseur_price AS pfp WHERE pfp.fk_product = p.rowid ORDER BY datec DESC LIMIT 1 )
     WHERE
         ps.fk_entrepot ='.$stock_id.'
     ORDER BY
         label ASC';
 
-if (!$result) { 
+if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
@@ -40,7 +40,7 @@ while ($row = $db->fetch_object($result))
     } else {
         $priceTemp = $row->price;
     }
- 
+
     $data[] = array(
         label => $row->label,
         stock => $row->reel,
@@ -51,6 +51,9 @@ while ($row = $db->fetch_object($result))
     $total += $row->total;
     $i++;
 }
+
+$db->free($res);
+$db->close();
 
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
@@ -72,12 +75,12 @@ if($stock_id == 1) {
      $inventoryName = 'Leon ';
 } else if($stock_id == 4) {
      $inventoryName = 'Lagos ';
-} 
+}
 
 $date = date('Y-m-d');
 
 $report_title = 'Reporte de inventario virtual '. $inventoryName. ' a  '.$date;
-    
+
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 

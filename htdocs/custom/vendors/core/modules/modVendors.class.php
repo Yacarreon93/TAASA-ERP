@@ -299,12 +299,26 @@ class modVendors extends DolibarrModules
 
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Cuentas por cobrar',
+									'mainmenu'=>'vendors',
+									'leftmenu'=>'vendors_report1',
+									'url'=>'/vendors/reports/UnpaidClientBillsReportPerVendor.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>107,
+									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=vendors,fk_leftmenu=vendors_reports',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>'Reporte por zona',
 									'mainmenu'=>'vendors',
 									'leftmenu'=>'vendors_report2',
 									'url'=>'/vendors/reports/report2.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>107,
+									'position'=>108,
 									'enabled'=>'$conf->vendors->enabled',  // Define condition to show or hide menu entry. Use '$conf->vendors->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->vendors->level1->level2' if you want your menu with a permission rules
 									'target'=>'',

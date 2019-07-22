@@ -2,14 +2,20 @@
 
 require_once('../../main.inc.php');
 require_once('./report.class.php');
+require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 
 $vendor     = GETPOST('vendor');
 if(!$vendor) {
-    $vendor = 1;
+    $vendor = 13;
 }
 
+$sql = 'SELECT * FROM llx_user WHERE rowid = '.$id;
+$res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+$row = $db->fetch_object($res);
+$vendedor = $row->firstname;
+
 $sql = 'SELECT
-    llx_societe.nom as nom,
+    llx_societe.rowid, llx_societe.nom as nom,
     sum(total_ttc) as total
 FROM
     llx_facture AS f
@@ -19,7 +25,7 @@ WHERE
     f.paye = 0
 AND f.fk_statut = 1
 AND f.entity = 1
-AND fe.vendor = '.$vendor.' 
+AND fe.vendor = '.$vendor.'
 GROUP BY nom';
 
 if (!$result) {
@@ -27,29 +33,36 @@ if (!$result) {
     die;
 }
 
+$object = new Client($db);
 $i = 0;
 $total = 0;
 $result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
+  $object->fetch($row->rowid);
+  $outstandingBills = $object->get_OutstandingBill();
     $data[] = array(
         nom => $row->nom,
-        total => price($row->total),
+        total => price($object->get_OutstandingBill()),
     );
     $i++;
+    $total+=$outstandingBills;
 }
+
+$db->free($res);
+$db->close();
 
 // Crear una instancia del pdf con una función para generar los datos
 $pdf = new ReportPDF('l');
 
 // Títulos de las columnas
 $header = array(
-    'Nom',
+    'Tercero',
     'Total'
 );
 
-$report_title = 'Reporte de total de facturas pendientes de cobro';
+$report_title = 'Total cuentas por cobrar '.$vendedor;
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
