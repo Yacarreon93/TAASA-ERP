@@ -9,7 +9,7 @@ if(!$vendor) {
     $vendor = 13;
 }
 
-$sql = 'SELECT * FROM llx_user WHERE rowid = '.$id;
+$sql = 'SELECT * FROM llx_user WHERE rowid = '.$vendor;
 $res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
 $row = $db->fetch_object($res);
 $vendedor = $row->firstname;
