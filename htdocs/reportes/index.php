@@ -68,7 +68,7 @@ $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($sear
 
 print_fiche_titre("Reportes", $buttonviewhierarchy);
 
-if($user->id == '1' || $user->id == '18' || $user->id == '17') {
+if($user->id == '1' || $user->id == '18' || $user->id == '19') {
 print '<table class="noborder nohover" width="50%">';
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Reportes de contabilidad</td></tr>';
