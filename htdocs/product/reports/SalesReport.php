@@ -128,6 +128,17 @@ for($i = 0; $i < $dayCounter; $i++) {
   $importeContado += $VendidoContadoSinIVA[$i] + $VendidoContadoConIVA[$i];
   $importeCredito += $VendidoCreditoSinIVA[$i]['total'] + $VendidoCreditoConIVA[$i]['total'];
   $importeAbonos += $totalAbonosAcredito[$i];
+
+  //totals per row
+  $totalPerRowCreditoSinIVA += $totals[$i]['ventasCreditoSinIVA'];
+  $totalPerRowCreditoConIVA += $totals[$i]['ventasCreditoConIVA'];
+  $totalPerRowContadoSinIVA += $totals[$i]['ventasContadoSinIVA'];
+  $totalPerRowContadoConIVA += $totals[$i]['ventasContadoConIVA'];
+  $totalPerRowIVA += $totals[$i]['IVA'];
+  $totalPerRowTotalSinIVA += $totals[$i]['totalSinIVA'];
+  $totalPerRowTotalConIVA += $totals[$i]['totalConIVA'];
+  $totalPerRowAbonado += $totals[$i]['importeAbonos'];
+
 }
 
 
@@ -174,6 +185,18 @@ $pdf->Cell(80, 10, 'TOTAL DE VENTAS', 0, 0, 'L');
 $pdf->ln();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($totals);
+//Totals per row
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, 'TOTAL', 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowCreditoSinIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowCreditoConIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowContadoSinIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowContadoConIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowTotalSinIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowTotalConIVA, 2, '.', ','), 1, 0, 'L');
+$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowAbonado, 2, '.', ','), 1, 0, 'L');
+//Totals
+$pdf->ln();
 $pdf->SetFont('Arial','B',11);
 $pdf->Cell(80, 10, 'Importe Contado: $'.number_format($importeContado, 2, '.', ','), 0, 0, 'L');
   $pdf->ln();
