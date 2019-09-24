@@ -69,7 +69,7 @@ $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($sear
 print_fiche_titre("Reportes", $buttonviewhierarchy);
 
 if($user->id == '1' || $user->id == '18' || $user->id == '19') {
-print '<table class="noborder nohover" width="50%">';
+print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Reportes de contabilidad</td></tr>';
 //Existencias en almacen
@@ -105,23 +105,28 @@ print "<tr><td><a id='unpaid_client_bills_link' target='_blank' href='../product
 
 
 $sql = "SELECT rowid, firstname FROM llx_user WHERE job = 'Vendedor'";
-$res = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+$resVendor = $db->query($sql) or die('ERROR en la consulta: '.$sql);
 
 //Total de cuentas por cobrar
 print "<tr><td><a id='unpaid_client_bills_total_link' target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>
 <td><select id='unpaid_client_bills_total_select'>
 <option value='1'>General</option>";
-while ($row = $db->fetch_object($res))
+$vendor_array = array();
+$k = 0;
+while ($row = $db->fetch_object($resVendor))
 {
+  $vendor_array[$k]["id"] = $row->rowid;
+  $vendor_array[$k]["firstname"] = $row->firstname;
   $vendor_id = $row->rowid;
   $vendedor = $row->firstname;
   print "<option value='".$vendor_id."'>".$vendedor."</option>";
+  $k++;
 }
 print "</select></td>";
 print "</table></form><br>";
 
 
-print '<table class="noborder nohover" width="50%">';
+print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Cierre de inventario</td></tr>';
 //Cierre de inventario
@@ -132,6 +137,21 @@ print "<tr><td><a id='inventoryClosingLink' target='_blank' href='../product/cie
 <option value='3'>Leon</option>
 <option value='4'>Lagos</option>
 </select></td>'";
+print "</table></form><br>";
+
+//Vendedores
+print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
+print "<tr class=\"liste_titre\">";
+print '<td colspan="2">Vendedores</td></tr>';
+print "<tr><td><a id='clients_per_vendor_link' target='_blank' href='../product/reports/ClientsPerVendorReport.php?vendor=13'>Clientes por Vendedor</a><br></td>
+<td><select id='clients_per_vendor_select'>";
+for($i = 0; $i < sizeof($vendor_array); $i++)
+{
+  $vendor_id =  $vendor_array[$i]["id"];
+  $vendedor = $vendor_array[$i]["firstname"];
+  print "<option value='".$vendor_id."'>".$vendedor."</option>";
+}
+print "</select></td>";
 print "</table></form><br>";
 
 print "<script>
@@ -179,6 +199,17 @@ print "<script>
                 var finalReportLink = firstLinkPart.concat(vendor);
               }
               document.getElementById('unpaid_client_bills_total_link').href = finalReportLink;
+          }
+          return false;
+        });
+
+        //changes clients per vendor report link dinamically
+       $('#clients_per_vendor_select').on('change', function () {
+          var vendor = $(this).val(); // get selected value
+          if (vendor) {
+              var firstLinkPart = '../product/reports/ClientsPerVendorReport.php?vendor=';
+              var finalReportLink = firstLinkPart.concat(vendor);
+              document.getElementById('clients_per_vendor_link').href = finalReportLink;
           }
           return false;
         });
