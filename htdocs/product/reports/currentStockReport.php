@@ -40,7 +40,7 @@ while ($row = $db->fetch_object($result))
     } else {
         $priceTemp = $row->price;
     }
-
+    $totalTemp = ($priceTemp * $row->reel);
     $data[] = array(
         label => $row->label,
         stock => $row->reel,
@@ -48,7 +48,7 @@ while ($row = $db->fetch_object($result))
         price => '$'.price($priceTemp),
         total => '$'.price($priceTemp * $row->reel),
     );
-    $total += $row->total;
+    $total += $totalTemp;
     $i++;
 }
 
