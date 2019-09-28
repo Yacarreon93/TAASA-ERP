@@ -79,7 +79,7 @@ if($stock_id == 1) {
 
 $date = date('Y-m-d');
 
-$report_title = 'Reporte de inventario virtual '. $inventoryName. ' a  '.$date;
+$report_title = 'Reporte de inventario virtual '. $inventoryName. ' a ';
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
