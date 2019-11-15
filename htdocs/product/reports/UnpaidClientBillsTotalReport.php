@@ -24,7 +24,11 @@ setlocale(LC_ALL, 'es_ES');
 
 $dateObj   = DateTime::createFromFormat('!m', $month_temp);
 $month_name = strftime('%B', $dateObj->getTimestamp());
-$dateBefore = $year . "0" .$month . "01000000";
+if($month <= 9) {
+    $dateBefore = $year . "0" .$month . "01000000";    
+} else {
+    $dateBefore = $year . $month . "01000000";
+}
 
 $sql = 'SELECT
     llx_societe.rowid, llx_societe.nom as nom,

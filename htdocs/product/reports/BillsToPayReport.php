@@ -16,7 +16,11 @@ if(!$currency) {
     $currency = 20;
 }
 
-$dateBefore = $year . "0" .$month . "01000000";
+if($month <= 9) {
+    $dateBefore = $year . "0" .$month . "01000000";    
+} else {
+    $dateBefore = $year . $month . "01000000";
+}
 
 $sql = 'SELECT s.rowid AS socid, s.nom AS name,
 fac.rowid AS facid, fac.ref AS ref, fac.datef AS date,
