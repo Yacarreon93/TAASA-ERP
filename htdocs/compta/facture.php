@@ -24,6 +24,7 @@ if (! empty($conf->projet->enabled)) {
 	require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 }
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
+require_once DOL_DOCUMENT_ROOT.'/comprobanteCFDI/service/comprobanteCFDIService.php';
 
 $langs->load('bills');
 $langs->load('companies');
@@ -52,7 +53,7 @@ $search_montant_ttc = GETPOST('search_montant_ttc', 'alpha');
 $origin = GETPOST('origin', 'alpha');
 $originid = (GETPOST('originid', 'int') ? GETPOST('originid', 'int') : GETPOST('origin_id', 'int')); // For backward compatibility
 $isTicket =  GETPOST('isTicket', 'alpha');
-
+$createCFDI = GETPOST('createCFDI', 'alpha');
 // PDF
 $hidedetails = (GETPOST('hidedetails', 'int') ? GETPOST('hidedetails', 'int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
 $hidedesc = (GETPOST('hidedesc', 'int') ? GETPOST('hidedesc', 'int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DESC) ? 1 : 0));
@@ -101,6 +102,8 @@ if ($id > 0 || ! empty($ref)) {
 			}
 		}
 	}
+
+
 
 // Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
 $hookmanager->initHooks(array('invoicecard','globalcard'));
@@ -468,6 +471,11 @@ if (empty($reshook))
 					$result = 1;
 
 	    			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
+
+	    			if($createCFDI) { //Save CFDI info
+						$service = new ComprobanteCFDIService();
+						$service->SaveCFDIFromFacture($db, $id);
+					}
 				}
 			}
 			else
@@ -2036,6 +2044,7 @@ llxHeader('', $langs->trans('Bill'), 'EN:Customers_Invoices|FR:Factures_Clients|
 
 if ($action == 'create')
 {
+
 	$facturestatic = new Facture($db);
 	$extralabels = $extrafields->fetch_name_optionals_label($facturestatic->table_element);
 
@@ -2934,9 +2943,9 @@ else if ($id > 0 || ! empty($ref))
 			$text .= '<br>' . img_warning() . ' ' . $langs->trans("ErrorInvoiceOfThisTypeMustBePositive");
 		}
 		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
 		} else {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
 		}
 
 	}
