@@ -32,6 +32,7 @@ define("CFDI_CONCEPTOS_PARTE", "cfdi_conceptos_parte");
 define("CFDI_CONCEPTOS_TIPO_IMPUESTO", "cfdi_conceptos_tipo_impuesto");
 define("CFDI_IMPUESTOS_TOTALES", "cfdi_impuestos_totales");
 define("CFDI_IMPUESTOS_GLOBALES", "cfdi_impuestos_globales");
+define("CFDI_COMPLEMENTO_PAGO", "cfdi_complemento_pago");
 
 
 
@@ -46,6 +47,13 @@ class ComprobanteCFDIDao {
 	private function ExecuteQuery($sql) {
 		$resql = $this->db->query($sql);
 		return $resql;
+	}
+
+	public function GetLastInsertedId() {
+		$sql = "SELECT id FROM cfdi_comprobante ORDER BY id DESC LIMIT 1";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->id;
 	}
 
 	private function getDb() {
@@ -108,7 +116,7 @@ class ComprobanteCFDIDao {
 			p.ref AS id_concepto,
 			'T' AS tipo_impuesto_federal,
 			total_tva AS importe,
-			002 AS impuesto,
+			'002' AS impuesto,
 			f.tva_tx AS tasa_o_cuota,
 			'Tasa' AS tipo_factor,
 			subprice AS base
@@ -121,13 +129,13 @@ class ComprobanteCFDIDao {
 
 		while ($row =  $this->db->fetch_object($result))
 		{
-				$tasa_o_cuota = ($tasa_o_cuota / 100);
+				$tasa_o_cuota = ($row->tasa_o_cuota / 100);
 				$data[] = array(
 					id_concepto=>$row->id_concepto,
 					tipo_impuesto_federal=> $row->tipo_impuesto_federal,
 					importe=>$row->importe,
-					impuesto=>impuesto,
-					tasa_o_cuota=> $tasa_o_cuota,
+					impuesto=>$row->impuesto,
+					tasa_o_cuota=>$tasa_o_cuota,
 					tipo_factor=>$row->tipo_factor,
 					base=> $row->base,
 					fk_comprobante=>$id
@@ -136,8 +144,9 @@ class ComprobanteCFDIDao {
 		return $data;
 	}
 
-	public function InsertIntoConceptosComprobante($array_data) {
+	public function InsertIntoConceptosComprobante($array_data, $lastId) {
 		$sql = 'INSERT INTO '.CFDI_CONCEPTOS .' (
+		fk_cfdi,
 		fk_comprobante,
 		id_concepto,
 		cantidad,
@@ -152,7 +161,8 @@ class ComprobanteCFDIDao {
 		descuento) 
 		VALUES ';
 		for($i=0; $i < sizeof($array_data); $i++) {
-			$sql.="( ".$array_data[$i]['fk_comprobante'].", ";
+			$sql.="(".$lastId.", ";
+			$sql.=$array_data[$i]['fk_comprobante'].", ";
 			$sql.="'".$array_data[$i]['id_concepto']."'".", ";
 			$sql.=$array_data[$i]['cantidad'].", ";
 			$sql.="'".$array_data[$i]['unidad']."'".", ";
@@ -272,8 +282,9 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}
 
-		public function InsertIntoConceptosTipoImpuesto($array_data) {
+		public function InsertIntoConceptosTipoImpuesto($array_data, $lastId) {
 		$sql = 'INSERT INTO '.CFDI_CONCEPTOS_TIPO_IMPUESTO .' (
+		fk_cfdi,
 		fk_comprobante,
 		id_concepto,
 		tipo_impuesto_federal,
@@ -288,6 +299,7 @@ class ComprobanteCFDIDao {
 		for($i=0; $i < sizeof($array_data); $i++) {
 			$total+=$array_data[$i]['importe'];
 			$sql.='(';
+			$sql.=$lastId.', ';
 			$sql.=$array_data[$i]['fk_comprobante'].', ';
 			$sql.="'".$array_data[$i]['id_concepto']."'".', ';
 			$sql.="'".$array_data[$i]['tipo_impuesto_federal']."'".', ';
@@ -301,29 +313,31 @@ class ComprobanteCFDIDao {
 			}  
 		} 
 		$this->ExecuteQuery($sql);
-
 		$arrayTotal = array();
 		$arrayTotal['fk_comprobante'] = $array_data[0]['fk_comprobante'];
 		$arrayTotal['impuestos_trasladados'] = $total;
 		$arrayTotal['impuestos_retenidos'] = 0;
-		$this->InsertIntoImpuestosTotales($arrayTotal);
-		$this->InsertIntoImpuestosGlobales($arrayTotal);
+		$this->InsertIntoImpuestosTotales($arrayTotal, $lastId);
+		$this->InsertIntoImpuestosGlobales($arrayTotal, $lastId);
 	}
 
-	public function InsertIntoImpuestosTotales($array_data) {
+	public function InsertIntoImpuestosTotales($array_data, $lastId) {
 		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_TOTALES.' (
+		fk_cfdi,
 		fk_comprobante,
 		impuestos_trasladados,
 		impuestos_retenidos) 
 		VALUES (';
+		$sql.=$lastId.', ';
 		$sql.=$array_data['fk_comprobante'].', ';
 		$sql.=$array_data['impuestos_trasladados'].', ';
 		$sql.=$array_data['impuestos_retenidos'].' ) ';
 		$this->ExecuteQuery($sql);
 	}
 
-	public function InsertIntoImpuestosGlobales($array_data) {
+	public function InsertIntoImpuestosGlobales($array_data, $lastId) {
 		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+		fk_cfdi,
 		fk_comprobante,
 		tipo_impuesto_federal,
 		importe,
@@ -331,6 +345,41 @@ class ComprobanteCFDIDao {
 		tasa_o_cuota,
 		tipo_factor) 
 		VALUES (';
+		$sql.=$lastId.', ';
+		$sql.=$array_data['fk_comprobante'].', ';
+		$sql.="'T', ";
+		$sql.=$array_data['impuestos_trasladados'].',';
+		$sql.="'002', ";
+		$sql.=0.160000.',';		
+		$sql.="'Tasa' )";
+		$this->ExecuteQuery($sql);
+	}
+
+	public function fetchPaymentData() {
+
+	}
+
+	public function InsertIntoPagoCFDI() {
+		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
+		fk_cfdi,
+		fk_comprobante,
+		forma_pago,
+		moneda,
+		tipo_cambio,
+		monto,
+		num_operacion,
+		emisor_rfc,
+		emisor_banco_ordenante,
+		emisor_cuenta_ordenante,
+		beneficiario_cuenta,
+		tipo_cadena_pago,
+		certificado_pago,
+		cadena_pago,
+		sello_pago,
+		emisor_rfc_banco,
+		id_pago) 
+		VALUES (';
+		$sql.=$lastId.', ';
 		$sql.=$array_data['fk_comprobante'].', ';
 		$sql.="'T', ";
 		$sql.=$array_data['impuestos_trasladados'].',';
