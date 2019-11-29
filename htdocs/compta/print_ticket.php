@@ -151,8 +151,10 @@ if ($ret) {
 
     $lines_str .= separator();
     foreach ($object->lines as $line) {
-        $temp_prod->fetch($line->fk_product);      
-        $total_weight += $temp_prod->weight ? $temp_prod->weight : 0;
+        $temp_prod->fetch($line->fk_product);
+        if($temp_prod->array_options['options_umed'] == 'KGM') {
+          $total_weight += $line->qty;
+        }
         if (!in_array($line->tva_tx, $tva)) {
             $tva[] = intval($line->tva_tx);
         }
