@@ -29,18 +29,35 @@ $sql.= ' AND f.fk_soc = s.rowid';
 $sql.= ' AND f.entity = 1';
 $sql.= ' AND pf.fk_paiement = '.$paiement_id;
 $resql=$db->query($sql);
+$totalPagado = 0;
 if ($resql)
 {
-  $objp = $db->fetch_object($resql);
-  $clientName=$objp->name;
-  $facid = $objp->facid;
-  $invoice=new Facture($db);
-  $invoice->fetch($facid);
-  $paiement = $invoice->getSommePaiement();
-  $creditnotes=$invoice->getSumCreditNotesUsed();
-  $deposits=$invoice->getSumDepositsUsed();
-  $alreadypayed=price2num($paiement + $creditnotes + $deposits,'MT');
-  $remaintopay=price2num($invoice->total_ttc - $paiement - $creditnotes - $deposits,'MT');
+  $num = $db->num_rows($resql);
+  if ($num > 0)
+  {
+    while ($row =  $db->fetch_object($result))
+    {
+      $totalPagado += $row->amount;
+      $resto = ($row->total_ttc - $row->amount);
+      $paymentData[] = array(
+            facnumber=>$row->facnumber,
+            saldo=> $row->total_ttc,
+            abono=>$row->amount,
+            resto=>$resto
+        );
+    }
+    $resql=$db->query($sql);
+    $objp = $db->fetch_object($resql);
+    $clientName=$objp->name;
+    $facid = $objp->facid;
+    $invoice=new Facture($db);
+    $invoice->fetch($facid);
+    $paiement = $invoice->getSommePaiement();
+    $creditnotes=$invoice->getSumCreditNotesUsed();
+    $deposits=$invoice->getSumDepositsUsed();
+    $alreadypayed=price2num($paiement + $creditnotes + $deposits,'MT');
+    $remaintopay=price2num($invoice->total_ttc - $paiement - $creditnotes - $deposits,'MT');
+  }
 }
 
 $copy = (GETPOST('copy', 'int'));
@@ -156,7 +173,7 @@ if ($ret) {
     $lines_str .= '</p>';
     $lines_str .= separator();
     $lines_str .= '<p class="d-flex">';
-    $lines_str .= '<span class="flex center">Recibi la cantidad de $'.price($objp->amount).'</span>';
+    $lines_str .= '<span class="flex center">Recibi la cantidad de $'.price($totalPagado).'</span>';
     $lines_str .= '</p>';
     $lines_str .= '<p class="d-flex">';
     $lines_str .= '<span class="flex center">del cliente</span>';
@@ -174,11 +191,21 @@ if ($ret) {
     $lines_str .= '<span class="flex center">RESTO</span>';
     $lines_str .= '</p>';
     $lines_str .= separator();
+    for($j = 0; $j < $num; $j++) 
+    {
+      $lines_str .= '<p class="d-flex">';
+      $lines_str .= '<span class="flex center">'.$paymentData[$j]['facnumber'].'</span>';
+      $lines_str .= '<span class="flex center">$'.price($paymentData[$j]['saldo']).'</span>';
+      $lines_str .= '<span class="flex center">$'.price($paymentData[$j]['abono']).'</span>';
+      $lines_str .= '<span class="flex center">$'.price($paymentData[$j]['resto']).'</span>';
+      $lines_str .= '</p>';
+    }
+    $lines_str .= separator();
     $lines_str .= '<p class="d-flex">';
-    $lines_str .= '<span class="flex center">'.$objp->facnumber.'</span>';
-    $lines_str .= '<span class="flex center">$'.price($objp->total_ttc).'</span>';
-    $lines_str .= '<span class="flex center">$'.price($objp->amount).'</span>';
-    $lines_str .= '<span class="flex center">$'.price($remaintopay).'</span>';
+    $lines_str .= '<span class="flex center">TOTAL PAGADO</span>';
+    $lines_str .= '<span class="flex center"></span>';
+    $lines_str .= '<span class="flex center"></span>';
+    $lines_str .= '<span class="flex center">$'.price($totalPagado).'</span>';
     $lines_str .= '</p>';
 } else {
     echo "ERROR: Id de Factura requerido";
