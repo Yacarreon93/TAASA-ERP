@@ -32,8 +32,10 @@ define("CFDI_CONCEPTOS_PARTE", "cfdi_conceptos_parte");
 define("CFDI_CONCEPTOS_TIPO_IMPUESTO", "cfdi_conceptos_tipo_impuesto");
 define("CFDI_IMPUESTOS_TOTALES", "cfdi_impuestos_totales");
 define("CFDI_IMPUESTOS_GLOBALES", "cfdi_impuestos_globales");
+define("CFDI_COMPROBANTE_PAGO", "cfdi_comprobante_pago");
+define("CFDI_COMPROBANTE_RELACIONADOS", "cfdi_comprobante_relacionados");
 define("CFDI_COMPLEMENTO_PAGO", "cfdi_complemento_pago");
-
+define("CFDI_DOC_RELACIONADO", "cfdi_doc_relacionado");
 
 
 class ComprobanteCFDIDao {
@@ -182,7 +184,7 @@ class ComprobanteCFDIDao {
 	}	
 
 	public function FetchComprobanteData($id) {
-		$sql = "SELECT f.rowid, facnumber AS serie, facnumber AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor
+		$sql = "SELECT f.rowid, facnumber AS serie, facnumber AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor, fk_soc, usocfdi AS uso_cfdi 
 			FROM llx_facture AS f
 			JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 			LEFT JOIN llx_c_paiement AS p ON f.fk_mode_reglement = p.id
@@ -219,7 +221,9 @@ class ComprobanteCFDIDao {
 					num_cuenta_pago=> NULL,
 					version=> 3.3,
 					confirmacion=> NULL,
-					fk_comprobante=>$id
+					fk_comprobante=>$id,
+					fk_soc=>$row->fk_soc,
+					uso_cfdi=>$row->uso_cfdi
 			);
 		}
 		return $data;
@@ -245,7 +249,9 @@ class ComprobanteCFDIDao {
 		lugar_de_expedicion,
 		num_cuenta_pago,
 		version,
-		fk_comprobante) 
+		fk_comprobante,
+		fk_soc,
+		uso_cfdi) 
 		VALUES (';
 		$sql.="'".$array_data[0]['serie']."'".", ";
 		$sql.="'".$array_data[0]['folio']."'".", ";
@@ -265,7 +271,9 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data[0]['lugar_de_expedicion']."'".", ";
 		$sql.="'".$array_data[0]['num_cuenta_pago']."'".", ";
 		$sql.="'".$array_data[0]['version']."'".", ";
-		$sql.=$array_data[0]['fk_comprobante'];
+		$sql.=$array_data[0]['fk_comprobante'].", ";
+		$sql.=$array_data[0]['fk_soc'].", ";
+		$sql.="'".$array_data[0]['uso_cfdi']."'";
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}
@@ -359,7 +367,74 @@ class ComprobanteCFDIDao {
 
 	}
 
-	public function InsertIntoPagoCFDI() {
+	public function InsertIntoCFDIComprobantePago($array_data) {
+		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_PAGO .' (
+		serie,
+		folio,
+		subtotal,
+		moneda,
+		total,
+		tipo_comprobante,
+		lugar_de_expedicion,
+		version,
+		fk_comprobante,
+		fk_soc,
+		uso_cfdi) 
+		VALUES (';
+		$sql.="'".$array_data[0]['serie']."'".", ";
+		$sql.="'".$array_data[0]['folio']."'".", ";
+		$sql.="0, ";
+		$sql.="'XXX', ";
+		$sql.="0, ";
+		$sql.="'P', ";
+		$sql.="'".$array_data[0]['lugar_de_expedicion']."'".", ";
+		$sql.="'3.3', ";
+		$sql.=$array_data[0]['fk_comprobante'].", ";
+		$sql.=$array_data[0]['fk_soc'].", ";
+		$sql.="'P01'";
+		$sql.= ')';
+		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIRelacionados($array_data, $lastId) {
+		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_RELACIONADOS .' (
+		fk_cfdi,
+		fk_comprobante,
+		tipo_relacion,
+		cfdi_relacionados) 
+		VALUES (';
+		$sql.=$lastId.', ';
+		$sql.=$array_data[0]['fk_comprobante'];
+		$sql.="'04', ";
+		$sql.=$array_data[0]['fk_cfdi_uuid'];
+		$sql.= ')';
+		$this->ExecuteQuery($sql);
+	}
+
+		public function InsertIntoConceptosPago($array_data, $lastId) {
+		$sql = 'INSERT INTO '.CFDI_CONCEPTOS .' (
+		fk_cfdi,
+		fk_comprobante,
+		cantidad,
+		descripcion,
+		valor_unitario,
+		importe,
+		clave_prod_serv,
+		clave_unidad) 
+		VALUES ';
+		$sql.="(".$lastId.", ";
+		$sql.=$array_data[$i]['fk_comprobante'].", ";
+		$sql.="1, ";
+		$sql.="'Pago', ";
+		$sql.="0, ";
+		$sql.="0, ";
+		$sql.="'84111506', ";
+		$sql.="'ACT'";
+		$sql.=" )";
+		$this->ExecuteQuery($sql);
+	}	
+
+	public function InsertIntoCFDIComplementoPago($array_data, $lastId) {
 		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -381,11 +456,54 @@ class ComprobanteCFDIDao {
 		VALUES (';
 		$sql.=$lastId.', ';
 		$sql.=$array_data['fk_comprobante'].', ';
-		$sql.="'T', ";
-		$sql.=$array_data['impuestos_trasladados'].',';
-		$sql.="'002', ";
-		$sql.=0.160000.',';		
-		$sql.="'Tasa' )";
+		$sql.="'".$array_data['forma_pago']."', ";
+		$sql.="'".$array_data['moneda']."', ";
+		$sql.=$array_data['tipo_cambio'].',';
+		$sql.=$array_data['monto'].',';
+		$sql.="'".$array_data['num_operacion']."', ";
+		$sql.="'".$array_data['emisor_rfc']."', ";
+		$sql.="'".$array_data['emisor_banco_ordenante']."', ";
+		$sql.="'".$array_data['beneficiario_cuenta']."', ";
+		$sql.="'".$array_data['tipo_cadena_pago']."', ";
+		$sql.="'".$array_data['certificado_pago']."', ";
+		$sql.="'".$array_data['cadena_pago']."', ";
+		$sql.="'".$array_data['sello_pago']."', ";
+		$sql.="'".$array_data['emisor_rfc_banco']."', ";
+		$sql.="'".$array_data['id_pago']."'";	
+		$sql.=")";
+		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIDocRelacionado($array_data, $lastId) {
+		$sql = 'INSERT INTO '.CFDI_DOC_RELACIONADO .' (
+		fk_cfdi,
+		fk_comprobante,
+		id_documento,
+		id_pago,
+		serie,
+		folio,
+		moneda,
+		tipo_cambio,
+		metodo_pago,
+		num_parcialidad,
+		importe_saldo_anterior,
+		importe_pagado,
+		importe_saldo_insoluto) 
+		VALUES (';
+		$sql.=$lastId.', ';
+		$sql.=$array_data['fk_comprobante'].', ';
+		$sql.="'".$array_data['id_documento']."', ";
+		$sql.="'".$array_data['id_pago']."', ";
+		$sql.="'".$array_data['serie']."', ";
+		$sql.="'".$array_data['folio']."', ";
+		$sql.="'".$array_data['moneda']."', ";
+		$sql.=$array_data['tipo_cambio'].',';
+		$sql.="'PPD, ";
+		$sql.=$array_data['num_parcialidad'].',';
+		$sql.=$array_data['importe_saldo_anterior'].',';
+		$sql.=$array_data['importe_pagado'].',';
+		$sql.=$array_data['importe_saldo_insoluto'];
+		$sql.=")";
 		$this->ExecuteQuery($sql);
 	}
 }

@@ -16,8 +16,13 @@ class ComprobanteCFDIService {
 		$CFDIDao->InsertIntoConceptosTipoImpuesto($impuestosData, $lastId);
 	}
 
-	public function SaveCFDIFromPayment($db, $paymentId) {
+	public function SaveCFDIFromPayment($db, $paymentArray) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		//$CFDIDao->InsertIntoPagoCFDI
+		$CFDIDao->InsertIntoCFDIComprobantePago($paymentArray);
+		$lastId = $CFDIDao->GetLastInsertedId();
+		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $lastId);
+		$CFDIDao->InsertIntoConceptosPago($paymentArray, $lastId);
+		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray, $lastId);
+		$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $lastId);
 	}
 }
