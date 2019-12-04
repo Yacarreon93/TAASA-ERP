@@ -24,7 +24,7 @@ if (! empty($conf->projet->enabled)) {
 	require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 }
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
-require_once DOL_DOCUMENT_ROOT.'/comprobanteCFDI/service/comprobanteCFDIService.php';
+require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
 
 $langs->load('bills');
 $langs->load('companies');

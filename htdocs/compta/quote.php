@@ -24,7 +24,7 @@ if (! empty($conf->projet->enabled)) {
 	require_once DOL_DOCUMENT_ROOT . '/core/class/html.formprojet.class.php';
 }
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
-require_once DOL_DOCUMENT_ROOT.'/comprobanteCFDI/service/comprobanteCFDIService.php';
+require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
 
 $langs->load('bills');
 $langs->load('companies');
@@ -2641,7 +2641,6 @@ if ($action == 'create')
 	}
 	else
 	{
-		echo 'al else???????';
 		// Show deprecated optional form to add product line here
 		if (! empty($conf->global->PRODUCT_SHOW_WHEN_CREATE)) {
 			print '<tr><td colspan="3">';
