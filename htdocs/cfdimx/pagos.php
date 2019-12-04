@@ -1036,37 +1036,16 @@ if ($action == "cfdi2") {
 	
 	print '<tr class="oculta"><td class="titlefield">Importe Saldo Insoluto</td>';
 	print '<td colspan="3"><input type="text" name="impSaldoInsoluto" value="'.$impSaldoInsoluto.'" ></td></tr>';
-	
 		
 	print '<tr><td class="titlefield" colspan="4" align="center"><input type="submit" name="guardar" value="Guardar informacion" class="button"></td></tr>';
 		
 	print '</table>';
 	print '</form>';
+	print '<br>';
 
-	$client = new nusoap_client($wscfdi, 'wsdl');
-	$result = $client->call('validaCliente',array( "rfc"=>$conf->global->MAIN_INFO_SIREN ));
-	$status_clt = $result["return"]["status_cliente_id"];
-	$status_clt_desc = $result["return"]["status_cliente_desc"];
-	$folios_timbrados = $result["return"]["folios_timbrados"];
-	$folios_adquiridos = $result["return"]["folios_adquiridos"];
-	$folios_disponibles = $result["return"]["folios_disponibles"];
+	print '<div style="font-size: 14px">';
 
-	if ($modo_timbrado == 1) {
-		$modo_timbrado_desc = "Produccion";
-	} else { 
-		$modo_timbrado_desc = "Pruebas"; 
-	}
-
-	print '<br>
-			<div style="width:380px; border:solid 1px; height:40px; background-color:#990000; padding:10px">
-				<font color="#FFFFFF">
-					<strong>Modalidad de Facturacion:</strong> '.$modo_timbrado_desc.'<br>
-					<strong>Folios Disponibles:</strong> '.$folios_disponibles.'<br>
-					<strong>Folios Timbrados:</strong> '.$folios_timbrados.'<br>
-				</font>
-			</div>
-			<br>
-			<div style="font-size:14px">';
+	$folios_disponibles = 0; // ?? <- Ya no se necesita!
 
 	if ($nmr == 0) {
 		print "Debe guardar la informacion del Pago para poder timbrar";
