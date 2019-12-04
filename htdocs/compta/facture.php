@@ -2943,7 +2943,7 @@ else if ($id > 0 || ! empty($ref))
 			$text .= '<br>' . img_warning() . ' ' . $langs->trans("ErrorInvoiceOfThisTypeMustBePositive");
 		}
 		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
 		} else {
 			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
 		}
