@@ -694,7 +694,7 @@ if ($action == "cfdi2") {
 	$obpag = new Paiement($db);
 	$obpag->fetch(GETPOST("pagcid"));
 
-	print '<table class="border centpercent">'."\n";
+	print '<table class="border centpercent" style="background: #d2e7fa">'."\n";
 
 	// Ref
 	print '<tr><td class="titlefield">'.$langs->trans('Ref').' Pago</td><td colspan="3">';
@@ -843,7 +843,7 @@ if ($action == "cfdi2") {
 	print '<form method="POST" action="pagos.php?action=guardar">';
 	print '<input type="hidden" name="facid" value="'.GETPOST("facid").'">';
 	print '<input type="hidden" name="pagcid" value="'.GETPOST("pagcid").'">';
-	print '<table class="border centpercent">'."\n";
+	print '<table class="border centpercent" style="background: #d2e7fa">'."\n";
 		
 	$formp = new Form($db);
 		
