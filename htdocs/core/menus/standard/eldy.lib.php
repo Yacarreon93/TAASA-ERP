@@ -756,6 +756,24 @@ function print_left_eldy_menu($db,$menu_array_before,$menu_array_after,&$tabMenu
 				$newmenu->add("/compta/facture/list.php",$langs->trans("BillsCustomers"),0,$user->rights->facture->lire, '', $mainmenu, 'customers_bills');
 				$newmenu->add("/compta/facture.php?action=create",$langs->trans("NewBill"),1,$user->rights->facture->creer);
 				$newmenu->add("/compta/facture.php?action=create&isTicket=true","Nuevo Ticket",1,$user->rights->facture->creer);
+				//Pagina para cotizar
+				$sql = "SELECT fk_quote_facture
+				FROM llx_user_relations AS ue
+				JOIN llx_entrepot AS e ON ue.fk_entrepot = e.rowid
+				WHERE ue.fk_user = ".$user->id;
+				$resql = $db->query($sql);
+				if ($resql)
+				{
+					$numr = $db->num_rows($resql);
+					if($numr <= 0) {
+						dol_print_error($db);
+					}
+				}
+				$objp = $db->fetch_object($resql);
+				$db->free($resql);
+				
+				$newmenu->add("/compta/quote.php?isTicket=1&facid=".$objp->fk_quote_facture,"Cotizar",1,$user->rights->facture->creer);
+
 				$newmenu->add("/compta/facture/list.php?leftmenu=customers_bills","Listado de Facturas",1,$user->rights->facture->lire);
 				$newmenu->add("/compta/facture/ticketList.php?leftmenu=customers_bills","Listado de Tickets",1,$user->rights->facture->lire);
 
