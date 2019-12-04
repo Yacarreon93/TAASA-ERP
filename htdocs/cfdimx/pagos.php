@@ -78,6 +78,7 @@ if($action==""){
 	}
 	print '<td class="liste_titre" align="right">' . $langs->trans('Amount') . '</td>';
 	print '<td class="liste_titre" align="right">CFDI</td>';
+	print '<td class="liste_titre" align="right">CFDI 2</td>';
 	print '<td class="liste_titre" width="18">&nbsp;</td>';
 	print '</tr>';
 	// Payments already done (from payment on this invoice)
@@ -137,6 +138,7 @@ if($action==""){
 				if($uuidP==""){
 					if($uuid!=""){
 						print '<td align="right"><a href="pagos.php?facid='.$object->id.'&pagcid='.$paymentstatic->id.'&action=cfdi">Genera CFDI</a></td>';
+						print '<td align="right"><a href="pagos.php?facid='.$object->id.'&pagcid='.$paymentstatic->id.'&action=cfdi2">Genera CFDI 2</a></td>';
 					}else{
 						print '<td align="right">No se ha timbrado la Factura</td>';
 					}
@@ -444,7 +446,7 @@ if ($action=="cfdi") {
 		$impPagadodr=$rsl->impPagado;
 		$impSaldoInsoluto=$rsl->impSaldoInsoluto;
 	}
-/*		?>
+	/*?>
 		<script type="text/javascript">
 		//$( document ).ready(function() {
 			//mosocultar();
@@ -683,6 +685,396 @@ if ($action=="cfdi") {
 			}
 		}
 		print "</div>";
+}
+
+/*
+	Acción para timbrar el pago de manera custom.
+*/
+if ($action == "cfdi2") {
+	$obpag = new Paiement($db);
+	$obpag->fetch(GETPOST("pagcid"));
+
+	print '<table class="border centpercent">'."\n";
+
+	// Ref
+	print '<tr><td class="titlefield">'.$langs->trans('Ref').' Pago</td><td colspan="3">';
+	print $form->showrefnav($obpag, 'ref', $linkback, 0, 'ref', 'ref', '');
+	print '</td></tr>';
+	
+	// Date payment
+	print '<tr><td>'.$langs->trans("Date").'</td><td colspan="3">';
+	print $form->editfieldval("Date",'datep',$obpag->date,$obpag,$user->rights->facture->paiement,'datepicker','',null,$langs->trans('PaymentDateUpdateSucceeded'));
+	print '</td></tr>';
+	
+	// Payment type (VIR, LIQ, ...)
+	$labeltype=$langs->trans("PaymentType".$obpag->type_code)!=("PaymentType".$obpag->type_code)?$langs->trans("PaymentType".$obpag->type_code):$obpag->type_libelle;
+	print '<tr><td>'.$langs->trans('PaymentMode').'</td><td colspan="3">'.$labeltype.'</td></tr>';
+	
+	// Payment numero
+	print '<tr><td>'.$langs->trans("Number").'</td><td colspan="3">';
+	print $form->editfieldval("Numero",'num_paiement',$obpag->numero,$obpag,$obpag->statut == 0 && $user->rights->fournisseur->facture->creer,'string','',null,$langs->trans('PaymentNumberUpdateSucceeded'));
+	print '</td></tr>';
+	
+	// Amount
+	print '<tr><td>'.$langs->trans('Amount').'</td><td colspan="3">'.price($obpag->montant,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
+	
+	// Note
+	print '<tr><td class="tdtop">'.$langs->trans("Note").'</td><td colspan="3">';
+	print $form->editfieldval("Note",'note',$obpag->note,$obpag,$user->rights->facture->paiement,'textarea');
+	print '</td></tr>';
+	
+	$disable_delete = 0;
+
+	// Bank account
+	if (!empty($conf->banque->enabled)) {
+		if ($obpag->fk_account > 0) {
+			$bankline=new AccountLine($db);
+			$bankline->fetch($obpag->bank_line);
+			
+			if ($bankline->rappro) {
+				$disable_delete = 1;
+				$title_button = dol_escape_htmltag($langs->transnoentitiesnoconv("CantRemoveConciliatedPayment"));
+			}
+	
+			print '<tr>';
+			print '<td>'.$langs->trans('BankTransactionLine').'</td>';
+			print '<td colspan="3">';
+			print $bankline->getNomUrl(1,0,'showconciliated');
+			print '</td>';
+			print '</tr>';
+	
+			print '<tr>';
+			print '<td>'.$langs->trans('BankAccount').'</td>';
+			print '<td colspan="3">';
+
+			$accountstatic=new Account($db);
+			$accountstatic->fetch($bankline->fk_account);
+			$monedaa=$accountstatic->currency_code;
+
+			print $accountstatic->getNomUrl(1);
+			print '</td>';
+			print '</tr>';
+	
+			if ($object->type_code == 'CHQ' && $bankline->fk_bordereau > 0) {
+				dol_include_once('/compta/paiement/cheque/class/remisecheque.class.php');
+				
+				$bordereau = new RemiseCheque($db);
+				$bordereau->fetch($bankline->fk_bordereau);
+	
+				print '<tr>';
+				print '<td>'.$langs->trans('CheckReceipt').'</td>';
+				print '<td colspan="3">';
+				print $bordereau->getNomUrl(1);
+				print '</td>';
+				print '</tr>';
+			}
+		}
+	}
+
+	print '</table>';
+	print '<br>';
+	
+	$datep="";
+	$formpago="";
+	$monedapago="";
+	$tipocambio="";
+	$montop="";
+	
+	$numoperacion="";
+	$rfcemisorctaorigen="";
+	$nombancoordenante="";
+	$ctaordenante="";
+	$rfcemisorctabeneficiario="";
+	$ctabeneficiario="";
+	$tipocadenapago="";
+	$certificadopago="";
+	$cadenaoriginal="";
+	$sellopago="";
+	
+	$idDocumento="";
+	$monedaDR="";
+	$metodoPDR="";
+	$docSerie="";
+	$docFolio="";
+	$tipocambiodr="";
+	$numparcialidaddr="";
+	$impSaldoAnterior="";
+	$impPagadodr="";
+	$impSaldoInsoluto="";
+	
+	$sql="SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos WHERE fk_facture=".GETPOST("facid")." AND fk_paiement=".GETPOST("pagcid");
+	$req=$db->query($sql);
+	$nmr=$db->num_rows($req);
+
+	if ($nmr > 0) {
+		$rsl=$db->fetch_object($req);
+		$datep=strtotime($rsl->fechaPago);
+		$formpago=$rsl->formaDePago;
+		$monedapago=$rsl->monedaP;
+		$tipocambio=$rsl->TipoCambioP;
+		$montop=$rsl->monto;
+		$numoperacion=$rsl->numOperacion;
+		$rfcemisorctaorigen=$rsl->rfcEmisorCtaOrd;
+		$nombancoordenante=$rsl->nomBancoOrdExt;
+		$ctaordenante=$rsl->ctaOrdenante;
+		$rfcemisorctabeneficiario=$rsl->rfcEmisorCtaBen;
+		$ctabeneficiario=$rsl->ctaBeneficiario;
+		$tipocadenapago=$rsl->tipoCadPago;
+		$certificadopago=$rsl->certPago;
+		$cadenaoriginal=$rsl->cadPago;
+		$sellopago=$rsl->selloPago;
+		
+		$sql="SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos_docto_relacionado WHERE fk_recepago=".$rsl->rowid;
+		$req=$db->query($sql);
+		$rsl=$db->fetch_object($req);
+		
+		$idDocumento=$rsl->idDocumento;
+		$monedaDR=$rsl->monedaDR;
+		$metodoPDR=$rsl->metodoDePagoDR;
+		$docSerie=$rsl->serie;
+		$docFolio=$rsl->folio;
+		$tipocambiodr=$rsl->tipoCambioDR;
+		$numparcialidaddr=$rsl->numParcialidad;
+		$impSaldoAnterior=$rsl->impSaldoAnt;
+		$impPagadodr=$rsl->impPagado;
+		$impSaldoInsoluto=$rsl->impSaldoInsoluto;
+	}
+
+	print '<form method="POST" action="pagos.php?action=guardar">';
+	print '<input type="hidden" name="facid" value="'.GETPOST("facid").'">';
+	print '<input type="hidden" name="pagcid" value="'.GETPOST("pagcid").'">';
+	print '<table class="border centpercent">'."\n";
+		
+	$formp = new Form($db);
+		
+	print '<tr><td class="titlefield" colspan="4" align="center"><strong>Timbrado de Pagos CFDI</strong></td>';
+	print '</tr>';
+
+	if ($datep == "") {
+		$datep=$obpag->date;
+	}
+
+	if ($formpago == "") {
+		$sql="SELECT accountancy_code FROM ".MAIN_DB_PREFIX."c_paiement WHERE code='".$obpag->type_code."'";
+		$req=$db->query($sql);
+		$rnr=$db->num_rows($req);
+
+		if ($rnr > 0) {
+			$res=$db->fetch_object($req);
+			$formpago=$res->accountancy_code;
+		} else {
+			$formpago="";
+		}
+	}
+		
+	if ($monedapago == "") {
+		if ($monedaa) {
+			$monedapago=$monedaa;
+		}
+	}
+	
+	if ($montop == "") {
+		$montop=str_replace(",","",number_format($obpag->montant,2));
+	}
+	
+	if ($idDocumento == "" && $monedaDR == "" && $metodoPDR == "") {
+		$sql="SELECT a.uuid, a.divisa, c.accountancy_code FROM ".MAIN_DB_PREFIX."cfdimx a, ".MAIN_DB_PREFIX."facture b,".MAIN_DB_PREFIX."c_paiement c  
+		WHERE a.fk_facture=".GETPOST("facid")." AND a.fk_facture=b.rowid AND b.fk_mode_reglement=c.id";
+		$rq=$db->query($sql);
+		$rs=$db->fetch_object($rq);
+		$sqlm="SHOW COLUMNS FROM ".MAIN_DB_PREFIX."facture_extrafields LIKE 'formpagcfdi'";
+		$resqlv=$db->query($sqlm);
+		$existe_form = $db->num_rows($resqlv);
+		
+		if ($existe_form > 0) {
+			$sqlv="SELECT formpagcfdi FROM ".MAIN_DB_PREFIX."facture_extrafields WHERE fk_object=".GETPOST("facid");
+			$rv=$db->query($sqlv);
+			$vrs=$db->fetch_object($rv);
+			$factura_metodopago=$vrs->formpagcfdi;
+		} else {
+			$factura_metodopago="";
+		}
+
+		$monedaDR=$rs->divisa;
+		$idDocumento=$rs->uuid;
+		$metodoPDR=$factura_metodopago;
+	}
+
+	$savedHour = date('G', $datep);
+	$savedMin = date('i', $datep);
+		
+	print '<tr><td class="titlefield"><strong>Fecha de Pago</strong></td>';
+	print '<td>';
+	print '<input type="hidden" name="mos" id="mos" value="0">';
+
+	if ($datep != "") { 
+		print'<input id="fechaPago" readonly="readonly" name="fechaPago" type="date" size="9" maxlength="9"  value="'.date("Y-m-d",$datep).'">';
+	}
+
+	print '<select class="flat " id="fechaPagohour" name="fechaPagohour">';
+
+	for ($k = 0; $k < 24; $k++) {
+		if ($k < 10) {
+			$hourValue = "0".$k;
+
+			if ($hourValue == $savedHour) {
+				print '<option selected value="'.$hourValue.'">'.$hourValue.'</option>';
+			} else {
+				print '<option value="'.$hourValue.'">'.$hourValue.'</option>';	
+			}
+		} else {
+			$hourValue = $k;
+
+			if ($hourValue == $savedHour) {
+				print '<option selected value="'.$hourValue.'">'.$hourValue.'</option>';
+			} else {
+				print '<option value="'.$hourValue.'">'.$hourValue.'</option>';
+			}
+		}
+	}
+
+	print '</select>';
+	print '<select class="flat " id="fechaPagomin" name="fechaPagomin">';
+
+	for ($k = 0; $k < 60; $k++) {
+		if ($k < 10) {
+			$minValue = "0".$k;
+			
+			if ($minValue == $savedMin) {
+				print '<option selected value="'.$minValue.'">'.$minValue.'</option>';	
+			} else {
+				print '<option value="'.$minValue.'">'.$minValue.'</option>';
+			}
+		} else {
+			$minValue = $k;
+
+			if ($minValue == $savedMin) {
+				print '<option selected value="'.$minValue.'">'.$minValue.'</option>';
+			} else {
+				print '<option value="'.$minValue.'">'.$minValue.'</option>';
+			}
+		}
+	}
+		
+	print '</td>';
+	
+	print '<td class="titlefield"><strong>Forma de Pago</strong></td>';
+	print '<td><input type="text" name="formpago" value="'.$formpago.'" ></td></tr>';
+
+	print '<tr><td class="titlefield"><strong>Moneda del Pago</strong></td>';
+	print '<td><input type="text" name="monedapago" value="'.$monedapago.'" ></td>';
+	
+	print '<td class="titlefield"><strong>Monto</strong></td>';
+	print '<td><input type="text" name="montop" value="'.$montop.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Tipo de cambio del Pago</td>';
+	print '<td><input type="text" name="tipocambio" value="'.$tipocambio.'" ></td>';
+	
+	print '<td class="titlefield">Numero de operacion</td>';
+	print '<td><input type="text" name="numoperacion" value="'.$numoperacion.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">RFC emisor cuenta ordenante</td>';
+	print '<td><input type="text" name="rfcemisorctaorigen" value="'.$rfcemisorctaorigen.'" ></td>';
+	
+	print '<td class="titlefield">Nombre del banco ordenante (Extranjero)</td>';
+	print '<td><input type="text" name="nombancoordenante" value="'.$nombancoordenante.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Cuenta Ordenante</td>';
+	print '<td><input type="text" name="ctaordenante" value="'.$ctaordenante.'" ></td>';
+	
+	print '<td class="titlefield">RFC emisor cuenta beneficiario</td>';
+	print '<td><input type="text" name="rfcemisorctabeneficiario" value="'.$rfcemisorctabeneficiario.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Cuenta beneficiario</td>';
+	print '<td><input type="text" name="ctabeneficiario" value="'.$ctabeneficiario.'" ></td>';
+	
+	print '<td class="titlefield">Tipo cadena de pago</td>';
+	print '<td><input type="text" name="tipocadenapago" value="'.$tipocadenapago.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Certificado del pago</td>';
+	print '<td colspan="3"><textarea name="certificadopago" rows="4" cols="60">'.$certificadopago.'
+			</textarea></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Cadena Original del comprobante pago</td>';
+	print '<td colspan="3"><textarea name="cadenaoriginal" rows="4" cols="60">'.$cadenaoriginal.'
+			</textarea></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Sello Pago</td>';
+	print '<td colspan="3"><textarea name="sellopago" rows="4" cols="60">'.$sellopago.'
+			</textarea></td></tr>';
+
+	////////////////////////////////////////////////////////////////
+
+	print '<tr><td class="titlefield" colspan="4" align="center"><strong>Documento relacionado</strong></td></tr>';
+	
+	print '<tr><td class="titlefield"><strong>ID Documento</strong></td>';
+	print '<td colspan="3"><input type="text" name="idDocumento" value="'.$idDocumento.'" size="40"></td></tr>';
+	
+	print '<tr><td class="titlefield"><strong>Moneda del Documento Relacionado</strong></td>';
+	print '<td><input type="text" name="monedaDR" value="'.$monedaDR.'" ></td>';
+	
+	print '<td class="titlefield"><strong>Metodo de Pago Documento Relacionado</strong></td>';
+	print '<td><input type="text" name="metodoPDR" value="'.$metodoPDR.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Serie</td>';
+	print '<td><input type="text" name="docSerie" value="'.$docSerie.'" ></td>';
+	
+	print '<td class="titlefield">Folio</td>';
+	print '<td><input type="text" name="docFolio" value="'.$docFolio.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Tipo Cambio Documento Relacionado</td>';
+	print '<td><input type="text" name="tipocambiodr" value="'.$tipocambiodr.'" ></td>';
+	
+	print '<td class="titlefield">Numero de Parcialidad</td>';
+	print '<td><input type="text" name="numparcialidaddr" value="'.$numparcialidaddr.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Importe Saldo Anterior</td>';
+	print '<td><input type="text" name="impSaldoAnterior" value="'.$impSaldoAnterior.'" ></td>';
+	
+	print '<td class="titlefield">Importe Pagado</td>';
+	print '<td><input type="text" name="impPagadodr" value="'.$impPagadodr.'" ></td></tr>';
+	
+	print '<tr class="oculta"><td class="titlefield">Importe Saldo Insoluto</td>';
+	print '<td colspan="3"><input type="text" name="impSaldoInsoluto" value="'.$impSaldoInsoluto.'" ></td></tr>';
+	
+		
+	print '<tr><td class="titlefield" colspan="4" align="center"><input type="submit" name="guardar" value="Guardar informacion" class="button"></td></tr>';
+		
+	print '</table>';
+	print '</form>';
+
+	$client = new nusoap_client($wscfdi, 'wsdl');
+	$result = $client->call('validaCliente',array( "rfc"=>$conf->global->MAIN_INFO_SIREN ));
+	$status_clt = $result["return"]["status_cliente_id"];
+	$status_clt_desc = $result["return"]["status_cliente_desc"];
+	$folios_timbrados = $result["return"]["folios_timbrados"];
+	$folios_adquiridos = $result["return"]["folios_adquiridos"];
+	$folios_disponibles = $result["return"]["folios_disponibles"];
+
+	if ($modo_timbrado == 1) {
+		$modo_timbrado_desc = "Produccion";
+	} else { 
+		$modo_timbrado_desc = "Pruebas"; 
+	}
+
+	print '<br>
+			<div style="width:380px; border:solid 1px; height:40px; background-color:#990000; padding:10px">
+				<font color="#FFFFFF">
+					<strong>Modalidad de Facturacion:</strong> '.$modo_timbrado_desc.'<br>
+					<strong>Folios Disponibles:</strong> '.$folios_disponibles.'<br>
+					<strong>Folios Timbrados:</strong> '.$folios_timbrados.'<br>
+				</font>
+			</div>
+			<br>
+			<div style="font-size:14px">';
+
+	if ($nmr == 0) {
+		print "Debe guardar la informacion del Pago para poder timbrar";
+	} else if ($folios_disponibles > 0) {
+		print '<a class="butAction" href="pagos/generaCFDI.php?facid='.GETPOST("facid").'&pagcid='.GETPOST("pagcid").'&action=generaCFDI">Generar CFDI</a>'."<br>";
+	}
+
+	print "</div>";
 }
 
 if($action=="cfdi1"){
