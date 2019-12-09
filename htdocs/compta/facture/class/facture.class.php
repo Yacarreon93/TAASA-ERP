@@ -1177,6 +1177,20 @@ class Facture extends CommonInvoice
 		}
 	}
 
+	/**
+	 *	Borra todas las lineas de una factura
+	 *
+	 *	@return     int         1 if OK, < 0 if KO
+	 */
+	function delete_lines()
+	{
+		$sql = 'DELETE FROM llx_facturedet';
+		$sql.= ' WHERE fk_facture = '.$this->id;
+		$result = $this->db->query($sql);
+		$this->db->free($result);
+		return 1;
+	}
+
 
 	/**
 	 *      Update database
