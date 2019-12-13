@@ -309,58 +309,144 @@ if($action=="guardar"){
 */
 if ($action == "guardar2") {
 
-	die('here');
+	die('checkpoint 1'); // @BORRAR
 
-	$fechaaux=str_replace("/", "-", GETPOST('fechaPago'));
-	$fechaPago=date("Y-m-d",strtotime($fechaaux));
-	$fechaPago=$fechaPago." ".GETPOST('fechaPagohour').":".GETPOST("fechaPagomin").":00";
+	$fechaaux = str_replace("/", "-", GETPOST('fechaPago'));
+	$fechaPago = date("Y-m-d",strtotime($fechaaux));
+	$fechaPago = $fechaPago." ".GETPOST('fechaPagohour').":".GETPOST("fechaPagomin").":00";
+
+	$facid_custom = GETPOST('facid'); // ".GETPOST('facid').",
+	$pagcid_custom = GETPOST('pagcid'); // ".GETPOST('pagcid').",
+
+	$elPagoYaExiste = $controlador->buscarPago(array('facid' => $facid_custom, 'pagcid' => $pagcid_custom)); // @MIRA1
 	
-	$sql1="SELECT rowid FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos WHERE fk_facture=".GETPOST('facid')." AND fk_paiement=".GETPOST('pagcid')." AND entity=".$conf->entity;
+	// $sql1="SELECT rowid FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos WHERE fk_facture=".GETPOST('facid')." AND fk_paiement=".GETPOST('pagcid')." AND entity=".$conf->entity;
+	// $resq=$db->query($sql1);
+	// $numr=$db->num_rows($resq);
 	
-	$resq=$db->query($sql1);
-	$numr=$db->num_rows($resq);
-	
-	if ($numr == 0) {
-		$sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos
-			   (fk_facture,
-				fk_paiement,
-				fechaPago,
-				formaDePago,
-				monedaP,
-				TipoCambioP,
-				monto,
-				numOperacion,
-				rfcEmisorCtaOrd,
-				nomBancoOrdExt,
-				ctaOrdenante,
-				rfcEmisorCtaBen,
-				ctaBeneficiario,
-				tipoCadPago,
-				certPago,
-				cadPago,
-				selloPago,
-				entity) 
-				VALUES (
-				".GETPOST('facid').",
-				".GETPOST('pagcid').",
-				'".$fechaPago."',
-				".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
-				".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
-				".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
-				".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
-				".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
-				".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
-				".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
-				".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
-				".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
-				".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
-				".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
-				".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
-				".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
-				".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL').",
-				".$conf->entity."
-				)";
+	if (!$elPagoYaExiste) {
+		$formpago_custom = GETPOST('formpago') != '' ? "'".GETPOST('formpago')."'" : 'NULL'; // ".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
+		$monedapago_custom = GETPOST('monedapago') != '' ? "'".GETPOST('monedapago')."'" : 'NULL'; // ".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
+		$tipocambio_custom = GETPOST('tipocambio') != '' ? "'".GETPOST('tipocambio')."'" : 'NULL'; // ".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
+		$montop_custom = GETPOST('montop') != '' ? "'".GETPOST('montop')."'" : 'NULL'; // ".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+		$numoperacion_custom = GETPOST('numoperacion') != '' ? "'".GETPOST('numoperacion')."'" : 'NULL'; // ".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
+		$rfcemisorctaorigen_custom = GETPOST('rfcemisorctaorigen') != '' ? "'".GETPOST('rfcemisorctaorigen')."'" : 'NULL'; // ".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
+		$nombancoordenante_custom = GETPOST('nombancoordenante') != '' ? "'".GETPOST('nombancoordenante')."'" : 'NULL'; // ".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
+		$ctaordenante_custom = GETPOST('ctaordenante') != '' ? "'".GETPOST('ctaordenante')."'" : 'NULL'; // ".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
+		$rfcemisorctabeneficiario_custom = GETPOST('rfcemisorctabeneficiario') != '' ? "'".GETPOST('rfcemisorctabeneficiario')."'" : 'NULL'; // ".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
+		$ctabeneficiario_custom = GETPOST('ctabeneficiario') != '' ? "'".GETPOST('ctabeneficiario')."'" : 'NULL'; // ".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
+		$tipocadenapago_custom = GETPOST('tipocadenapago') != '' ? "'".GETPOST('tipocadenapago')."'" : 'NULL'; // ".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
+		$certificadopago_custom = trim(GETPOST('certificadopago')) != '' ? "'".GETPOST('certificadopago')."'" : 'NULL'; // ".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
+		$cadenaoriginal_custom = trim(GETPOST('cadenaoriginal')) != '' ? "'".GETPOST('cadenaoriginal')."'" : 'NULL'; // ".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
+		$sellopago_custom = trim(GETPOST('sellopago')) != '' ? "'".GETPOST('sellopago')."'" : 'NULL'; // ".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL').",
+
+		// Estos son los datos de @IMPORTANTE2:
+
+		$idDocumento_custom = GETPOST('idDocumento') != '' ? "'".GETPOST('idDocumento')."'" : 'NULL'; // ".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
+		$docSerie_custom = GETPOST('docSerie') != '' ? "'".GETPOST('docSerie')."'" : 'NULL'; // ".(GETPOST('docSerie')!=''?"'".GETPOST('docSerie')."'":'NULL').",
+		$docFolio_custom = GETPOST('docFolio') != '' ? "'".GETPOST('docFolio')."'" : 'NULL'; // ".(GETPOST('docFolio')!=''?"'".GETPOST('docFolio')."'":'NULL').",
+		$monedaDR_custom = GETPOST('monedaDR') != '' ? "'".GETPOST('monedaDR')."'" : 'NULL'; // ".(GETPOST('monedaDR')!=''?"'".GETPOST('monedaDR')."'":'NULL').",
+		$tipocambiodr_custom = GETPOST('tipocambiodr') != '' ? "'".GETPOST('tipocambiodr')."'" : 'NULL'; // ".(GETPOST('tipocambiodr')!=''?"'".GETPOST('tipocambiodr')."'":'NULL').",
+		$metodoPDR_custom = GETPOST('metodoPDR') != '' ? "'".GETPOST('metodoPDR')."'" : 'NULL'; // ".(GETPOST('metodoPDR')!=''?"'".GETPOST('metodoPDR')."'":'NULL').",
+		$numparcialidaddr_custom = GETPOST('numparcialidaddr') != '' ? "'".GETPOST('numparcialidaddr')."'" : 'NULL'; // ".(GETPOST('numparcialidaddr')!=''?"'".GETPOST('numparcialidaddr')."'":'NULL').",
+		$impSaldoAnterior_custom = GETPOST('impSaldoAnterior') != '' ? "'".GETPOST('impSaldoAnterior')."'" : 'NULL'; // ".(GETPOST('impSaldoAnterior')!=''?"'".GETPOST('impSaldoAnterior')."'":'NULL').",
+		$impPagadodr_custom = GETPOST('impPagadodr') != '' ? "'".GETPOST('impPagadodr')."'" : 'NULL'; // ".(GETPOST('impPagadodr')!=''?"'".GETPOST('impPagadodr')."'":'NULL').",
+		$impSaldoInsoluto_custom = GETPOST('impSaldoInsoluto') != '' ? "'".GETPOST('impSaldoInsoluto')."'" : 'NULL'; // ".(GETPOST('impSaldoInsoluto')!=''?"'".GETPOST('impSaldoInsoluto')."'":'NULL').",
+
+		$data_custom = array();
+		$data_custom['facid'] = $facid_custom;
+		$data_custom['pagcid'] = $pagcid_custom;
+		$data_custom['fechaPago'] = $fechaPago;
+		$data_custom['formpago'] = $formpago_custom;
+		$data_custom['monedapago'] = $monedapago_custom;
+		$data_custom['tipocambio'] = $tipocambio_custom;
+		$data_custom['montop'] = $montop_custom;
+		$data_custom['numoperacion'] = $numoperacion_custom;
+		$data_custom['rfcemisorctaorigen'] = $rfcemisorctaorigen_custom;
+		$data_custom['nombancoordenante'] = $nombancoordenante_custom;
+		$data_custom['ctaordenante'] = $ctaordenante_custom;
+		$data_custom['rfcemisorctabeneficiario'] = $rfcemisorctabeneficiario_custom;
+		$data_custom['ctabeneficiario'] = $ctabeneficiario_custom;
+		$data_custom['tipocadenapago'] = $tipocadenapago_custom;
+		$data_custom['certificadopago'] = $certificadopago_custom;
+		$data_custom['cadenaoriginal'] = $cadenaoriginal_custom;
+		$data_custom['sellopago'] = $sellopago_custom;
 		
+		// Estos son los datos de @IMPORTANTE2:
+		
+		$data_custom['idDocumento'] = $idDocumento_custom;
+		$data_custom['docSerie'] = $docSerie_custom;
+		$data_custom['docFolio'] = $docFolio_custom;
+		$data_custom['monedaDR'] = $monedaDR_custom;
+		$data_custom['tipocambiodr'] = $tipocambiodr_custom;
+		$data_custom['metodoPDR'] = $metodoPDR_custom;
+		$data_custom['numparcialidaddr'] = $numparcialidaddr_custom;
+		$data_custom['impSaldoAnterior'] = $impSaldoAnterior_custom;
+		$data_custom['impPagadodr'] = $impPagadodr_custom;
+		$data_custom['impSaldoInsoluto'] = $impSaldoInsoluto_custom;
+
+		$elPagoFueGuardado = $controlador->guardarInfoPago($data_custom); // @MIRA2
+
+		/*
+			@IMPORTANTE1:
+			!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			Revisar abajo! Buscar: "@IMPORTANTE2"
+		*/
+
+		print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."'</script>";
+
+		// $sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos
+		// 	   (fk_facture,
+		// 		fk_paiement,
+		// 		fechaPago,
+		// 		formaDePago,
+		// 		monedaP,
+		// 		TipoCambioP,
+		// 		monto,
+		// 		numOperacion,
+		// 		rfcEmisorCtaOrd,
+		// 		nomBancoOrdExt,
+		// 		ctaOrdenante,
+		// 		rfcEmisorCtaBen,
+		// 		ctaBeneficiario,
+		// 		tipoCadPago,
+		// 		certPago,
+		// 		cadPago,
+		// 		selloPago,
+		// 		entity) 
+		// 		VALUES (
+		// 		".GETPOST('facid').",
+		// 		".GETPOST('pagcid').",
+		// 		'".$fechaPago."',
+		// 		".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
+		// 		".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
+		// 		".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
+		// 		".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+		// 		".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
+		// 		".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
+		// 		".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
+		// 		".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
+		// 		".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
+		// 		".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
+		// 		".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
+		// 		".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
+		// 		".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
+		// 		".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL').",
+		// 		".$conf->entity."
+		// 		)";
+
+		/*
+			@IMPORTANTE2:
+			Posiblemente no sea necesario realizar las acciones del bloque posterior "@BLOQUE",
+			en el caso del formulario orginal se crea un segundo registro en la base de datos,
+			supongo que es para guardar la información extra del pago, por lo que es posible que
+			se requiera guardar esa información en el registro de pago creado anteriormente en @MIRA2.
+		*/
+
+		die('checkpoint 2'); // @BORRAR
+
+		// INICIO @BLOQUE
+
 		if ($res = $db->query($sql)) {
 			$last=$db->last_insert_id(MAIN_DB_PREFIX."cfdimx_recepcion_pagos");
 			$fk_recepago=$last;
@@ -399,7 +485,11 @@ if ($action == "guardar2") {
 		} else {
 			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."&mesg=err1'</script>";
 		}
+
+		// FINAL @BLOQUE
 	} else {
+
+		
 		$resultado=$db->fetch_object($resq);
 
 		$sql3="UPDATE ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos
