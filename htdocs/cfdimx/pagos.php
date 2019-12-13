@@ -159,9 +159,9 @@ if($action==""){
 }
 
 if($action=="guardar"){
-// 	print "<pre>";
-// 	print_r($_REQUEST);
-// 	print "</pre>";
+	// 	print "<pre>";
+	// 	print_r($_REQUEST);
+	// 	print "</pre>";
 	$fechaaux=str_replace("/", "-", GETPOST('fechaPago'));
 	$fechaPago=date("Y-m-d",strtotime($fechaaux));
 	$fechaPago=$fechaPago." ".GETPOST('fechaPagohour').":".GETPOST("fechaPagomin").":00";
@@ -295,6 +295,152 @@ if($action=="guardar"){
 			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."&mesg=err1'</script>";
 		}
 		
+	}
+}
+
+/*
+	Acción para guardar la info del pago (custom):
+	
+	1. Obtener la info.
+	2. Revisar si se ha guardado la info del pago anteriormente:
+		- Si se guardó: Actualizar la info en la base de datos.
+		- Si NO se guardó: Guardar la info en la base de datos.
+	3. Refrescar la página.
+*/
+if ($action == "guardar2") {
+
+	die('here');
+
+	$fechaaux=str_replace("/", "-", GETPOST('fechaPago'));
+	$fechaPago=date("Y-m-d",strtotime($fechaaux));
+	$fechaPago=$fechaPago." ".GETPOST('fechaPagohour').":".GETPOST("fechaPagomin").":00";
+	
+	$sql1="SELECT rowid FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos WHERE fk_facture=".GETPOST('facid')." AND fk_paiement=".GETPOST('pagcid')." AND entity=".$conf->entity;
+	
+	$resq=$db->query($sql1);
+	$numr=$db->num_rows($resq);
+	
+	if ($numr == 0) {
+		$sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos
+			   (fk_facture,
+				fk_paiement,
+				fechaPago,
+				formaDePago,
+				monedaP,
+				TipoCambioP,
+				monto,
+				numOperacion,
+				rfcEmisorCtaOrd,
+				nomBancoOrdExt,
+				ctaOrdenante,
+				rfcEmisorCtaBen,
+				ctaBeneficiario,
+				tipoCadPago,
+				certPago,
+				cadPago,
+				selloPago,
+				entity) 
+				VALUES (
+				".GETPOST('facid').",
+				".GETPOST('pagcid').",
+				'".$fechaPago."',
+				".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
+				".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
+				".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
+				".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+				".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
+				".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
+				".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
+				".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
+				".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
+				".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
+				".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
+				".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
+				".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
+				".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL').",
+				".$conf->entity."
+				)";
+		
+		if ($res = $db->query($sql)) {
+			$last=$db->last_insert_id(MAIN_DB_PREFIX."cfdimx_recepcion_pagos");
+			$fk_recepago=$last;
+			
+			$sql2="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos_docto_relacionado
+			(fk_recepago,
+		     idDocumento,
+		     serie,
+		     folio,
+		     monedaDR,
+		     tipoCambioDR,
+		     metodoDePagoDR,
+		     numParcialidad,
+		     impSaldoAnt,
+		     impPagado,
+		     impSaldoInsoluto,
+		   	 entity)
+			 VALUES (
+					'".$fk_recepago."',
+					".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
+					".(GETPOST('docSerie')!=''?"'".GETPOST('docSerie')."'":'NULL').",
+					".(GETPOST('docFolio')!=''?"'".GETPOST('docFolio')."'":'NULL').",
+					".(GETPOST('monedaDR')!=''?"'".GETPOST('monedaDR')."'":'NULL').",
+					".(GETPOST('tipocambiodr')!=''?"'".GETPOST('tipocambiodr')."'":'NULL').",
+					".(GETPOST('metodoPDR')!=''?"'".GETPOST('metodoPDR')."'":'NULL').",
+					".(GETPOST('numparcialidaddr')!=''?"'".GETPOST('numparcialidaddr')."'":'NULL').",
+					".(GETPOST('impSaldoAnterior')!=''?"'".GETPOST('impSaldoAnterior')."'":'NULL').",
+					".(GETPOST('impPagadodr')!=''?"'".GETPOST('impPagadodr')."'":'NULL').",
+					".(GETPOST('impSaldoInsoluto')!=''?"'".GETPOST('impSaldoInsoluto')."'":'NULL').",
+					".$conf->entity."
+			 )";
+			
+			$res2=$db->query($sql2);
+
+			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
+		} else {
+			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."&mesg=err1'</script>";
+		}
+	} else {
+		$resultado=$db->fetch_object($resq);
+
+		$sql3="UPDATE ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos
+				SET
+				fechaPago='".$fechaPago."',
+				formaDePago=".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
+				monedaP=".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
+				TipoCambioP=".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
+				monto=".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+				numOperacion=".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
+				rfcEmisorCtaOrd=".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
+				nomBancoOrdExt=".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
+				ctaOrdenante=".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
+				rfcEmisorCtaBen=".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
+				ctaBeneficiario=".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
+				tipoCadPago=".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
+				certPago=".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
+				cadPago=".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
+				selloPago=".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL')."
+				WHERE rowid=".$resultado->rowid;		
+		
+		if ($res=$db->query($sql3)) {
+			$sql4="UPDATE ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos_docto_relacionado
+					SET
+					 idDocumento=".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
+				     serie=".(GETPOST('docSerie')!=''?"'".GETPOST('docSerie')."'":'NULL').",
+				     folio=".(GETPOST('docFolio')!=''?"'".GETPOST('docFolio')."'":'NULL').",
+				     monedaDR=".(GETPOST('monedaDR')!=''?"'".GETPOST('monedaDR')."'":'NULL').",
+				     tipoCambioDR=".(GETPOST('tipocambiodr')!=''?"'".GETPOST('tipocambiodr')."'":'NULL').",
+				     metodoDePagoDR=".(GETPOST('metodoPDR')!=''?"'".GETPOST('metodoPDR')."'":'NULL').",
+				     numParcialidad=".(GETPOST('numparcialidaddr')!=''?"'".GETPOST('numparcialidaddr')."'":'NULL').",
+				     impSaldoAnt=".(GETPOST('impSaldoAnterior')!=''?"'".GETPOST('impSaldoAnterior')."'":'NULL').",
+				     impPagado=".(GETPOST('impPagadodr')!=''?"'".GETPOST('impPagadodr')."'":'NULL').",
+				     impSaldoInsoluto=".(GETPOST('impSaldoInsoluto')!=''?"'".GETPOST('impSaldoInsoluto')."'":'NULL')."
+					WHERE fk_recepago=".$resultado->rowid;
+			$res2=$db->query($sql4);
+
+			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
+		} else {
+			print "<script>window.location.href='pagos.php?action=cfdi&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."&mesg=err1'</script>";
+		}
 	}
 }
 
@@ -688,7 +834,7 @@ if ($action=="cfdi") {
 }
 
 /*
-	Acción para timbrar el pago de manera custom.
+	Acción para mostrar el formulario de pago (custom).
 */
 if ($action == "cfdi2") {
 	$obpag = new Paiement($db);
@@ -1037,7 +1183,7 @@ if ($action == "cfdi2") {
 	print '<tr class="oculta"><td class="titlefield">Importe Saldo Insoluto</td>';
 	print '<td colspan="3"><input type="text" name="impSaldoInsoluto" value="'.$impSaldoInsoluto.'" ></td></tr>';
 		
-	print '<tr><td class="titlefield" colspan="4" align="center"><input type="submit" name="guardar" value="Guardar informacion" class="button"></td></tr>';
+	print '<tr><td class="titlefield" colspan="4" align="center"><input type="submit" name="guardar2" value="Guardar informacion" class="button"></td></tr>';
 		
 	print '</table>';
 	print '</form>';
