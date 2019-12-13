@@ -1045,12 +1045,20 @@ if ($action == "cfdi2") {
 	$impSaldoAnterior="";
 	$impPagadodr="";
 	$impSaldoInsoluto="";
+
+	/*
+		@IMPORTANTE4: Buscar la info del pago desde la tabla correcta.
+	*/
+
+	// $facid_custom = GETPOST('facid'); // ".GETPOST('facid').",
+	// $pagcid_custom = GETPOST('pagcid'); // ".GETPOST('pagcid').",
+	// $elPago = $controlador->buscarPago(array('facid' => $facid_custom, 'pagcid' => $pagcid_custom)); // @MIRA4
 	
 	$sql="SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos WHERE fk_facture=".GETPOST("facid")." AND fk_paiement=".GETPOST("pagcid");
 	$req=$db->query($sql);
 	$nmr=$db->num_rows($req);
 
-	if ($nmr > 0) {
+	if ($nmr > 0) { // @IMPORTANTE5: if ($elPago) { ...obteber la info de $elPago }
 		$rsl=$db->fetch_object($req);
 		$datep=strtotime($rsl->fechaPago);
 		$formpago=$rsl->formaDePago;
@@ -1289,7 +1297,7 @@ if ($action == "cfdi2") {
 
 	print '<div style="font-size: 14px">';
 
-	$folios_disponibles = 0; // ?? <- Ya no se necesita!
+	$folios_disponibles = 0; // @IMPORTANTE6: ?? <- Ya no se necesita!
 
 	if ($nmr == 0) {
 		print "Debe guardar la informacion del Pago para poder timbrar";
