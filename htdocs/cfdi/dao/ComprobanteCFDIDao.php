@@ -71,7 +71,7 @@ class ComprobanteCFDIDao {
 
 	public function FetchConceptosData($id) {
 		$sql = "SELECT
-			ref AS id_concepto,
+			p.rowid AS id_concepto,
 			qty AS cantidad,
 			umed AS unidad,
 			p.label AS descripcion,
@@ -115,7 +115,7 @@ class ComprobanteCFDIDao {
 
 	public function FetchImpuestosData($id) {
 		$sql = "SELECT
-			p.ref AS id_concepto,
+			p.rowid AS id_concepto,
 			'T' AS tipo_impuesto_federal,
 			total_tva AS importe,
 			'002' AS impuesto,
@@ -132,12 +132,17 @@ class ComprobanteCFDIDao {
 		while ($row =  $this->db->fetch_object($result))
 		{
 				$tasa_o_cuota = ($row->tasa_o_cuota / 100);
+				if($tasa_o_cuota == 0.16) {
+					$string_tasa_o_cuota = "0.160000";
+				} else {
+					$string_tasa_o_cuota = "0";
+				}
 				$data[] = array(
 					id_concepto=>$row->id_concepto,
 					tipo_impuesto_federal=> $row->tipo_impuesto_federal,
 					importe=>$row->importe,
 					impuesto=>$row->impuesto,
-					tasa_o_cuota=>$tasa_o_cuota,
+					tasa_o_cuota=>$string_tasa_o_cuota,
 					tipo_factor=>$row->tipo_factor,
 					base=> $row->base,
 					fk_comprobante=>$id
@@ -184,7 +189,7 @@ class ComprobanteCFDIDao {
 	}	
 
 	public function FetchComprobanteData($id) {
-		$sql = "SELECT f.rowid, facnumber AS serie, facnumber AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor, fk_soc, usocfdi AS uso_cfdi 
+		$sql = "SELECT f.rowid, facnumber AS serie, f.rowid AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor, fk_soc, usocfdi AS uso_cfdi 
 			FROM llx_facture AS f
 			JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 			LEFT JOIN llx_c_paiement AS p ON f.fk_mode_reglement = p.id
@@ -200,7 +205,7 @@ class ComprobanteCFDIDao {
 				} else {
 					$tipo_cambio= 19.5;
 				}
-				$lugar_de_expedicion = $this->GetVendorAddress($vendor);
+				$lugar_de_expedicion = $this->GetVendorAddress($row->vendor);
 				$data[] = array(
 					serie=>$row->serie,
 					folio=> $row->folio,

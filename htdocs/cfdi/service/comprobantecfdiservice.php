@@ -1,6 +1,6 @@
 <?php
 
-require_once DOL_DOCUMENT_ROOT.'/comprobanteCFDI/dao/ComprobanteCFDIDao.php';
+require_once DOL_DOCUMENT_ROOT.'/cfdi/dao/ComprobanteCFDIDao.php';
 
 
 class ComprobanteCFDIService {
