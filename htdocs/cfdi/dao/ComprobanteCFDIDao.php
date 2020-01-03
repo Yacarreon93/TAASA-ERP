@@ -511,4 +511,11 @@ class ComprobanteCFDIDao {
 		$sql.=")";
 		$this->ExecuteQuery($sql);
 	}
+
+	public function CheckIfExists($fk_comprobante) {
+		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$id;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
 }

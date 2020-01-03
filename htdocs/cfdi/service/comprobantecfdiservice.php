@@ -7,13 +7,16 @@ class ComprobanteCFDIService {
 
 	public function SaveCFDIFromFacture($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
-		$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
-		$lastId = $CFDIDao->GetLastInsertedId();
-		$conceptosData = $CFDIDao->FetchConceptosData($factureId);
-		$CFDIDao->InsertIntoConceptosComprobante($conceptosData, $lastId);
-		$impuestosData =$CFDIDao->FetchImpuestosData($factureId);
-		$CFDIDao->InsertIntoConceptosTipoImpuesto($impuestosData, $lastId);
+		$cfdiNotExists = $CFDIDao->CheckIfExists($factureId);
+		if($cfdiNotExists) {
+			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
+			$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
+			$lastId = $CFDIDao->GetLastInsertedId();
+			$conceptosData = $CFDIDao->FetchConceptosData($factureId);
+			$CFDIDao->InsertIntoConceptosComprobante($conceptosData, $lastId);
+			$impuestosData =$CFDIDao->FetchImpuestosData($factureId);
+			$CFDIDao->InsertIntoConceptosTipoImpuesto($impuestosData, $lastId);
+		}
 	}
 
 	public function SaveCFDIFromPayment($db, $paymentArray) {
