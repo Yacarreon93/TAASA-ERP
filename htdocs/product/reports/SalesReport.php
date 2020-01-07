@@ -7,6 +7,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/service/FacturePaiementsService.php';
 
 $account = GETPOST('account');
 $month = GETPOST('month');
+$year = GETPOST('year');
 
 if(!$account) {
     $account = 1;
@@ -58,8 +59,13 @@ ORDER BY
     datef ASC,
     f.rowid DESC
 	 ) t1 ON t1.rowid = f.rowid
-WHERE MONTH(p.datep) = ".$month." AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")
-ORDER BY
+WHERE MONTH(p.datep) = ".$month;
+if(!$year) {
+  $sql.=" AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")";
+} else {
+  $sql.=" AND YEAR(p.datep) = ".$year." AND fk_statut != 3 AND (b.fk_account =".$account.")";
+}
+$sql.=" ORDER BY
 p.datep ASC,
 p.amount DESC";
 
