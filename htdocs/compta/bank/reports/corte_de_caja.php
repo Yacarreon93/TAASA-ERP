@@ -93,7 +93,7 @@ while ($i < $num)
         dateo   => dol_print_date($db->jdate($row->do),"day"),
         datev   => dol_print_date($db->jdate($row->dv),"day"),
         type    => $type,
-        thirdparty  => dol_trunc($row->thirdparty, 23),
+        thirdparty  => dol_trunc($row->thirdparty, 19),
         debe    => '$'.price($debe),
         haber   => '$'.price($haber),
     );
@@ -110,8 +110,6 @@ while ($i < $num)
 }
 
 $pdf = new ReportPDF('l');
-
-$report_title = 'Reporte corte de caja';
 
 // Títulos de las columnas
 $header = array(
@@ -134,7 +132,10 @@ $header2 = array(
         transferencia    => '$'.price($total_transf)
     );
 
-$pdf->SetTitle($report_title, 10);
+$report_title = 'Corte de caja';
+// Carga de datos
+$pdf->SetFont('Arial', '', 11);
+$pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 11);
 $pdf->createDynamicHeader($header, 10);
