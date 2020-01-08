@@ -363,7 +363,7 @@ class ComprobanteCFDIDao {
 		$sql.="'T', ";
 		$sql.=$array_data['impuestos_trasladados'].',';
 		$sql.="'002', ";
-		$sql.=0.160000.',';		
+		$sql.="'0.160000', ";		
 		$sql.="'Tasa' )";
 		$this->ExecuteQuery($sql);
 	}
