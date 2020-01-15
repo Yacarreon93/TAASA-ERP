@@ -110,9 +110,9 @@ while ($row = $db->fetch_object($result))
 
 $factureService = new FacturePaiementsService();
 //CREDITO
-$VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $account);
-$VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $account);
-$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $account);
+$VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $year, $account);
+$VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $year, $account);
+$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $year, $account);
 
 //CONTADO
 //$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
