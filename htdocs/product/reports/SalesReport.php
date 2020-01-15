@@ -15,6 +15,9 @@ if(!$account) {
 if(!$month) {
     $month = 1;
 }
+if(!$year) {
+    $year = date("Y");
+}
 
 $sql = "SELECT
  datep AS fecha_pago, p.rowid AS id_pago, p.amount AS total_pago, pf.amount AS importe_pago,
