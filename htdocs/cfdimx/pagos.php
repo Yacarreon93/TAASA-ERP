@@ -333,7 +333,7 @@ if ($action == "guardar2") {
 	$cadenaoriginal_custom = trim(GETPOST('cadenaoriginal')) != '' ? "'".GETPOST('cadenaoriginal')."'" : 'NULL'; // ".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
 	$sellopago_custom = trim(GETPOST('sellopago')) != '' ? "'".GETPOST('sellopago')."'" : 'NULL'; // ".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL').",
 
-	// Estos son los datos de extra:
+	// Estos son los datos extra:
 	$idDocumento_custom = GETPOST('idDocumento') != '' ? "'".GETPOST('idDocumento')."'" : 'NULL'; // ".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
 	$docSerie_custom = GETPOST('docSerie') != '' ? "'".GETPOST('docSerie')."'" : 'NULL'; // ".(GETPOST('docSerie')!=''?"'".GETPOST('docSerie')."'":'NULL').",
 	$docFolio_custom = GETPOST('docFolio') != '' ? "'".GETPOST('docFolio')."'" : 'NULL'; // ".(GETPOST('docFolio')!=''?"'".GETPOST('docFolio')."'":'NULL').",
@@ -457,6 +457,8 @@ if ($action == "guardar2") {
 			
 			$res2 = $db->query($sql2);
 
+			// @MIRA: Crear registro (agregar error handling).
+
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."'</script>";
 		} else {
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."&mesg=err1'</script>";
@@ -502,13 +504,13 @@ if ($action == "guardar2") {
 
 			$res2 = $db->query($sql4);
 
+			// @MIRA: Actualizar registro (agregar error handling).
+
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."'</script>";
 		} else {
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."&mesg=err1'</script>";
 		}
 	}
-
-	// @MIRA: Validar si no hubo errores, y si no, llamar a la función aquí.
 }
 
 $form = $form2;
@@ -1253,26 +1255,34 @@ if ($action == "cfdi2") {
 	print '<tr class="oculta"><td class="titlefield">Importe Saldo Insoluto</td>';
 	print '<td colspan="3"><input type="text" name="impSaldoInsoluto" value="'.$impSaldoInsoluto.'" ></td></tr>';
 		
-	print '<tr><td class="titlefield" colspan="4" align="center"><input type="submit" name="guardar2" value="Guardar informacion" class="button"></td></tr>';
-		
-	print '</table>';
-	print '</form>';
-	print '<br>';
+	print '<tr>';
 
-	print '<div style="font-size: 14px">';
+	print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0" colspan="2">';
+	print '</td>';
+
+	print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0;font-weight:bold">';
 
 	$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = false; // @MIRA: Hacer un SELECT de las tablas para validar que en efecto la info existe.
+	$URLDelSitioDeTimbrado = ''; // @MIRA
 
 	if ($nmr == 0) {
-		print 'Debe guardar la información del Pago para poder timbrar';
+		print 'Debe guardar la información del Pago para poder timbrarlo';
 	} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
-		$URLDelSitioDeTimbrado = ''; // @MIRA
-
-		print '<a class="butAction" href="'.$URLDelSitioDeTimbrado.'" target="_blank">Generar CFDI</a>';
-		print '<br>';
+		print '<a class="butAction" style="float:right" href="'.$URLDelSitioDeTimbrado.'" target="_blank">Generar CFDI</a>';
+	} else {
+		print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
 	}
 
-	print "</div>";
+	print '</td>';
+
+	print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0">';
+	print '<input type="submit" name="guardar2" value="Guardar información" class="button">';
+	print '</td>';
+	
+	print '</tr>';
+
+	print '</form>';
+	print '</table>';
 }
 
 if($action=="cfdi1"){
