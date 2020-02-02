@@ -115,29 +115,30 @@ $IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $account
 
 $totals = array();
 
-for($i = 0; $i < $dayCounter; $i++) {
-    $totals[$i]['fecha'] = $dateArray[$i];
-    $totals[$i]['ventasCreditoSinIVA'] = $VendidoCreditoSinIVA[$i]['total'];
-    $totals[$i]['ventasCreditoConIVA'] = $VendidoCreditoConIVA[$i]['total'];
-    $totals[$i]['ventasContadoSinIVA'] = $VendidoContadoSinIVA[$i];
-    $totals[$i]['ventasContadoConIVA'] = $VendidoContadoConIVA[$i];
-    $totals[$i]['IVA']  = $IVAContado[$i] + $IVACredito[$i]['total'];
-    $totals[$i]['totalSinIVA'] = $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i];
-    $totals[$i]['totalConIVA']  = $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i];
-    $totals[$i]['importeAbonos'] = $totalAbonosAcredito[$i];
+for ($i = 0; $i < $dayCounter; $i++) {
+    $totals[$i]['fecha'] = date('d/m/Y', strtotime($dateArray[$i]));;
+    $totals[$i]['ventasCreditoSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]['total']);
+    $totals[$i]['ventasCreditoConIVA'] = formatMoney($VendidoCreditoConIVA[$i]['total']);
+    $totals[$i]['ventasContadoSinIVA'] = formatMoney($VendidoContadoSinIVA[$i]);
+    $totals[$i]['ventasContadoConIVA'] = formatMoney($VendidoContadoConIVA[$i]);
+    $totals[$i]['IVA']  = formatMoney($IVAContado[$i] + $IVACredito[$i]['total']);
+    $totals[$i]['totalSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]);
+    $totals[$i]['totalConIVA']  = formatMoney($VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]);
+    $totals[$i]['importeAbonos'] = formatMoney($totalAbonosAcredito[$i]);
+
   $importeContado += $VendidoContadoSinIVA[$i] + $VendidoContadoConIVA[$i];
   $importeCredito += $VendidoCreditoSinIVA[$i]['total'] + $VendidoCreditoConIVA[$i]['total'];
   $importeAbonos += $totalAbonosAcredito[$i];
 
   //totals per row
-  $totalPerRowCreditoSinIVA += $totals[$i]['ventasCreditoSinIVA'];
-  $totalPerRowCreditoConIVA += $totals[$i]['ventasCreditoConIVA'];
-  $totalPerRowContadoSinIVA += $totals[$i]['ventasContadoSinIVA'];
-  $totalPerRowContadoConIVA += $totals[$i]['ventasContadoConIVA'];
-  $totalPerRowIVA += $totals[$i]['IVA'];
-  $totalPerRowTotalSinIVA += $totals[$i]['totalSinIVA'];
-  $totalPerRowTotalConIVA += $totals[$i]['totalConIVA'];
-  $totalPerRowAbonado += $totals[$i]['importeAbonos'];
+  $totalPerRowCreditoSinIVA += $VendidoCreditoSinIVA[$i]['total'];
+  $totalPerRowCreditoConIVA += $VendidoCreditoConIVA[$i]['total'];
+  $totalPerRowContadoSinIVA += $VendidoContadoSinIVA[$i];
+  $totalPerRowContadoConIVA += $VendidoContadoConIVA[$i];
+  $totalPerRowIVA += $IVAContado[$i] + $IVACredito[$i]['total'];
+  $totalPerRowTotalSinIVA += $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i];
+  $totalPerRowTotalConIVA += $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i];
+  $totalPerRowAbonado += $totalAbonosAcredito[$i];
 
 }
 
@@ -169,42 +170,110 @@ if($account == 1)
      $accountName = 'Leon ';
 }
 
-$report_title = $accountName .' Reporte de ventas del mes';
+$report_title = strtr('REPORTE DE VENTAS DEL MES - $M $Y', array(
+    '$M' => getCurrentMonthNameStr(),
+    '$Y' => strftime('%G'),
+));
+
+$report_subtitle = "CUENTA: $accountName";
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 
+$columnWidth = $pdf->maxWidth / count($header);
+
+$grayRGB1 = [235, 235, 235];
+$grayRGB2 = [191, 191, 191];
+
 // 7 es la altura por default
 // $pdf->setRowHeight(7);
 $pdf->SetTitle($report_title);
+$pdf->SetSubtitle($report_subtitle);
 $pdf->AddPage();
-$pdf->Cell(40, 10, ' ', 0, 0, 'L');
-$pdf->Cell(60, 10, 'VENTAS CREDITO', 0, 0, 'L');
-$pdf->Cell(90, 10, 'VENTAS CONTADO', 0, 0, 'L');
-$pdf->Cell(80, 10, 'TOTAL DE VENTAS', 0, 0, 'L');
+$pdf->Cell($columnWidth, 10, ' ', 0, 0, 'L');
+$pdf->SetFillColor(...$grayRGB1);
+$pdf->SetFont('', 'B');
+$pdf->Cell($columnWidth * 2, 10, 'VENTAS CREDITO', 1, 0, 'C', 1);
+$pdf->SetFillColor(...$grayRGB2);
+$pdf->Cell($columnWidth * 2, 10, 'VENTAS CONTADO', 1, 0, 'C', 1);
+$pdf->Cell($columnWidth, 10, ' ', 0, 0, 'L');
+$pdf->SetFillColor(...$grayRGB1);
+$pdf->Cell($columnWidth * 2, 10, 'TOTAL DE VENTAS', 1, 0, 'C', 1);
+$pdf->SetFont('', '');
 $pdf->ln();
-$pdf->createDynamicHeader($header);
-$pdf->createDynamicRows($totals);
+
+$pdf->createDynamicHeader($header, array(
+    'bold' => true,
+    'background' => array(
+        '2' => $grayRGB1,
+        '3' => $grayRGB1,
+        '4' => $grayRGB2,
+        '5' => $grayRGB2,
+        '7' => $grayRGB1,
+        '8' => $grayRGB1,
+    ),
+));
+
+// for($i = 0; $i < 10; $i++) {
+//     $totals[$i][] = date('d/m/Y', strtotime('2019-12-26 12:00:00'));
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+//     $totals[$i][] = 'qwe';
+// } 
+
+$pdf->createDynamicRows($totals, array(
+    'bold' => false,
+    'background' => array(
+        '2' => $grayRGB1,
+        '3' => $grayRGB1,
+        '4' => $grayRGB2,
+        '5' => $grayRGB2,
+        '7' => $grayRGB1,
+        '8' => $grayRGB1,
+    ),
+));
+
 //Totals per row
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, 'TOTAL', 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowCreditoSinIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowCreditoConIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowContadoSinIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowContadoConIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowTotalSinIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowTotalConIVA, 2, '.', ','), 1, 0, 'L');
-$pdf->Cell(($pdf->maxWidth/count($header)), 10, number_format($totalPerRowAbonado, 2, '.', ','), 1, 0, 'L');
+$pdf->SetFont('', 'B', $pdf->fontSizeHeader);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, 'Total', 1, 0, 'L');
+$pdf->SetFont('', 'B', $pdf->fontSizeRows);
+$pdf->SetFillColor(...$grayRGB1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowCreditoSinIVA), 1, 0, 'L', 1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowCreditoConIVA), 1, 0, 'L', 1);
+$pdf->SetFillColor(...$grayRGB2);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowContadoSinIVA), 1, 0, 'L', 1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowContadoConIVA), 1, 0, 'L', 1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowIVA), 1, 0, 'L');
+$pdf->SetFillColor(...$grayRGB1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowTotalSinIVA), 1, 0, 'L', 1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowTotalConIVA), 1, 0, 'L', 1);
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowAbonado), 1, 0, 'L');
+
 //Totals
 $pdf->ln();
-$pdf->SetFont('Arial','B',11);
-$pdf->Cell(80, 10, 'Importe Contado: $'.number_format($importeContado, 2, '.', ','), 0, 0, 'L');
-  $pdf->ln();
-$pdf->Cell(80, 10, 'Importe Credito: $'.number_format($importeCredito, 2, '.', ','), 0, 0, 'L');
-  $pdf->ln();
-$pdf->Cell(80, 10, 'Importe de Abonos: $'.number_format($importeAbonos, 2, '.', ','), 0, 0, 'L');
-  $pdf->ln();
-$pdf->Cell(80, 10, 'TOTAL DEL CORTE: $'.number_format(($importeContado + $importeAbonos), 2, '.', ','), 0, 0, 'L');
+$pdf->ln();
+$pdf->SetFont('Arial', 'B', $pdf->fontSizeHeader);
+$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Importe Contado', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeContado), 1);
+$pdf->ln();
+$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, utf8_decode('Importe Crédito'), 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeCredito), 1);
+$pdf->ln();
+$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Importe de Abonos', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeAbonos), 1);
+$pdf->ln();
+$pdf->SetFillColor(...$grayRGB1);
+$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'TOTAL DEL CORTE', 1, 0, 'L', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeContado + $importeAbonos), 1, 0, 'L', 1);
 
  //$pdf->BasicTable($header,$data);
 // $pdf->AddPage();
