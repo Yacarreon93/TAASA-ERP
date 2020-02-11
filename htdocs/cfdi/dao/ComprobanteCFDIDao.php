@@ -121,7 +121,7 @@ class ComprobanteCFDIDao {
 			'002' AS impuesto,
 			f.tva_tx AS tasa_o_cuota,
 			'Tasa' AS tipo_factor,
-			subprice AS base
+			total_ht AS base
 		FROM
 			llx_facturedet AS f
 		JOIN llx_product AS p ON fk_product = p.rowid
@@ -135,7 +135,7 @@ class ComprobanteCFDIDao {
 				if($tasa_o_cuota == 0.16) {
 					$string_tasa_o_cuota = "0.160000";
 				} else {
-					$string_tasa_o_cuota = "0";
+					$string_tasa_o_cuota = "0.000000";
 				}
 				$data[] = array(
 					id_concepto=>$row->id_concepto,
@@ -164,8 +164,7 @@ class ComprobanteCFDIDao {
 		importe,
 		num_cuenta_predial,
 		clave_prod_serv,
-		clave_unidad,
-		descuento) 
+		clave_unidad) 
 		VALUES ';
 		for($i=0; $i < sizeof($array_data); $i++) {
 			$sql.="(".$lastId.", ";
@@ -179,8 +178,7 @@ class ComprobanteCFDIDao {
 			$sql.=$array_data[$i]['importe'].", ";
 			$sql.="'', ";
 			$sql.="'".$array_data[$i]['clave_prod_serv']."'".", ";
-			$sql.="'".$array_data[$i]['clave_unidad']."'".", ";
-			$sql.=$array_data[$i]['descuento']." )";
+			$sql.="'".$array_data[$i]['clave_unidad']."')"; 
 			if($i < (count($array_data)-1)) {
 				$sql.= ',';
 			}  
@@ -241,8 +239,6 @@ class ComprobanteCFDIDao {
 		forma_pago,
 		condiciones_pago,
 		subtotal,
-		descuento,
-		motivo_descuento,
 		tipo_cambio,
 		moneda,
 		total,
@@ -263,8 +259,6 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data[0]['forma_pago']."'".", ";
 		$sql.="'".$array_data[0]['condiciones_pago']."'".", ";
 		$sql.=$array_data[0]['subtotal'].", ";
-		$sql.=$array_data[0]['descuento'].", ";
-		$sql.="'".$array_data[0]['motivo_descuento']."'".", ";
 		$sql.=$array_data[0]['tipo_cambio'].", ";
 		$sql.="'".$array_data[0]['moneda']."'".", ";
 		$sql.=$array_data[0]['total'].", ";
@@ -349,6 +343,11 @@ class ComprobanteCFDIDao {
 	}
 
 	public function InsertIntoImpuestosGlobales($array_data, $lastId) {
+		if($array_data['impuestos_trasladados'] > 0) {
+			$impuesto = "0.160000";
+		} else {
+			$impuesto = "0.000000";
+		}
 		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -363,7 +362,7 @@ class ComprobanteCFDIDao {
 		$sql.="'T', ";
 		$sql.=$array_data['impuestos_trasladados'].',';
 		$sql.="'002', ";
-		$sql.="'0.160000', ";		
+		$sql.="'".$impuesto."', ";		
 		$sql.="'Tasa' )";
 		$this->ExecuteQuery($sql);
 	}
