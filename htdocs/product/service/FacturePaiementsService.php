@@ -287,30 +287,30 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 
 	public function getTotalIVAFacturasContado($db, $month, $account) {
 		$sql = "SELECT DISTINCT
-	dateo,
-	t1.tva
-FROM
-	llx_bank
-LEFT OUTER JOIN (
-	SELECT
-		datef,
-		SUM(tva) AS tva
-	FROM
-		llx_facture
-	WHERE
-		fk_cond_reglement = 1
-	AND fk_account = ".$account."
-	AND MONTH (datef) = ".$month."
-	AND YEAR (DATEf) = YEAR (CURDATE())
-	AND tva != 0
-	GROUP BY
-		datef
-	ORDER BY
-		datef ASC
-) t1 ON t1.datef = dateo
-WHERE
-	MONTH (dateo) = ".$month."
-AND YEAR (dateo) = YEAR (CURDATE())";
+    	dateo,
+    	t1.tva
+        FROM
+        	llx_bank
+        LEFT OUTER JOIN (
+        	SELECT
+        		datef,
+        		SUM(tva) AS tva
+        	FROM
+        		llx_facture
+        	WHERE
+        		fk_cond_reglement = 1
+        	AND fk_account = ".$account."
+        	AND MONTH (datef) = ".$month."
+        	AND YEAR (DATEf) = YEAR (CURDATE())
+        	AND tva != 0
+        	GROUP BY
+        		datef
+        	ORDER BY
+        		datef ASC
+        ) t1 ON t1.datef = dateo
+        WHERE
+        	MONTH (dateo) = ".$month."
+        AND YEAR (dateo) = YEAR (CURDATE())";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -332,5 +332,23 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 		}
 		return $data;
 	}
+
+    public function GetTotalVendidoPorDia($db, $datef, $account) {
+        $sql = "
+        SELECT SUM(total_ttc) as vendido
+        FROM llx_facture AS f
+        WHERE f.datef = '".$datef."'"; 
+        $sql.=" AND fk_statut != 3 
+        AND f.fk_account = ".$account;
+        $sql.=" AND date_valid IS NOT NULL";
+        $result = $db->query($sql);
+
+        if (!$result) {
+            echo 'Error: '.$db->lasterror;
+            die;
+        }
+        $row = $db->fetch_object($result);
+        return $row->vendido;
+    }
 
 }
