@@ -128,6 +128,7 @@ class ComprobanteCFDIDao {
 		WHERE
 			fk_facture = ".$id;
 		$result = $this->ExecuteQuery($sql);
+		$impuestosFlag = false;
 
 		while ($row =  $this->db->fetch_object($result))
 		{
@@ -512,9 +513,8 @@ class ComprobanteCFDIDao {
 	}
 
 	public function CheckIfExists($fk_comprobante) {
-		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$id;
+		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$fk_comprobante;
 		$result = $this->ExecuteQuery($sql);
 		return $result;
 	}
-
 }
