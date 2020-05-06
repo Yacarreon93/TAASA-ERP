@@ -5,6 +5,36 @@ require_once('tfpdf/tfpdf.php');
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_TIME, 'es_ES');
 
+/*
+ strftime('%A %d/%b/%G')
+*/
+function getFullStrCurrentDate() {
+    return utf8_decode(strtr('$D $d/$m/$Y', array(
+        '$D' => getCurrentDayStr(),
+        '$d' => strftime('%d'),
+        '$m' => getCurrentMonthAbbrStr(),
+        '$Y' => strftime('%G'),
+    )));
+}
+
+function getCurrentDayStr() {
+    return ucfirst(strftime('%A'));
+}
+
+function getCurrentMonthAbbrStr() {
+    return strtoupper(strftime('%b'));
+}
+
+function getCurrentMonthNameStr() {
+    return ucfirst(strftime('%B'));
+}
+
+function formatMoney($money) {
+    return money_format('$%.2n', $money);
+}
+/*
+*/
+
 class ReportPDF extends tFPDF
 {
     // Recibe la función cargadora de datos
@@ -13,10 +43,16 @@ class ReportPDF extends tFPDF
         // Ajustar la anchura de la página
         $this->maxWidth = $this->w - 20;
         $this->rowHeight = 7;
+        $this->fontSizeHeader = 12;
+        $this->fontSizeRows = 8;
     }
 
     function setTitle($title) {
         $this->title = $title;
+    }
+
+    function setSubtitle($subtitle) {
+        $this->subtitle = $subtitle;
     }
 
     // Asignar el alto de las columnas
@@ -25,14 +61,20 @@ class ReportPDF extends tFPDF
     }
 
     function Header() {
-        $this->SetFontSize(14);
-        $this->Cell(100, 20, utf8_decode($this->title));
-        $this->Cell(90, 20, strftime('%A %d/%b/%G'), 0, 0, 'R');
+        $this->SetFont('', 'B', 14);
+        $this->Cell(1, 10, utf8_decode($this->title));
+        $this->SetFont('', '');
+        $this->Cell(0, 10, getFullStrCurrentDate(), 0, 0, 'R');
+        $this->Ln();
+        if (isset($this->subtitle)) {
+            $this->Cell(1, 5, utf8_decode($this->subtitle));
+            $this->Ln();
+        }
         $this->Ln();
     }
 
     function Footer() {
-        $this->SetFontSize(12);
+        $this->SetFontSize($this->fontSizeHeader);
         $this->SetY($this->h - $this->rowHeight);
         $this->Cell(0, $this->setRowHeight, "Parte $this->page", 0, 0, 'C');
     }
@@ -52,34 +94,85 @@ class ReportPDF extends tFPDF
     }
 
     // Crea el encabezado con una anchura dinamica
-    function createDynamicHeader($header) {
-        $this->SetFontSize(12);
+    function createDynamicHeader($header, $options) {
+        $this->SetFont('', '', $this->fontSizeHeader);
+        
+        if (isset($options)) {
+            if ($options['bold']) {
+                $this->SetFont('', 'B');
+            }
+        }
+
+        $colIndex = 1;
+        
         foreach($header as $col) {
+            $fill = false;
+
+            if (isset($options)) {
+                if ($options['background']) {
+                    if ($options['background'][$colIndex]) {
+                        $this->SetFillColor(...$options['background'][$colIndex]);
+                        $fill = true;
+                    }
+                }
+            }
+
             $this->Cell(
                 $this->maxWidth / count($header),
                 $this->rowHeight,
                 utf8_decode($col),
-                1
+                1,
+                0,
+                'L',
+                $fill
             );
+
+            $colIndex++;
         }
+
         $this->Ln();
     }
 
     // Crea las columnas con una anchura dinámica
-    function createDynamicRows($data) {
-        $this->SetFontSize(8);
-        foreach($data as $row) {
+    function createDynamicRows($data, $options) {
+        $this->SetFont('', '', $this->fontSizeRows);
+
+        if (isset($options)) {
+            if ($options['bold']) {
+                $this->SetFont('', 'B');
+            }
+        }
+
+        foreach ($data as $row) {
+            $colIndex = 1;
+
             foreach ($row as $key => $value) {
+                $fill = false;
+
+                if (isset($options)) {
+                    if ($options['background']) {
+                        if ($options['background'][$colIndex]) {
+                            $this->SetFillColor(...$options['background'][$colIndex]);
+                            $fill = true;
+                        }
+                    }
+                }
+
                 $this->Cell(
                     $this->maxWidth / count($data[0]),
                     $this->rowHeight,
                     utf8_decode($value),
-                    1
+                    1,
+                    0,
+                    'L',
+                    $fill
                 );
+
+                $colIndex++;
             }
+
             $this->Ln();
         }
-        $this->Ln();
     }
 
     // Tabla simple
