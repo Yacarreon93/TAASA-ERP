@@ -7,8 +7,8 @@ class ComprobanteCFDIService {
 
 	public function SaveCFDIFromFacture($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		$cfdiNotExists = $CFDIDao->CheckIfExists($factureId);
-		if(!$cfdiNotExists) {
+		$cfdiExists = $CFDIDao->CheckIfExists($factureId);
+		if($cfdiExists) {
 			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
 			$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
 			$lastId = $CFDIDao->GetLastInsertedId();
