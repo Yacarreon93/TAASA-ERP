@@ -73,15 +73,15 @@ print '<table class="noborder nohover" border="1" style="width:50%; border: 1px 
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Reportes de contabilidad</td></tr>';
 //Existencias en almacen
-print "<tr><td><a id='currentReportLink' target='_blank' href='../product/reports/currentStockReport.php?stockId=1'>Existencias en almacén</a><br></td>
-<td><select id='current_report_dynamic_select'>
+print "<tr><td><select id='current_report_dynamic_select'>
     <option value='1'>Aguascalientes Bodega</option>
 <option value='2'>Aguascalientes Produccion</option>
 <option value='3'>Leon</option>
 <option value='4'>Lagos</option>
-</select></td>'";
+</select></td>
+<td><a id='currentReportLink' target='_blank' href='../product/reports/currentStockReport.php?stockId=1'>Existencias en almacén</a><br></td>'";
 //Reporte de ventas
-print "<tr><td><a id='salesReportLink' target='_blank' href='../product/reports/SalesReport.php'>Reporte de ventas</a></td>
+print "<tr>
 <td><select id='sales_report_dynamic_select'>
     <option value='1'>Enero</option>
 <option value='2'>Febrero</option>
@@ -95,20 +95,21 @@ print "<tr><td><a id='salesReportLink' target='_blank' href='../product/reports/
 <option value='10'>Octubre</option>
 <option value='11'>Noviembre</option>
 <option value='12'>Diciembre</option>
-</select></td>";
+</select></td>
+<td><a id='salesReportLink' target='_blank' href='../product/reports/SalesReport.php'>Reporte de ventas</a></td>";
 //Antiguedad de saldos
-print "<tr><td><a target='_blank' href='../product/reports/BillsToPayReport.php'>Antigüedad de saldos</a><br></td>
-<td><br><br></td>'";
+print "<tr><td><br><br></td>
+<td><a target='_blank' href='../product/reports/BillsToPayReport.php'>Antigüedad de saldos</a><br></td>'";
 //Cuentas por cobrar
-print "<tr><td><a id='unpaid_client_bills_link' target='_blank' href='../product/reports/UnpaidClientBillsReport.php'>Cuentas por cobrar</a><br></td>
-<td><br><br></td>'";
-
+print "<tr>
+<td><br><br></td>
+<td><a id='unpaid_client_bills_link' target='_blank' href='../product/reports/UnpaidClientBillsReport.php'>Cuentas por cobrar</a><br></td>'";
 
 $sql = "SELECT rowid, firstname FROM llx_user WHERE job = 'Vendedor'";
 $resVendor = $db->query($sql) or die('ERROR en la consulta: '.$sql);
 
 //Total de cuentas por cobrar
-print "<tr><td><a id='unpaid_client_bills_total_link' target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>
+print "<tr>
 <td><select id='unpaid_client_bills_total_select'>
 <option value='1'>General</option>";
 $vendor_array = array();
@@ -122,7 +123,8 @@ while ($row = $db->fetch_object($resVendor))
   print "<option value='".$vendor_id."'>".$vendedor."</option>";
   $k++;
 }
-print "</select></td>";
+print "</select></td>
+<td><a id='unpaid_client_bills_total_link' target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td>";
 print "</table></form><br>";
 
 
@@ -130,20 +132,21 @@ print '<table class="noborder nohover" border="1" style="width:50%; border: 1px 
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Cierre de inventario</td></tr>';
 //Cierre de inventario
-print "<tr><td><a id='inventoryClosingLink' target='_blank' href='../product/cierre_de_inventario.php?stock_id=1'>Ir a Cierre de inventario</a><br></td>
+print "<tr>
 <td><select id='stock_closing_dynamic_select'>
     <option value='1'>Aguascalientes Bodega</option>
 <option value='2'>Aguascalientes Produccion</option>
 <option value='3'>Leon</option>
 <option value='4'>Lagos</option>
-</select></td>'";
+</select></td>
+<td><a id='inventoryClosingLink' target='_blank' href='../product/cierre_de_inventario.php?stock_id=1'>Ir a Cierre de inventario</a><br></td>'";
 print "</table></form><br>";
 
 //Vendedores
 print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
 print "<tr class=\"liste_titre\">";
 print '<td colspan="2">Vendedores</td></tr>';
-print "<tr><td><a id='clients_per_vendor_link' target='_blank' href='../product/reports/ClientsPerVendorReport.php?vendor=13'>Clientes por Vendedor</a><br></td>
+print "<tr>
 <td><select id='clients_per_vendor_select'>";
 for($i = 0; $i < sizeof($vendor_array); $i++)
 {
@@ -151,7 +154,8 @@ for($i = 0; $i < sizeof($vendor_array); $i++)
   $vendedor = $vendor_array[$i]["firstname"];
   print "<option value='".$vendor_id."'>".$vendedor."</option>";
 }
-print "</select></td>";
+print "</select></td>
+<td><a id='clients_per_vendor_link' target='_blank' href='../product/reports/ClientsPerVendorReport.php?vendor=13'>Clientes por Vendedor</a><br></td>";
 print "</table></form><br>";
 
 print "<script>
