@@ -83,6 +83,10 @@ print "<tr style='background-color:#7C8398; color:white'>
 <option value='4'>Lagos</option>
 </select></td>
 </tr>'";
+//Cuentas por cobrar
+print "<tr colspan='2'>
+<td><br><br></td>
+<td><a id='general_unpaid_client_bills_link' target='_blank' href='../product/reports/UnpaidClientBillsReport.php?month=1'>Cuentas por cobrar</a><br></td></tr>'";
 //Existencias en almacen
 print "<tr><td><br><br></td>
 <td><a id='currentReportLink' target='_blank' href='../product/reports/currentStockReport.php?stockId=1'>Existencias en almacén</a><br></td>'";
