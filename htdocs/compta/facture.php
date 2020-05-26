@@ -25,6 +25,7 @@ if (! empty($conf->projet->enabled)) {
 }
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/service/ClientUtilsService.php';
 
 $langs->load('bills');
 $langs->load('companies');
@@ -2942,12 +2943,23 @@ else if ($id > 0 || ! empty($ref))
 		{
 			$text .= '<br>' . img_warning() . ' ' . $langs->trans("ErrorInvoiceOfThisTypeMustBePositive");
 		}
-		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
-		} else {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+		/*Validate client debt*/
+		$limitExceeded = 0;
+		$clientUtilsService = new ClientUtilsService($db);
+		$clientDebt = $clientUtilsService->GetClientDebt($object->socid);
+		$clientFutureDebt = $clientDebt->total + $object->total_ttc;
+		if((($clientFutureDebt) > $clientDebt->credit_limit) && $object->cond_reglement_id != 1) {
+			print_r("<p style ='color:red'>Limite de credito excedido. Solo ventas de contado</p>");
+			$limitExceeded++;
 		}
-
+		
+		if($limitExceeded == 0) {
+			if($isTicket) {
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			} else {
+				$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			}
+		}
 	}
 
 	// Confirm back to draft status
@@ -4347,7 +4359,7 @@ else if ($id > 0 || ! empty($ref))
 
 	    var params = {  "socid" : socid };
 
-	    /*Autofill fields when client is selected. If the client debt exceeds the limit, the facture cannot be created.*/
+	    /*Autofill fields when client is selected. If the client debt exceeds the limit, the facture can only have cond reglement 1.*/
 	    $.ajax(
 	    {
 	        data: params,
@@ -4367,34 +4379,21 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementsByName("cond_reglement_id").disabled = true;
 	            document.getElementsByName("options_isticket").disabled = true;
 	            document.getElementsByName("fk_account")[0].disabled = true;
-	        }
-	    });
-
-	    	    /*If the client debt exceeds the limit, the facture cannot be created.*/
-	    $.ajax(
-	    {
-	        data: params,
-	        url: "../scripts/commande/getClientDebt.php",
-	        type: "post",
-	        dataType: "json",
-	        success:  function (data)
-	        {
-	            //Debt check
-	            if(data) {
+	            if(data.debt) {
 	            	$debt = Number.parseFloat(data.debt);
 		            $credit_limit = Number.parseFloat(data.credit_limit);
-		            console.log('debt: ' + $debt);
-		            console.log('credit_limit: ' + $credit_limit);
 		            if($debt > $credit_limit) {
-		            	document.getElementById("createButton").disabled = true;
+		            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+		            	document.getElementsByName("cond_reglement_id")[0].disabled = true;
+		            	//document.getElementById("createButton").disabled = true;
 		            	document.getElementById("messageDebt").style.color = "red";
-		            	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido";
+		            	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido. Solo ventas de contado";
 		            } else {
-		            	document.getElementById("createButton").disabled = false;
+		            	document.getElementsByName("cond_reglement_id")[0].disabled = false;
 		            	document.getElementById("messageDebt").innerHTML = "";
 		            }
 	            } else {
-	            	document.getElementById("createButton").disabled = false;
+	            	document.getElementsByName("cond_reglement_id")[0].disabled = false;
 	            	document.getElementById("messageDebt").innerHTML = "";
 	            }
 	        }

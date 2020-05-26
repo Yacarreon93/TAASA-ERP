@@ -15,8 +15,7 @@ $sql = " SELECT llx_societe.rowid, llx_societe.nom AS nom, sum(total_ttc) AS tot
 		WHERE f.fk_soc = ".$socid; 
 $sql.= " AND f.paye = 0
 		AND f.fk_statut = 1
-		AND f.entity = 1
-		AND DATE(datef) < now()";
+		AND f.entity = 1";
 
 $resql=$db->query($sql);
 if ($resql)
