@@ -2466,6 +2466,10 @@ if ($action == 'create')
 	$form->select_conditions_paiements(isset($_POST['cond_reglement_id']) ? $_POST['cond_reglement_id'] : $cond_reglement_id, 'cond_reglement_id');
 	print '</td></tr>';
 
+	//Hidden Payment Term
+	print '<input hidden id="cond_reglement_id"/>';
+
+
 	// Payment mode
 	print '<tr><td class="fieldrequired">' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
 	$form->select_types_paiements(isset($_POST['mode_reglement_id']) ? $_POST['mode_reglement_id'] : $mode_reglement_id, 'mode_reglement_id', 'CRDT');
@@ -2947,8 +2951,9 @@ else if ($id > 0 || ! empty($ref))
 		$limitExceeded = 0;
 		$clientUtilsService = new ClientUtilsService($db);
 		$clientDebt = $clientUtilsService->GetClientDebt($object->socid);
-		$clientFutureDebt = $clientDebt->total + $object->total_ttc;
-		if((($clientFutureDebt) > $clientDebt->credit_limit) && $object->cond_reglement_id != 1) {
+		$clientLimit = $clientUtilsService->GetOutstandingLimit($object->socid);
+		$clientFutureDebt = ($clientDebt->total - $clientDebt->abonado) + $object->total_ttc;
+		if((($clientFutureDebt) > $clientLimit) && $object->cond_reglement_id != 1) {
 			print_r("<p style ='color:red'>Limite de credito excedido. Solo ventas de contado</p>");
 			$limitExceeded++;
 		}
@@ -4368,7 +4373,6 @@ else if ($id > 0 || ! empty($ref))
 	        dataType: "json",
 	        success:  function (data)
 	        {
-	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
 	            document.getElementsByName("options_currency")[0].value = data.currency;
@@ -4385,16 +4389,32 @@ else if ($id > 0 || ! empty($ref))
 		            if($debt > $credit_limit) {
 		            	document.getElementsByName("cond_reglement_id")[0].value = 1;
 		            	document.getElementsByName("cond_reglement_id")[0].disabled = true;
+		            	document.getElementById("cond_reglement_id").disabled = false;
+		            	document.getElementById("cond_reglement_id").value = 1;
+		            	document.getElementById("cond_reglement_id").setAttribute("name", "cond_reglement_id");
 		            	//document.getElementById("createButton").disabled = true;
 		            	document.getElementById("messageDebt").style.color = "red";
 		            	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido. Solo ventas de contado";
 		            } else {
+		            	//document.getElementById("cond_reglement_id").value = 1;
+		            	document.getElementById("cond_reglement_id").removeAttribute("name");
 		            	document.getElementsByName("cond_reglement_id")[0].disabled = false;
 		            	document.getElementById("messageDebt").innerHTML = "";
+		            	if(data.cond) {
+		            	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+			            } else {
+			            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+			            }
 		            }
 	            } else {
-	            	document.getElementsByName("cond_reglement_id")[0].disabled = false;
-	            	document.getElementById("messageDebt").innerHTML = "";
+	            	document.getElementById("cond_reglement_id").removeAttribute("name");
+		            document.getElementsByName("cond_reglement_id")[0].disabled = false;
+		           if(data.cond) {
+		            	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+			            } else {
+			            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+			            }
+		            document.getElementById("messageDebt").innerHTML = "";
 	            }
 	        }
 	    });

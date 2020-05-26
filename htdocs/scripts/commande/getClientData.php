@@ -7,7 +7,7 @@ $error = 0;
 
 $socid = $_POST['socid'];
 
-$sql = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency, se.cash_desk ";
+$sql = " SELECT s.rowid, s.mode_reglement, s.cond_reglement, se.vendor, se.currency, se.cash_desk, s.outstanding_limit as credit_limit";
 $sql.= " FROM ".MAIN_DB_PREFIX."societe s ";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe_extrafields se ON se.fk_object = s.rowid";
 $sql.= " WHERE s.rowid = '".$socid."' LIMIT 1";
@@ -49,6 +49,11 @@ if ($resql)
 				}else{
 					$resultado["cash_desk"]= "";
 				}
+				if ($obj->credit_limit) {
+					$resultado["credit_limit"]= $obj->credit_limit;
+				}else{
+					$resultado["credit_limit"]= "";
+				}
 			}
 			$i++;
 		}
@@ -60,15 +65,25 @@ else
 	dol_print_error($db);
 }
 
-$sql = " SELECT llx_societe.rowid, llx_societe.nom AS nom, sum(total_ttc) AS total, fk_account AS account, llx_societe.outstanding_limit as credit_limit
-		FROM llx_facture AS f
-		JOIN llx_societe ON f.fk_soc = llx_societe.rowid
-		JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
-		WHERE f.fk_soc = ".$socid; 
-$sql.= " AND f.paye = 0
-		AND f.fk_statut = 1
-		AND f.entity = 1";
-
+$sql = "SELECT
+		SUM(f.total_ttc) as total,
+		(
+			SELECT
+				SUM(pf.amount) AS abonado
+			FROM
+				`llx_facture` AS fa
+			LEFT JOIN llx_paiement_facture AS pf ON pf.fk_facture = fa.rowid
+			WHERE
+				fk_soc =".$socid." 
+			AND fk_statut = 1
+		) as abonado
+	FROM
+		`llx_facture` AS f
+	WHERE
+		fk_soc =".$socid." 
+	AND f.paye = 0
+			AND f.fk_statut = 1
+			AND f.entity = 1";
 $resql=$db->query($sql);
 if ($resql)
 {
@@ -81,10 +96,9 @@ if ($resql)
 		{
 			if ( $obj->total) 
 			{
-				$resultado["debt"]= $obj->total;
-				$resultado["credit_limit"]= $obj->credit_limit;
+				$resultado["debt"]= $obj->total - $obj->abonado;
 			}
-			
+
 		}
 	}
 	echo json_encode($resultado);

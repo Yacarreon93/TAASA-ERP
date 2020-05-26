@@ -37,7 +37,7 @@ class ClientUtilsService {
 		return $resql;
 	}
 
-	public function GetClientDebt($socid) {
+	public function GetOutstandingLimit($socid) {
 		$sql = " SELECT llx_societe.rowid, llx_societe.nom AS nom, sum(total_ttc) AS total, fk_account AS account, llx_societe.outstanding_limit as credit_limit
 		FROM llx_facture AS f
 		JOIN llx_societe ON f.fk_soc = llx_societe.rowid
@@ -48,6 +48,32 @@ class ClientUtilsService {
 		AND f.entity = 1";
 		$result = $this->ExecuteQuery($sql);
 		$row =  $this->db->fetch_object($result);
+		return $row->credit_limit;
+	}
+
+	public function GetClientDebt($socid) {
+		$sql = "SELECT
+		SUM(f.total_ttc) as total,
+		(
+			SELECT
+				SUM(pf.amount) AS abonado
+			FROM
+				`llx_facture` AS fa
+			LEFT JOIN llx_paiement_facture AS pf ON pf.fk_facture = fa.rowid
+			WHERE
+				fk_soc =".$socid." 
+			AND fk_statut = 1
+		) as abonado
+		FROM
+			`llx_facture` AS f
+			WHERE
+		fk_soc =".$socid." 
+		AND f.paye = 0
+			AND f.fk_statut = 1
+			AND f.entity = 1";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
 		return $row;
 	}
+	
 }
