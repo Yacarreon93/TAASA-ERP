@@ -2732,10 +2732,10 @@ if ($action == 'create')
 	print "</table>\n";
 
 	dol_fiche_end();
-
+	print '<div id ="messageDebt"></div>';
 	// Button "Create Draft"
 	print '<div class="center">';
-	print '<input type="submit" class="button" name="bouton" value="' . $langs->trans('CreateDraft') . '">';
+	print '<input type="submit" class="button" id="createButton" name="bouton" value="' . $langs->trans('CreateDraft') . '">';
 	print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	print '<input type="button" class="button" value="' . $langs->trans("Cancel") . '" onClick="javascript:history.go(-1)">';
 	print '</div>';
@@ -4347,6 +4347,7 @@ else if ($id > 0 || ! empty($ref))
 
 	    var params = {  "socid" : socid };
 
+	    /*Autofill fields when client is selected. If the client debt exceeds the limit, the facture cannot be created.*/
 	    $.ajax(
 	    {
 	        data: params,
@@ -4366,6 +4367,36 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementsByName("cond_reglement_id").disabled = true;
 	            document.getElementsByName("options_isticket").disabled = true;
 	            document.getElementsByName("fk_account")[0].disabled = true;
+	        }
+	    });
+
+	    	    /*If the client debt exceeds the limit, the facture cannot be created.*/
+	    $.ajax(
+	    {
+	        data: params,
+	        url: "../scripts/commande/getClientDebt.php",
+	        type: "post",
+	        dataType: "json",
+	        success:  function (data)
+	        {
+	            //Debt check
+	            if(data) {
+	            	$debt = Number.parseFloat(data.debt);
+		            $credit_limit = Number.parseFloat(data.credit_limit);
+		            console.log('debt: ' + $debt);
+		            console.log('credit_limit: ' + $credit_limit);
+		            if($debt > $credit_limit) {
+		            	document.getElementById("createButton").disabled = true;
+		            	document.getElementById("messageDebt").style.color = "red";
+		            	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido";
+		            } else {
+		            	document.getElementById("createButton").disabled = false;
+		            	document.getElementById("messageDebt").innerHTML = "";
+		            }
+	            } else {
+	            	document.getElementById("createButton").disabled = false;
+	            	document.getElementById("messageDebt").innerHTML = "";
+	            }
 	        }
 	    });
 	});
