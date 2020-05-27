@@ -304,7 +304,14 @@ class ComprobanteCFDIDao {
 		VALUES';
 
 		$total = 0;
+		$totalTasa0 = 0;
+		$totalTasa16 = 0;
 		for($i=0; $i < sizeof($array_data); $i++) {
+			if($array_data[$i]['tasa_o_cuota'] == "0.000000") {
+				$totalTasa0 += 1;
+			} else {
+				$totalTasa16 += $array_data[$i]['importe'];
+			}
 			$total+=$array_data[$i]['importe'];
 			$sql.='(';
 			$sql.=$lastId.', ';
@@ -320,10 +327,13 @@ class ComprobanteCFDIDao {
 				$sql.= ',';
 			}  
 		} 
+
 		$this->ExecuteQuery($sql);
 		$arrayTotal = array();
 		$arrayTotal['fk_comprobante'] = $array_data[0]['fk_comprobante'];
 		$arrayTotal['impuestos_trasladados'] = $total;
+		$arrayTotal['impuestos_trasladados_tasa0'] = $totalTasa0;
+		$arrayTotal['impuestos_trasladados_tasa16'] = $totalTasa16;
 		$arrayTotal['impuestos_retenidos'] = 0;
 		$this->InsertIntoImpuestosTotales($arrayTotal, $lastId);
 		$this->InsertIntoImpuestosGlobales($arrayTotal, $lastId);
@@ -344,28 +354,44 @@ class ComprobanteCFDIDao {
 	}
 
 	public function InsertIntoImpuestosGlobales($array_data, $lastId) {
-		if($array_data['impuestos_trasladados'] > 0) {
-			$impuesto = "0.160000";
-		} else {
-			$impuesto = "0.000000";
+		if($array_data['impuestos_trasladados_tasa0'] > 0) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante,
+				tipo_impuesto_federal,
+				importe,
+				impuesto,
+				tasa_o_cuota,
+				tipo_factor) 
+				VALUES (';
+				$sql.=$lastId.', ';
+				$sql.=$array_data['fk_comprobante'].', ';
+				$sql.="'T', ";
+				$sql.='0,';
+				$sql.="'002', ";
+				$sql.="'0.000000', ";		
+				$sql.="'Tasa' )";
+				$this->ExecuteQuery($sql);
 		}
-		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
-		fk_cfdi,
-		fk_comprobante,
-		tipo_impuesto_federal,
-		importe,
-		impuesto,
-		tasa_o_cuota,
-		tipo_factor) 
-		VALUES (';
-		$sql.=$lastId.', ';
-		$sql.=$array_data['fk_comprobante'].', ';
-		$sql.="'T', ";
-		$sql.=$array_data['impuestos_trasladados'].',';
-		$sql.="'002', ";
-		$sql.="'".$impuesto."', ";		
-		$sql.="'Tasa' )";
-		$this->ExecuteQuery($sql);
+		if($array_data['impuestos_trasladados_tasa16'] > 0) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante,
+				tipo_impuesto_federal,
+				importe,
+				impuesto,
+				tasa_o_cuota,
+				tipo_factor) 
+				VALUES (';
+				$sql.=$lastId.', ';
+				$sql.=$array_data['fk_comprobante'].', ';
+				$sql.="'T', ";
+				$sql.=$array_data['impuestos_trasladados_tasa16'].',';
+				$sql.="'002', ";
+				$sql.="'0.160000', ";		
+				$sql.="'Tasa' )";
+				$this->ExecuteQuery($sql);
+		}
 	}
 
 	public function fetchPaymentData() {
