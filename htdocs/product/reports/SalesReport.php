@@ -179,8 +179,11 @@ if($account == 1)
      $accountName = 'Leon ';
 }
 
+$dateObj   = DateTime::createFromFormat('!m', $month);
+$month_name = strftime('%B', $dateObj->getTimestamp());
+
 $report_title = strtr('REPORTE DE VENTAS DEL MES - $M $Y', array(
-    '$M' => getCurrentMonthNameStr(),
+    '$M' => $month_name,
     '$Y' => strftime('%G'),
 ));
 
