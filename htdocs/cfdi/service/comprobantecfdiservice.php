@@ -5,6 +5,21 @@ require_once DOL_DOCUMENT_ROOT.'/cfdi/dao/ComprobanteCFDIDao.php';
 
 class ComprobanteCFDIService {
 
+	public function SaveAllFactures($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiExists = $CFDIDao->CheckIfExists($factureId);
+		if($cfdiExists) {
+			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
+			$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
+			$lastId = $CFDIDao->GetLastInsertedId();
+			$conceptosData = $CFDIDao->FetchConceptosData($factureId);
+			$CFDIDao->InsertIntoConceptosComprobante($conceptosData, $lastId);
+			$impuestosData =$CFDIDao->FetchImpuestosData($factureId);
+			$CFDIDao->InsertIntoConceptosTipoImpuesto($impuestosData, $lastId);
+			$CFDIDao->InsertIntoCFDIMXComprobante($comprobanteData);
+		}
+	}
+
 	public function SaveCFDIFromFacture($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$cfdiExists = $CFDIDao->CheckIfExists($factureId);
@@ -27,5 +42,14 @@ class ComprobanteCFDIService {
 		$CFDIDao->InsertIntoConceptosPago($paymentArray, $lastId);
 		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray, $lastId);
 		$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $lastId);
+	}
+
+	public function SaveCFDIMXFromFacture($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiExists = $CFDIDao->CheckIfExists($factureId);
+		if($cfdiExists) {
+			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
+			$CFDIDao->InsertIntoCFDIMXComprobante($comprobanteData);
+		}
 	}
 }

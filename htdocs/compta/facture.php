@@ -473,10 +473,10 @@ if (empty($reshook))
 
 	    			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 
-	    			if($createCFDI) { //Save CFDI info
-						$service = new ComprobanteCFDIService();
-						$service->SaveCFDIFromFacture($db, $id);
-					}
+	    			// if($createCFDI) { //Save CFDI info
+					// 	$service = new ComprobanteCFDIService();
+					// 	$service->SaveCFDIFromFacture($db, $id);
+					// }
 				}
 			}
 			else

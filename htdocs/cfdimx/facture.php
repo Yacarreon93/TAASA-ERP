@@ -36,8 +36,12 @@ $folios_timbrados = $result["return"]["folios_timbrados"];
 $folios_adquiridos = $result["return"]["folios_adquiridos"];
 $folios_disponibles = $result["return"]["folios_disponibles"];
 
+$timbreProfact = true;
+
 if( $_REQUEST["cfdi_commit"]==1 ){
 	$msg_cfdi_final = "El comprobante se ha generado de manera exitosa ".$comp_email;
+} else if( $_REQUEST["cfdi_commit"]==100 ){
+	$msg_cfdi_final = "Generando comprobante ".$comp_email;
 }
 
 $sql= " SELECT * FROM ".MAIN_DB_PREFIX ."facture WHERE rowid = ".$_REQUEST["facid"];
@@ -177,14 +181,32 @@ if($conf->global->MAIN_MODULE_MULTICURRENCY){
 //Status del comprobante
 //print 'uuid: '.$uuid.'<br>';
 //print 'usr: '.$conf->global->MAIN_INFO_SIREN.'<br>';
-//print 'pwd: '.$passwd_timbrado.'<br>';
-if($uuid!=""){
-	$result = $client->call('getStatusUUID',array( 
-		"uuid"=>$uuid, 
-		"timbrado_usuario"=>$conf->global->MAIN_INFO_SIREN, 
-		"timbrado_password"=>$passwd_timbrado
-	));
-	$status_comprobante=$result["return"]["status"];
+//print 'pwd: '.$passwd_timbrado.'<br>';/
+if($uuid == "Pendiente") {
+    $resql=$db->query("SELECT UUID FROM  cfdi_comprobante WHERE fk_comprobante = ". $_REQUEST["facid"]);
+    if ($resql){
+        $obj = $db->fetch_object($resql);
+        $dbUuid = $obj->UUID;
+    }
+    if($dbUuid) {
+        $uuid = $dbUuid;
+        $resql=$db->query("UPDATE llx_cfdimx set uuid = '" . $uuid . "' WHERE fk_facture = ". $_REQUEST["facid"]);
+    }
+}
+
+if($uuid == "Pendiente") {
+    $status_comprobante="Sin timbrar";
+} else if($uuid != ""){
+    if( $selloCFD == "Pendiente") {
+        $status_comprobante="Enviado";
+    } else {
+        $result = $client->call('getStatusUUID',array( 
+            "uuid"=>$uuid, 
+            "timbrado_usuario"=>$conf->global->MAIN_INFO_SIREN, 
+            "timbrado_password"=>$passwd_timbrado
+        ));
+        $status_comprobante=$result["return"]["status"];
+    }
 }else{
 	$status_comprobante="Sin timbrar";
 }
@@ -202,7 +224,11 @@ if( isset($_REQUEST["action"]) && $_REQUEST["action"] == "generaCFDI"){
     }
 
     //include 'consumeTestService.php';
-	include("generaCFDI.php"); //AMM generaCFDI.php
+    include("generaCFDI.php"); //AMM generaCFDI.php
+    
+
+} else if( isset($_REQUEST["action"]) && $_REQUEST["action"] == "generaCFDI2"){
+    include("generaCFDI2.php");
 
 }
 
@@ -2272,7 +2298,8 @@ if( $cfdi_tot>0 ){
 						"timbrado_usuario"=>$_REQUEST["rfc_emisor"], 
 						"timbrado_password"=>$passwd_timbrado
 					)
-				);
+                );
+                
 				
 				if( $resultado["return"]!="" ){
 					$split_res = explode("-",$resultado["return"]);
@@ -2837,7 +2864,7 @@ if( $cfdi_tot>0 ){
 										echo '</p>';
 										echo '</div>';
 									}else{
-										print 'status_comprobante: '.$status_comprobante;
+										print 'status comprobante: '.$status_comprobante;
 									}
 								}
 							}
@@ -2868,7 +2895,12 @@ if( $cfdi_tot>0 ){
 											}else{
 												if( $modo_timbrado==1 && $folios_disponibles>0 )
 												{
-													print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//AMM boton generar CFDI
+                                                    if($timbreProfact && ($user->societe_id == 0)) {
+                                                        print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI Profact</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI Profact
+                                                    } else {
+                                                        print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//AMM boton generar CFDI
+                                                    }
+													
 												}elseif( $modo_timbrado==2 )
 												{
 													print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;

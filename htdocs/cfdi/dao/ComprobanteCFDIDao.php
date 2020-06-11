@@ -33,7 +33,6 @@ define("CFDI_CONCEPTOS_TIPO_IMPUESTO", "cfdi_conceptos_tipo_impuesto");
 define("CFDI_IMPUESTOS_TOTALES", "cfdi_impuestos_totales");
 define("CFDI_IMPUESTOS_GLOBALES", "cfdi_impuestos_globales");
 define("CFDI_COMPROBANTE_PAGO", "cfdi_comprobante_pago");
-define("CFDI_COMPROBANTE_RELACIONADOS", "cfdi_comprobante_relacionados");
 define("CFDI_COMPLEMENTO_PAGO", "cfdi_complemento_pago");
 define("CFDI_DOC_RELACIONADO", "cfdi_doc_relacionado");
 
@@ -275,6 +274,58 @@ class ComprobanteCFDIDao {
 		$sql.=$array_data[0]['fk_soc'].", ";
 		$sql.="'".$array_data[0]['uso_cfdi']."'";
 		$sql.= ')';
+		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIMXComprobante($array_data) {
+		$sql = "
+				INSERT INTO ".MAIN_DB_PREFIX."cfdimx (
+					factura_serie,
+					factura_folio,
+					factura_seriefolio,
+					xml,
+					cadena,
+					version,
+					selloCFD,
+					fechaTimbrado,
+					uuid,
+					certificado,
+					sello,
+					certEmisor,
+					cancelado,
+					u4dig,
+					fk_facture,
+					fecha_emision,
+					hora_emision,
+					fecha_timbrado,
+					hora_timbrado,
+					tipo_timbrado,
+					divisa,
+					entity_id
+				) VALUES (
+					'".$array_data[0]['serie']."',
+					'".$array_data[0]['folio']."',
+					'".$array_data[0]['serie']."-".$array_data[0]['folio']."',
+					'Pendiente',
+					'Pendiente',
+					'".$array_data[0]['version']."',
+					'Pendiente',
+					'".date("Y-m-d H:i:s")."',
+					'Pendiente',
+					'Pendiente',
+					'Pendiente',
+					'Pendiente',
+					'0',
+					'0',
+					'".$array_data[0]['fk_comprobante']."',
+					'".date("Y-m-d")."',
+					'".date("H:i:s")."',
+					'".date("Y-m-d")."',
+					'".date("H:i:s")."',
+					'1',
+					'MXN',
+					'".$_SESSION['dol_entity']."'
+				)";
 		$this->ExecuteQuery($sql);
 	}
 
