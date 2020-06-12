@@ -2289,51 +2289,65 @@ if( $cfdi_tot>0 ){
             /*
              * Boutons actions
              */
-			if( isset( $_REQUEST["cancelaCFDIaction"] ) ){
-				
-				$resultado = $client->call("cancelaCDFI", 
+			if( isset( $_REQUEST["cancelaCFDIaction"] ) ){ //Validacion para profact
+                if($selloCFD == "Pendiente") {
+                    $cancela_fact = "
+                    UPDATE ".MAIN_DB_PREFIX."facture SET close_code = 'abandon', close_note = 'CFDI Cancelado', fk_statut = 3 
+                    WHERE rowid = " . $_REQUEST["facid"];
+                    $rr = $db->query( $cancela_fact );
+                        
+                    $cancela_update = "UPDATE  ".MAIN_DB_PREFIX."cfdimx SET cancelado = 1 WHERE fk_facture = " . $_REQUEST["facid"];
+                    $rr = $db->query( $cancela_update );
+
+                    $cancela_cfdi = "UPDATE cfdi_comprobante SET status = 2 WHERE fk_comprobante = " . $_REQUEST["facid"];
+                    $rr = $db->query( $cancela_cfdi );
+
+                    echo '
+                    <script>
+                    location.href="?facid='.$_REQUEST["facid"].'";
+                    </script>';
+                } else {
+                    $resultado = $client->call("cancelaCDFI", 
 					array(
 						"rfc"=>$_REQUEST["rfc_emisor"],
 						"uuid"=>$_REQUEST["uuid"], 
 						"timbrado_usuario"=>$_REQUEST["rfc_emisor"], 
 						"timbrado_password"=>$passwd_timbrado
-					)
-                );
-                
-				
-				if( $resultado["return"]!="" ){
-					$split_res = explode("-",$resultado["return"]);
-					$result_cancel=$split_res[0];
-
-					if($result_cancel==205){
-						$msg_cfdi_final = "UUID no existe";
-					}else if($result_cancel==202){
-						$msg_cfdi_final = "UUID Previamente cancelado";
-					}else if($result_cancel==104){
-						$msg_cfdi_final = "Error al conectar Web Service de cancelacion del SAT, probablemente no cuente con privilegios para Cancelar";
-					}else{
-						if($result_cancel!=201){
-							
-							$cancela_fact = "
-							UPDATE ".MAIN_DB_PREFIX."facture SET close_code = 'abandon', close_note = 'CFDI Cancelado', fk_statut = 3 
-							WHERE rowid = " . $_REQUEST["facid"];
-							$rr = $db->query( $cancela_fact );
-							
-							$cancela_update = "UPDATE  ".MAIN_DB_PREFIX."cfdimx SET cancelado = 1 WHERE fk_facture = " . $_REQUEST["facid"];
-							$rr = $db->query( $cancela_update );
-							
-							echo '
-							<script>
-							location.href="?facid='.$_REQUEST["facid"].'";
-							</script>';
-						}else{
-							$msg_cfdi_final = "Resultado inesperado:".$resultado["return"];	
-						}
-					}
-					
-				}else{
-					$msg_cfdi_final="No hay respuesta para la cancelación, favor de intentar mas tarde";	
-				}
+                    ));
+                    if( $resultado["return"]!="" ){
+                        $split_res = explode("-",$resultado["return"]);
+                        $result_cancel=$split_res[0];
+    
+                        if($result_cancel==205){
+                            $msg_cfdi_final = "UUID no existe";
+                        }else if($result_cancel==202){
+                            $msg_cfdi_final = "UUID Previamente cancelado";
+                        }else if($result_cancel==104){
+                            $msg_cfdi_final = "Error al conectar Web Service de cancelacion del SAT, probablemente no cuente con privilegios para Cancelar";
+                        }else{
+                            if($result_cancel!=201){
+                                
+                                $cancela_fact = "
+                                UPDATE ".MAIN_DB_PREFIX."facture SET close_code = 'abandon', close_note = 'CFDI Cancelado', fk_statut = 3 
+                                WHERE rowid = " . $_REQUEST["facid"];
+                                $rr = $db->query( $cancela_fact );
+                                
+                                $cancela_update = "UPDATE  ".MAIN_DB_PREFIX."cfdimx SET cancelado = 1 WHERE fk_facture = " . $_REQUEST["facid"];
+                                $rr = $db->query( $cancela_update );
+                                
+                                echo '
+                                <script>
+                                location.href="?facid='.$_REQUEST["facid"].'";
+                                </script>';
+                            }else{
+                                $msg_cfdi_final = "Resultado inesperado:".$resultado["return"];	
+                            }
+                        }
+                        
+                    }else{
+                        $msg_cfdi_final="No hay respuesta para la cancelación, favor de intentar mas tarde";	
+                    }
+                }
 			}
 
 			if( $msg_cfdi_final!="" ){
