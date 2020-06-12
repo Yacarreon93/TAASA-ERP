@@ -2895,7 +2895,6 @@ if( $cfdi_tot>0 ){
 											}else{
 												if( $modo_timbrado==1 && $folios_disponibles>0 )
 												{
-                                                    print_r($user->id);
                                                     if($timbreProfact && ($user->id == 1)) {
                                                         print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI Profact</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI Profact
                                                     } else {
