@@ -2299,7 +2299,10 @@ if( $cfdi_tot>0 ){
                     $cancela_update = "UPDATE  ".MAIN_DB_PREFIX."cfdimx SET cancelado = 1 WHERE fk_facture = " . $_REQUEST["facid"];
                     $rr = $db->query( $cancela_update );
 
-                    $cancela_cfdi = "UPDATE cfdi_comprobante SET status = 2 WHERE fk_comprobante = " . $_REQUEST["facid"];
+                    $cancela_cfdi = "UPDATE cfdi_comprobante SET status = 0 WHERE fk_comprobante = " . $_REQUEST["facid"];
+                    $rr = $db->query( $cancela_cfdi );
+
+                    $cancela_cfdi = "UPDATE cfdi_comprobante SET cancelado = 2 WHERE fk_comprobante = " . $_REQUEST["facid"];
                     $rr = $db->query( $cancela_cfdi );
 
                     echo '
