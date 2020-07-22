@@ -5,6 +5,7 @@ require_once(DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php');
 require_once(DOL_DOCUMENT_ROOT.'/core/lib/invoice.lib.php');
 require_once(DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php');
 require_once DOL_DOCUMENT_ROOT . '/compta/paiement/class/paiement.class.php';
+require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
 require('conf.php');
 include('lib/nusoap/lib/nusoap.php');
 global $db;
@@ -456,6 +457,10 @@ if ($action == "guardar2") {
 				)";
 			
 			$res2 = $db->query($sql2);
+				
+			$service = new ComprobanteCFDIService();
+			$service->SaveCFDIFromPayment($db, $facid_custom, $pagcid_custom, $data_custom);
+
 
 			// @MIRA: Crear registro (agregar error handling).
 

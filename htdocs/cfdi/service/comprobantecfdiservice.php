@@ -34,14 +34,14 @@ class ComprobanteCFDIService {
 		}
 	}
 
-	public function SaveCFDIFromPayment($db, $paymentArray) {
+	public function SaveCFDIFromPayment($db, $factureId, $paymentId, $paymentArray) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		$CFDIDao->InsertIntoCFDIComprobantePago($paymentArray);
-		$lastId = $CFDIDao->GetLastInsertedId();
-		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $lastId);
-		$CFDIDao->InsertIntoConceptosPago($paymentArray, $lastId);
-		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray, $lastId);
-		$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $lastId);
+		$CFDIDao->InsertIntoCFDIComprobantePago($factureId, $paymentArray);
+		$comprobanteId = $CFDIDao->GetComprobanteIdByFactureId($factureId);
+		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray,$comprobanteId);
+		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $comprobanteId);
+		$CFDIDao->InsertIntoConceptosPago($paymentArray, $comprobanteId);
+		$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $comprobanteId);
 	}
 
 	public function SaveCFDIMXFromFacture($db, $factureId) {
