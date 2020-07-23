@@ -79,7 +79,7 @@ class ComprobanteCFDIDao {
 		FROM llx_facture AS f
 		JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 		JOIN llx_user AS u ON fe.vendor = u.rowid
-		WHERE rowid = '".$factureId."'";
+		WHERE f.rowid = '".$factureId."'";
 		$result = $this->ExecuteQuery($sql);
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
@@ -482,14 +482,14 @@ class ComprobanteCFDIDao {
 		fk_payment,
 		uso_cfdi) 
 		VALUES (';
-		$sql.="'".$array_data['docSerie']."'".", ";
-		$sql.="'".$array_data['docFolio']."'".", ";
+		$sql.="'".'PA-'.$array_data['pagcid']."', ";
+		$sql.="'".$array_data['pagcid']."'".", ";
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
 		$sql.="'P', ";
-		$sql.="5, ";
 		$sql.="'".$lugar_de_expedicion."'".", ";
+		$sql.="5, ";
 		$sql.="'3.3', ";
 		$sql.="'".$array_data['facid']."'".", ";
 		$sql.="'".$array_data['pagcid']."'".", ";
@@ -510,23 +510,23 @@ class ComprobanteCFDIDao {
 		tipocambiodr,
 		metodoPDR,
 		numparcialidaddr,
-		impSaldoAnterior.
+		impSaldoAnterior,
 		impPagadodr,
 		impSaldoInsoluto) 
 		VALUES (';
 		$sql.=$comprobanteId.', ';
 		$sql.=$array_data['facid'].', ';
-		$sql.="'".$array_data['idDocumento']."'".", ";
+		$sql.=$array_data['idDocumento'].", ";
 		$sql.=$comprobanteId.', ';
-		$sql.="'".$array_data['docSerie']."'".", ";
-		$sql.="'".$array_data['docFolio']."'".", ";
-		$sql.="'".$array_data['monedaDR']."'".", ";
+		$sql.="'".'PA-'.$array_data['pagcid']."', ";
+		$sql.="'".$array_data['pagcid']."'".", ";
+		$sql.=$array_data['monedaDR'].", ";
 		$sql.=$array_data['tipocambiodr'].', ';
-		$sql.="'".$array_data['metodoPDR']."'".", ";
+		$sql.=$array_data['metodoPDR'].", ";
 		$sql.=$array_data['numparcialidaddr'].', ';
-		$sql.="'".$array_data['impSaldoAnterior']."'".", ";
-		$sql.="'".$array_data['impPagadodr']."'".", ";
-		$sql.="'".$array_data['impSaldoInsoluto']."'".", ";
+		$sql.=$array_data['impSaldoAnterior'].", ";
+		$sql.=$array_data['impPagadodr'].", ";
+		$sql.=$array_data['impSaldoInsoluto'];
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}
@@ -575,8 +575,8 @@ class ComprobanteCFDIDao {
 		VALUES (';
 		$sql.=$comprobanteId.', ';
 		$sql.=$array_data['facid'].', ';
-		$sql.="'".$array_data['formpago']."', ";
-		$sql.="'".$array_data['monedapago']."', ";
+		$sql.=$array_data['formpago'].", ";
+		$sql.=$array_data['monedapago'].", ";
 		$sql.=$array_data['tipocambio'].',';
 		$sql.=$array_data['montop'].',';
 		$sql.="'".$array_data['numoperacion']."', ";

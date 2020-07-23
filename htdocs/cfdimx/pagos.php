@@ -310,7 +310,7 @@ if($action=="guardar"){
 	3. Refrescar la página.
 */
 if ($action == "guardar2") {
-	die('checkpoint 1'); // @BORRAR
+	//die('checkpoint 1'); // @BORRAR
 
 	$fechaaux = str_replace("/", "-", GETPOST('fechaPago'));
 	$fechaPago = date("Y-m-d",strtotime($fechaaux));
@@ -322,7 +322,7 @@ if ($action == "guardar2") {
 	$formpago_custom = GETPOST('formpago') != '' ? "'".GETPOST('formpago')."'" : 'NULL'; // ".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
 	$monedapago_custom = GETPOST('monedapago') != '' ? "'".GETPOST('monedapago')."'" : 'NULL'; // ".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
 	$tipocambio_custom = GETPOST('tipocambio') != '' ? "'".GETPOST('tipocambio')."'" : 'NULL'; // ".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
-	$montop_custom = GETPOST('montop') != '' ? "'".GETPOST('montop')."'" : 'NULL'; // ".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+	$montop_custom = GETPOST('montop') != '' ? GETPOST('montop') : 'NULL'; // ".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
 	$numoperacion_custom = GETPOST('numoperacion') != '' ? "'".GETPOST('numoperacion')."'" : 'NULL'; // ".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
 	$rfcemisorctaorigen_custom = GETPOST('rfcemisorctaorigen') != '' ? "'".GETPOST('rfcemisorctaorigen')."'" : 'NULL'; // ".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
 	$nombancoordenante_custom = GETPOST('nombancoordenante') != '' ? "'".GETPOST('nombancoordenante')."'" : 'NULL'; // ".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
@@ -382,7 +382,7 @@ if ($action == "guardar2") {
 	$numr = $db->num_rows($resq);
 	
 	if ($numr == 0) {
-		die('checkpoint 2'); // @BORRAR
+		//die('checkpoint 2'); // @BORRAR
 
 		$sql = "INSERT INTO ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos (
 				fk_facture,
@@ -457,6 +457,8 @@ if ($action == "guardar2") {
 				)";
 			
 			$res2 = $db->query($sql2);
+
+			//die('checkpoint 4'); // @BORRAR
 				
 			$service = new ComprobanteCFDIService();
 			$service->SaveCFDIFromPayment($db, $facid_custom, $pagcid_custom, $data_custom);
@@ -469,6 +471,7 @@ if ($action == "guardar2") {
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."&mesg=err1'</script>";
 		}
 	} else {
+		echo 'si encontro algo guardado';
 		die('checkpoint 3'); // @BORRAR
 	
 		$resultado = $db->fetch_object($resq);

@@ -41,7 +41,7 @@ class ComprobanteCFDIService {
 		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray,$comprobanteId);
 		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $comprobanteId);
 		$CFDIDao->InsertIntoConceptosPago($paymentArray, $comprobanteId);
-		$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $comprobanteId);
+		//$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $comprobanteId);
 	}
 
 	public function SaveCFDIMXFromFacture($db, $factureId) {
