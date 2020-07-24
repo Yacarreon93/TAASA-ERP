@@ -472,7 +472,7 @@ if ($action == "guardar2") {
 		}
 	} else {
 		echo 'si encontro algo guardado';
-		die('checkpoint 3'); // @BORRAR
+		//die('checkpoint 3'); // @BORRAR
 	
 		$resultado = $db->fetch_object($resq);
 
@@ -493,9 +493,28 @@ if ($action == "guardar2") {
 				certPago=".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
 				cadPago=".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
 				selloPago=".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL')."
-			WHERE rowid=".$resultado->rowid;		
+			WHERE rowid=".$resultado->rowid;	
+
+			$sqlCFDI = "UPDATE cfdi_complemento_pago 
+			SET
+				fecha_pago='".$fechaPago."',
+				forma_pago=".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL').",
+				moneda=".(GETPOST('monedapago')!=''?"'".GETPOST('monedapago')."'":'NULL').",
+				tipo_cambio=".(GETPOST('tipocambio')!=''?"'".GETPOST('tipocambio')."'":'NULL').",
+				monto=".(GETPOST('montop')!=''?"'".GETPOST('montop')."'":'NULL').",
+				num_operacion=".(GETPOST('numoperacion')!=''?"'".GETPOST('numoperacion')."'":'NULL').",
+				emisor_rfc=".(GETPOST('rfcemisorctaorigen')!=''?"'".GETPOST('rfcemisorctaorigen')."'":'NULL').",
+				nombre_banco_ordenante=".(GETPOST('nombancoordenante')!=''?"'".GETPOST('nombancoordenante')."'":'NULL').",
+				cuenta_ordenante=".(GETPOST('ctaordenante')!=''?"'".GETPOST('ctaordenante')."'":'NULL').",
+				rfc_emisor_cuenta_beneficiario=".(GETPOST('rfcemisorctabeneficiario')!=''?"'".GETPOST('rfcemisorctabeneficiario')."'":'NULL').",
+				cuenta_beneficiario=".(GETPOST('ctabeneficiario')!=''?"'".GETPOST('ctabeneficiario')."'":'NULL').",
+				tipo_cadena_pago=".(GETPOST('tipocadenapago')!=''?"'".GETPOST('tipocadenapago')."'":'NULL').",
+				certificado_pago=".(trim(GETPOST('certificadopago'))!=''?"'".GETPOST('certificadopago')."'":'NULL').",
+				cadena_pago=".(trim(GETPOST('cadenaoriginal'))!=''?"'".GETPOST('cadenaoriginal')."'":'NULL').",
+				sello_pago=".(trim(GETPOST('sellopago'))!=''?"'".GETPOST('sellopago')."'":'NULL')."
+				WHERE id_pago = ".$pagcid_custom;
 		
-		if ($res = $db->query($sql3)) {
+		if ($res = $db->query($sql3) && $resCFDI = $db->query($sqlCFDI)) {
 			$sql4 = "UPDATE ".MAIN_DB_PREFIX."cfdimx_recepcion_pagos_docto_relacionado
 				SET
 					idDocumento=".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
@@ -512,7 +531,20 @@ if ($action == "guardar2") {
 
 			$res2 = $db->query($sql4);
 
-			// @MIRA: Actualizar registro (agregar error handling).
+
+			$sqlCFDIDoc = "UPDATE cfdi_comprobante_relacionados
+				SET
+					id_documento=".(GETPOST('idDocumento')!=''?"'".GETPOST('idDocumento')."'":'NULL').",
+					monedaDR=".(GETPOST('monedaDR')!=''?"'".GETPOST('monedaDR')."'":'NULL').",
+					tipoCambioDR=".(GETPOST('tipocambiodr')!=''?"'".GETPOST('tipocambiodr')."'":'NULL').",
+					metodoPDR=".(GETPOST('metodoPDR')!=''?"'".GETPOST('metodoPDR')."'":'NULL').",
+					numparcialidaddr=".(GETPOST('numparcialidaddr')!=''?"'".GETPOST('numparcialidaddr')."'":'NULL').",
+					impSaldoAnterior=".(GETPOST('impSaldoAnterior')!=''?"'".GETPOST('impSaldoAnterior')."'":'NULL').",
+					impPagadodr=".(GETPOST('impPagadodr')!=''?"'".GETPOST('impPagadodr')."'":'NULL').",
+					impSaldoInsoluto=".(GETPOST('impSaldoInsoluto')!=''?"'".GETPOST('impSaldoInsoluto')."'":'NULL')."
+					WHERE id_pago = ".$pagcid_custom;
+
+			$resCFDIDoc = $db->query($sqlCFDIDoc);
 
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."'</script>";
 		} else {
@@ -1270,13 +1302,22 @@ if ($action == "cfdi2") {
 
 	print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0;font-weight:bold">';
 
-	$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = false; // @MIRA: Hacer un SELECT de las tablas para validar que en efecto la info existe.
+	
+	$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = false;
+	$sqlCFDICheck = "SELECT * FROM cfdi_complemento_pago
+					WHERE id_pago = ".$pagcid_custom;
+
+	$resCFDICheck = $db->query($sqlCFDICheck);
+
+	if($resCFDICheck) {
+		$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = true;
+	}
 	$URLDelSitioDeTimbrado = ''; // @MIRA
 
 	if ($nmr == 0) {
 		print 'Debe guardar la información del Pago para poder timbrarlo';
 	} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
-		print '<a class="butAction" style="float:right" href="'.$URLDelSitioDeTimbrado.'" target="_blank">Generar CFDI</a>';
+		print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
 	} else {
 		print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
 	}
@@ -1622,6 +1663,17 @@ if($action=="cfdi1"){
 		$out.= '</table><br><br>';
 		print $out;
 	}
+}
+
+if($action=="timbrarCFDIProfact") {
+	
+	$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
+	SET
+		status = 0
+		WHERE fk_payment = ".GETPOST('pagcid','int');
+	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
+
+	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
 }
 
 ?>

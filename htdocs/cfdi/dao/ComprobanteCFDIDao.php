@@ -517,7 +517,7 @@ class ComprobanteCFDIDao {
 		$sql.=$comprobanteId.', ';
 		$sql.=$array_data['facid'].', ';
 		$sql.=$array_data['idDocumento'].", ";
-		$sql.=$comprobanteId.', ';
+		$sql.=$array_data['pagcid'].', ';
 		$sql.="'".'PA-'.$array_data['pagcid']."', ";
 		$sql.="'".$array_data['pagcid']."'".", ";
 		$sql.=$array_data['monedaDR'].", ";
@@ -558,6 +558,7 @@ class ComprobanteCFDIDao {
 		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
 		fk_cfdi,
 		fk_comprobante,
+		id_pago,
 		forma_pago,
 		moneda,
 		tipo_cambio,
@@ -575,6 +576,7 @@ class ComprobanteCFDIDao {
 		VALUES (';
 		$sql.=$comprobanteId.', ';
 		$sql.=$array_data['facid'].', ';
+		$sql.=$array_data['pagcid'].', ';
 		$sql.=$array_data['formpago'].", ";
 		$sql.=$array_data['monedapago'].", ";
 		$sql.=$array_data['tipocambio'].',';
