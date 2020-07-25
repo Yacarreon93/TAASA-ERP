@@ -60,7 +60,7 @@ class ReportPDF extends tFPDF
     }
     
     function enableHour() {
-        $this->hourEnabled = true;
+        $this->hour = getHour();
     }
     
     // Asignar el alto de las columnas
@@ -77,10 +77,10 @@ class ReportPDF extends tFPDF
         if (isset($this->subtitle)) {
             $this->Cell(1, 5, utf8_decode($this->subtitle));
         }
-        if ($this->hourEnabled) {
-            $this->Cell(0, 10, 'Hora: '.getHour(), 0, 0, 'R');
+        if (isset($this->hour)) {
+            $this->Cell(0, 10, "Hora: $this->hour", 0, 0, 'R');
         }
-        if (isset($this->subtitle) || $this->hourEnabled) {
+        if (isset($this->subtitle) || isset($this->hour)) {
             $this->Ln();
         }
         $this->Ln();
