@@ -95,6 +95,7 @@ $pdf->SetFont('Arial', '', 11);
 // 7 es la altura por default
 // $pdf->setRowHeight(7);
 $pdf->SetTitle($report_title);
+$pdf->EnableHour();
 $pdf->AddPage();
 $pdf->createDynamicHeader($header);
 $pdf->createDynamicRows($data);
