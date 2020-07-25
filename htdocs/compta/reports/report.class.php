@@ -107,10 +107,10 @@ class ReportPDF extends tFPDF
     }
 
     // Crea el encabezado con una anchura dinamica
-    function createDynamicHeader($header, $options) {
+    function createDynamicHeader($header, $options = []) {
         $this->SetFont('', '', $this->fontSizeHeader);
         
-        if (isset($options)) {
+        if (count($options)) {
             if ($options['bold']) {
                 $this->SetFont('', 'B');
             }
@@ -121,7 +121,7 @@ class ReportPDF extends tFPDF
         foreach($header as $col) {
             $fill = false;
 
-            if (isset($options)) {
+            if (count($options)) {
                 if ($options['background']) {
                     if ($options['background'][$colIndex]) {
                         $this->SetFillColor(...$options['background'][$colIndex]);
@@ -147,10 +147,10 @@ class ReportPDF extends tFPDF
     }
 
     // Crea las columnas con una anchura dinámica
-    function createDynamicRows($data, $options) {
+    function createDynamicRows($data, $options = []) {
         $this->SetFont('', '', $this->fontSizeRows);
 
-        if (isset($options)) {
+        if (count($options)) {
             if ($options['bold']) {
                 $this->SetFont('', 'B');
             }
@@ -162,7 +162,7 @@ class ReportPDF extends tFPDF
             foreach ($row as $key => $value) {
                 $fill = false;
 
-                if (isset($options)) {
+                if (count($options)) {
                     if ($options['background']) {
                         if ($options['background'][$colIndex]) {
                             $this->SetFillColor(...$options['background'][$colIndex]);
