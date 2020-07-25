@@ -17,6 +17,10 @@ function getFullStrCurrentDate() {
     )));
 }
 
+function getHour() {
+    return date("h:i:s a");
+}
+
 function getCurrentDayStr() {
     return ucfirst(strftime('%A'));
 }
@@ -54,7 +58,11 @@ class ReportPDF extends tFPDF
     function setSubtitle($subtitle) {
         $this->subtitle = $subtitle;
     }
-
+    
+    function enableHour() {
+        $this->hourEnabled = true;
+    }
+    
     // Asignar el alto de las columnas
     function setRowHeight($height) {
         $this->rowHeight = $height;
@@ -68,6 +76,11 @@ class ReportPDF extends tFPDF
         $this->Ln();
         if (isset($this->subtitle)) {
             $this->Cell(1, 5, utf8_decode($this->subtitle));
+        }
+        if ($this->hourEnabled) {
+            $this->Cell(0, 10, 'Hora: '.getHour(), 0, 0, 'R');
+        }
+        if (isset($this->subtitle) || $this->hourEnabled) {
             $this->Ln();
         }
         $this->Ln();
