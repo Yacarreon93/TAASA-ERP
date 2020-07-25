@@ -6,14 +6,14 @@ date_default_timezone_set('America/Mexico_City');
 setlocale(LC_TIME, 'es_ES');
 
 /*
- strftime('%A %d/%b/%G')
+ strftime('%A %d/%b/%Y')
 */
 function getFullStrCurrentDate() {
     return utf8_decode(strtr('$D $d/$m/$Y', array(
         '$D' => getCurrentDayStr(),
         '$d' => strftime('%d'),
         '$m' => getCurrentMonthAbbrStr(),
-        '$Y' => strftime('%G'),
+        '$Y' => strftime('%Y'),
     )));
 }
 
