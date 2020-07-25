@@ -189,6 +189,7 @@ $grayRGB2 = [191, 191, 191];
 // $pdf->setRowHeight(7);
 $pdf->SetTitle($report_title);
 $pdf->SetSubtitle($report_subtitle);
+$pdf->EnableHour();
 $pdf->AddPage();
 $pdf->Cell($columnWidth, 10, ' ', 0, 0, 'L');
 $pdf->SetFillColor(...$grayRGB1);
