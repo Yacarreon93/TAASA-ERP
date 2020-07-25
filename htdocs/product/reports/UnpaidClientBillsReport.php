@@ -113,8 +113,8 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->SetTitle($report_title);
 $pdf->EnableHour();
 $pdf->AddPage();
-$pdf->createDynamicHeader($header);
-$pdf->createDynamicRows($data);
+$pdf->createDynamicHeader($header, null);
+$pdf->createDynamicRows($data, null);
 
 $pdf->AddPage();
 $pdf->SetFont('Arial','B',11);

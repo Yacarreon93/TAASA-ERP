@@ -25,6 +25,7 @@ if (! empty($conf->projet->enabled)) {
 }
 require_once DOL_DOCUMENT_ROOT . '/core/class/doleditor.class.php';
 require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
+require_once DOL_DOCUMENT_ROOT.'/compta/service/ClientUtilsService.php';
 
 $langs->load('bills');
 $langs->load('companies');
@@ -472,10 +473,10 @@ if (empty($reshook))
 
 	    			if ($result < 0) setEventMessages($object->error, $object->errors, 'errors');
 
-	    			if($createCFDI) { //Save CFDI info
-						$service = new ComprobanteCFDIService();
-						$service->SaveCFDIFromFacture($db, $id);
-					}
+	    			// if($createCFDI) { //Save CFDI info
+					// 	$service = new ComprobanteCFDIService();
+					// 	$service->SaveCFDIFromFacture($db, $id);
+					// }
 				}
 			}
 			else
@@ -2465,6 +2466,10 @@ if ($action == 'create')
 	$form->select_conditions_paiements(isset($_POST['cond_reglement_id']) ? $_POST['cond_reglement_id'] : $cond_reglement_id, 'cond_reglement_id');
 	print '</td></tr>';
 
+	//Hidden Payment Term
+	print '<input hidden id="cond_reglement_id"/>';
+
+
 	// Payment mode
 	print '<tr><td class="fieldrequired">' . $langs->trans('PaymentMode') . '</td><td colspan="2">';
 	$form->select_types_paiements(isset($_POST['mode_reglement_id']) ? $_POST['mode_reglement_id'] : $mode_reglement_id, 'mode_reglement_id', 'CRDT');
@@ -2732,10 +2737,10 @@ if ($action == 'create')
 	print "</table>\n";
 
 	dol_fiche_end();
-
+	print '<div id ="messageDebt"></div>';
 	// Button "Create Draft"
 	print '<div class="center">';
-	print '<input type="submit" class="button" name="bouton" value="' . $langs->trans('CreateDraft') . '">';
+	print '<input type="submit" class="button" id="createButton" name="bouton" value="' . $langs->trans('CreateDraft') . '">';
 	print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	print '<input type="button" class="button" value="' . $langs->trans("Cancel") . '" onClick="javascript:history.go(-1)">';
 	print '</div>';
@@ -2942,12 +2947,24 @@ else if ($id > 0 || ! empty($ref))
 		{
 			$text .= '<br>' . img_warning() . ' ' . $langs->trans("ErrorInvoiceOfThisTypeMustBePositive");
 		}
-		if($isTicket) {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
-		} else {
-			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+		/*Validate client debt*/
+		$limitExceeded = 0;
+		$clientUtilsService = new ClientUtilsService($db);
+		$clientDebt = $clientUtilsService->GetClientDebt($object->socid);
+		$clientLimit = $clientUtilsService->GetOutstandingLimit($object->socid);
+		$clientFutureDebt = ($clientDebt->total - $clientDebt->abonado) + $object->total_ttc;
+		if((($clientFutureDebt) > $clientLimit) && $object->cond_reglement_id != 1) {
+			print_r("<p style ='color:red'>Limite de credito excedido. Solo ventas de contado</p>");
+			$limitExceeded++;
 		}
-
+		
+		if($limitExceeded == 0) {
+			if($isTicket) {
+			$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			} else {
+				$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?createCFDI=1&facid=' . $object->id, $langs->trans('ValidateBill'), $text, 'confirm_valid', $formquestion, (($object->type != Facture::TYPE_CREDIT_NOTE && $object->total_ttc < 0) ? "no" : "yes"), 2);
+			}
+		}
 	}
 
 	// Confirm back to draft status
@@ -4347,6 +4364,7 @@ else if ($id > 0 || ! empty($ref))
 
 	    var params = {  "socid" : socid };
 
+	    /*Autofill fields when client is selected. If the client debt exceeds the limit, the facture can only have cond reglement 1.*/
 	    $.ajax(
 	    {
 	        data: params,
@@ -4355,7 +4373,6 @@ else if ($id > 0 || ! empty($ref))
 	        dataType: "json",
 	        success:  function (data)
 	        {
-	            document.getElementsByName("cond_reglement_id")[0].value = data.cond;
 	            document.getElementById("selectmode_reglement_id").value = data.mode;
 	            document.getElementById("options_vendor").value = data.vendor;
 	            document.getElementsByName("options_currency")[0].value = data.currency;
@@ -4366,6 +4383,39 @@ else if ($id > 0 || ! empty($ref))
 	            document.getElementsByName("cond_reglement_id").disabled = true;
 	            document.getElementsByName("options_isticket").disabled = true;
 	            document.getElementsByName("fk_account")[0].disabled = true;
+	            if(data.debt) {
+	            	$debt = Number.parseFloat(data.debt);
+		            $credit_limit = Number.parseFloat(data.credit_limit);
+		            if($debt > $credit_limit) {
+		            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+		            	document.getElementsByName("cond_reglement_id")[0].disabled = true;
+		            	document.getElementById("cond_reglement_id").disabled = false;
+		            	document.getElementById("cond_reglement_id").value = 1;
+		            	document.getElementById("cond_reglement_id").setAttribute("name", "cond_reglement_id");
+		            	//document.getElementById("createButton").disabled = true;
+		            	document.getElementById("messageDebt").style.color = "red";
+		            	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido. Solo ventas de contado";
+		            } else {
+		            	//document.getElementById("cond_reglement_id").value = 1;
+		            	document.getElementById("cond_reglement_id").removeAttribute("name");
+		            	document.getElementsByName("cond_reglement_id")[0].disabled = false;
+		            	document.getElementById("messageDebt").innerHTML = "";
+		            	if(data.cond) {
+		            	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+			            } else {
+			            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+			            }
+		            }
+	            } else {
+	            	document.getElementById("cond_reglement_id").removeAttribute("name");
+		            document.getElementsByName("cond_reglement_id")[0].disabled = false;
+		           if(data.cond) {
+		            	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
+			            } else {
+			            	document.getElementsByName("cond_reglement_id")[0].value = 1;
+			            }
+		            document.getElementById("messageDebt").innerHTML = "";
+	            }
 	        }
 	    });
 	});

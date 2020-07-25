@@ -476,6 +476,9 @@ llxHeader('',$langs->trans("UserCard"));
                 $formother->select_year($year?$year:-1,'year_general',1, 20, 5);
                 echo '</div>';
                 echo '<input type="radio" id="weekly_radio" name="range" value="3" style="margin-left:10px; margin-right: 3px">Facturas por semana';
+                $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
+                echo '<div id="theHidden" style="position:absolute">';
+                echo '</div>';
                 echo '<div style="display:inline">';
                 echo '<select id="selectMonthWeek" onchange="setMonthValueWeek()">
                       <option value=""></option>
@@ -495,10 +498,6 @@ llxHeader('',$langs->trans("UserCard"));
                 echo '<select id="weekSelector" class="flat" style="width:100px">';
                 echo '</select>';
                 echo '<input type="hidden" value="" name="month_week" id="month_week">';
-
-                $formother->select_year($year?$year:-1,'year_week',1, 20, 5);
-                echo '<div id="theHidden" style="position:absolute">';
-                echo '</div>';
                 print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'" style="padding:5px; padding-left: 20px; vertical-align: bottom;">';
                 echo '</div>';
                 echo '</div>';
@@ -517,7 +516,7 @@ llxHeader('',$langs->trans("UserCard"));
                             function setActualDate() {
                             var today = new Date();
                             var yyyy = today.getFullYear();
-                            document.getElementById("year_week").value = yyyy;
+                            //document.getElementById("year_week").value = yyyy;
                             document.getElementById("year_general").value = yyyy;
                             }
                             window.onload = setActualDate;

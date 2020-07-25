@@ -32,8 +32,6 @@ define("CFDI_CONCEPTOS_PARTE", "cfdi_conceptos_parte");
 define("CFDI_CONCEPTOS_TIPO_IMPUESTO", "cfdi_conceptos_tipo_impuesto");
 define("CFDI_IMPUESTOS_TOTALES", "cfdi_impuestos_totales");
 define("CFDI_IMPUESTOS_GLOBALES", "cfdi_impuestos_globales");
-define("CFDI_COMPROBANTE_PAGO", "cfdi_comprobante_pago");
-define("CFDI_COMPROBANTE_RELACIONADOS", "cfdi_comprobante_relacionados");
 define("CFDI_COMPLEMENTO_PAGO", "cfdi_complemento_pago");
 define("CFDI_DOC_RELACIONADO", "cfdi_doc_relacionado");
 
@@ -58,6 +56,13 @@ class ComprobanteCFDIDao {
 		return $row->id;
 	}
 
+	public function GetComprobanteIdByFactureId($factureId) {
+		$sql = "SELECT id FROM cfdi_comprobante WHERE fk_comprobante = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->id;
+	}
+
 	private function getDb() {
 		return $this->db;
 	}
@@ -68,10 +73,21 @@ class ComprobanteCFDIDao {
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
 	}
+	public function GetVendorAddressByFactureId($factureId) {
+		$sql = "SELECT
+		zip
+		FROM llx_facture AS f
+		JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+		JOIN llx_user AS u ON fe.vendor = u.rowid
+		WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->zip;
+	}
 
 	public function FetchConceptosData($id) {
 		$sql = "SELECT
-			ref AS id_concepto,
+			p.rowid AS id_concepto,
 			qty AS cantidad,
 			umed AS unidad,
 			p.label AS descripcion,
@@ -115,29 +131,35 @@ class ComprobanteCFDIDao {
 
 	public function FetchImpuestosData($id) {
 		$sql = "SELECT
-			p.ref AS id_concepto,
+			p.rowid AS id_concepto,
 			'T' AS tipo_impuesto_federal,
 			total_tva AS importe,
 			'002' AS impuesto,
 			f.tva_tx AS tasa_o_cuota,
 			'Tasa' AS tipo_factor,
-			subprice AS base
+			total_ht AS base
 		FROM
 			llx_facturedet AS f
 		JOIN llx_product AS p ON fk_product = p.rowid
 		WHERE
 			fk_facture = ".$id;
 		$result = $this->ExecuteQuery($sql);
+		$impuestosFlag = false;
 
 		while ($row =  $this->db->fetch_object($result))
 		{
 				$tasa_o_cuota = ($row->tasa_o_cuota / 100);
+				if($tasa_o_cuota == 0.16) {
+					$string_tasa_o_cuota = "0.160000";
+				} else {
+					$string_tasa_o_cuota = "0.000000";
+				}
 				$data[] = array(
 					id_concepto=>$row->id_concepto,
 					tipo_impuesto_federal=> $row->tipo_impuesto_federal,
 					importe=>$row->importe,
 					impuesto=>$row->impuesto,
-					tasa_o_cuota=>$tasa_o_cuota,
+					tasa_o_cuota=>$string_tasa_o_cuota,
 					tipo_factor=>$row->tipo_factor,
 					base=> $row->base,
 					fk_comprobante=>$id
@@ -159,8 +181,7 @@ class ComprobanteCFDIDao {
 		importe,
 		num_cuenta_predial,
 		clave_prod_serv,
-		clave_unidad,
-		descuento) 
+		clave_unidad) 
 		VALUES ';
 		for($i=0; $i < sizeof($array_data); $i++) {
 			$sql.="(".$lastId.", ";
@@ -174,8 +195,7 @@ class ComprobanteCFDIDao {
 			$sql.=$array_data[$i]['importe'].", ";
 			$sql.="'', ";
 			$sql.="'".$array_data[$i]['clave_prod_serv']."'".", ";
-			$sql.="'".$array_data[$i]['clave_unidad']."'".", ";
-			$sql.=$array_data[$i]['descuento']." )";
+			$sql.="'".$array_data[$i]['clave_unidad']."')"; 
 			if($i < (count($array_data)-1)) {
 				$sql.= ',';
 			}  
@@ -184,7 +204,7 @@ class ComprobanteCFDIDao {
 	}	
 
 	public function FetchComprobanteData($id) {
-		$sql = "SELECT f.rowid, facnumber AS serie, facnumber AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor, fk_soc, usocfdi AS uso_cfdi 
+		$sql = "SELECT f.rowid, facnumber AS serie, f.rowid AS folio, p.accountancy_code AS forma_pago, pt.traduccion AS condiciones_pago, total AS subtotal, 0 AS descuento, NULL AS motivo_descuento, currency AS moneda, total_ttc AS total, NULL AS total_con_letra, formpagcfdi AS metodo_pago, NULL AS num_cuenta_pago, vendor, fk_soc, usocfdi AS uso_cfdi 
 			FROM llx_facture AS f
 			JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 			LEFT JOIN llx_c_paiement AS p ON f.fk_mode_reglement = p.id
@@ -200,7 +220,7 @@ class ComprobanteCFDIDao {
 				} else {
 					$tipo_cambio= 19.5;
 				}
-				$lugar_de_expedicion = $this->GetVendorAddress($vendor);
+				$lugar_de_expedicion = $this->GetVendorAddress($row->vendor);
 				$data[] = array(
 					serie=>$row->serie,
 					folio=> $row->folio,
@@ -236,8 +256,6 @@ class ComprobanteCFDIDao {
 		forma_pago,
 		condiciones_pago,
 		subtotal,
-		descuento,
-		motivo_descuento,
 		tipo_cambio,
 		moneda,
 		total,
@@ -258,8 +276,6 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data[0]['forma_pago']."'".", ";
 		$sql.="'".$array_data[0]['condiciones_pago']."'".", ";
 		$sql.=$array_data[0]['subtotal'].", ";
-		$sql.=$array_data[0]['descuento'].", ";
-		$sql.="'".$array_data[0]['motivo_descuento']."'".", ";
 		$sql.=$array_data[0]['tipo_cambio'].", ";
 		$sql.="'".$array_data[0]['moneda']."'".", ";
 		$sql.=$array_data[0]['total'].", ";
@@ -275,6 +291,58 @@ class ComprobanteCFDIDao {
 		$sql.=$array_data[0]['fk_soc'].", ";
 		$sql.="'".$array_data[0]['uso_cfdi']."'";
 		$sql.= ')';
+		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIMXComprobante($array_data) {
+		$sql = "
+				INSERT INTO ".MAIN_DB_PREFIX."cfdimx (
+					factura_serie,
+					factura_folio,
+					factura_seriefolio,
+					xml,
+					cadena,
+					version,
+					selloCFD,
+					fechaTimbrado,
+					uuid,
+					certificado,
+					sello,
+					certEmisor,
+					cancelado,
+					u4dig,
+					fk_facture,
+					fecha_emision,
+					hora_emision,
+					fecha_timbrado,
+					hora_timbrado,
+					tipo_timbrado,
+					divisa,
+					entity_id
+				) VALUES (
+					'".$array_data[0]['serie']."',
+					'".$array_data[0]['folio']."',
+					'".$array_data[0]['serie']."-".$array_data[0]['folio']."',
+					'Pendiente',
+					'Pendiente',
+					'".$array_data[0]['version']."',
+					'Pendiente',
+					'".date("Y-m-d H:i:s")."',
+					'Pendiente',
+					'Pendiente',
+					'Pendiente',
+					'Pendiente',
+					'0',
+					'0',
+					'".$array_data[0]['fk_comprobante']."',
+					'".date("Y-m-d")."',
+					'".date("H:i:s")."',
+					'".date("Y-m-d")."',
+					'".date("H:i:s")."',
+					'1',
+					'MXN',
+					'".$_SESSION['dol_entity']."'
+				)";
 		$this->ExecuteQuery($sql);
 	}
 
@@ -304,7 +372,14 @@ class ComprobanteCFDIDao {
 		VALUES';
 
 		$total = 0;
+		$totalTasa0 = 0;
+		$totalTasa16 = 0;
 		for($i=0; $i < sizeof($array_data); $i++) {
+			if($array_data[$i]['tasa_o_cuota'] == "0.000000") {
+				$totalTasa0 += 1;
+			} else {
+				$totalTasa16 += $array_data[$i]['importe'];
+			}
 			$total+=$array_data[$i]['importe'];
 			$sql.='(';
 			$sql.=$lastId.', ';
@@ -320,10 +395,13 @@ class ComprobanteCFDIDao {
 				$sql.= ',';
 			}  
 		} 
+
 		$this->ExecuteQuery($sql);
 		$arrayTotal = array();
 		$arrayTotal['fk_comprobante'] = $array_data[0]['fk_comprobante'];
 		$arrayTotal['impuestos_trasladados'] = $total;
+		$arrayTotal['impuestos_trasladados_tasa0'] = $totalTasa0;
+		$arrayTotal['impuestos_trasladados_tasa16'] = $totalTasa16;
 		$arrayTotal['impuestos_retenidos'] = 0;
 		$this->InsertIntoImpuestosTotales($arrayTotal, $lastId);
 		$this->InsertIntoImpuestosGlobales($arrayTotal, $lastId);
@@ -344,31 +422,53 @@ class ComprobanteCFDIDao {
 	}
 
 	public function InsertIntoImpuestosGlobales($array_data, $lastId) {
-		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
-		fk_cfdi,
-		fk_comprobante,
-		tipo_impuesto_federal,
-		importe,
-		impuesto,
-		tasa_o_cuota,
-		tipo_factor) 
-		VALUES (';
-		$sql.=$lastId.', ';
-		$sql.=$array_data['fk_comprobante'].', ';
-		$sql.="'T', ";
-		$sql.=$array_data['impuestos_trasladados'].',';
-		$sql.="'002', ";
-		$sql.=0.160000.',';		
-		$sql.="'Tasa' )";
-		$this->ExecuteQuery($sql);
+		if($array_data['impuestos_trasladados_tasa0'] > 0) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante,
+				tipo_impuesto_federal,
+				importe,
+				impuesto,
+				tasa_o_cuota,
+				tipo_factor) 
+				VALUES (';
+				$sql.=$lastId.', ';
+				$sql.=$array_data['fk_comprobante'].', ';
+				$sql.="'T', ";
+				$sql.='0,';
+				$sql.="'002', ";
+				$sql.="'0.000000', ";		
+				$sql.="'Tasa' )";
+				$this->ExecuteQuery($sql);
+		}
+		if($array_data['impuestos_trasladados_tasa16'] > 0) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante,
+				tipo_impuesto_federal,
+				importe,
+				impuesto,
+				tasa_o_cuota,
+				tipo_factor) 
+				VALUES (';
+				$sql.=$lastId.', ';
+				$sql.=$array_data['fk_comprobante'].', ';
+				$sql.="'T', ";
+				$sql.=$array_data['impuestos_trasladados_tasa16'].',';
+				$sql.="'002', ";
+				$sql.="'0.160000', ";		
+				$sql.="'Tasa' )";
+				$this->ExecuteQuery($sql);
+		}
 	}
 
 	public function fetchPaymentData() {
 
 	}
 
-	public function InsertIntoCFDIComprobantePago($array_data) {
-		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_PAGO .' (
+	public function InsertIntoCFDIComprobantePago($factureId, $array_data) {
+		$lugar_de_expedicion = $this->GetVendorAddressByFactureId($factureId);
+		$sql = 'INSERT INTO '.CFDI_COMPROBANTE .' (
 		serie,
 		folio,
 		subtotal,
@@ -376,42 +476,62 @@ class ComprobanteCFDIDao {
 		total,
 		tipo_comprobante,
 		lugar_de_expedicion,
+		status,
 		version,
 		fk_comprobante,
-		fk_soc,
+		fk_payment,
 		uso_cfdi) 
 		VALUES (';
-		$sql.="'".$array_data[0]['serie']."'".", ";
-		$sql.="'".$array_data[0]['folio']."'".", ";
+		$sql.="'".'PA-'.$array_data['pagcid']."', ";
+		$sql.="'".$array_data['pagcid']."'".", ";
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
 		$sql.="'P', ";
-		$sql.="'".$array_data[0]['lugar_de_expedicion']."'".", ";
+		$sql.="'".$lugar_de_expedicion."'".", ";
+		$sql.="5, ";
 		$sql.="'3.3', ";
-		$sql.=$array_data[0]['fk_comprobante'].", ";
-		$sql.=$array_data[0]['fk_soc'].", ";
+		$sql.="'".$array_data['facid']."'".", ";
+		$sql.="'".$array_data['pagcid']."'".", ";
 		$sql.="'P01'";
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}
 
-	public function InsertIntoCFDIRelacionados($array_data, $lastId) {
+	public function InsertIntoCFDIRelacionados($array_data, $comprobanteId) {
 		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_RELACIONADOS .' (
 		fk_cfdi,
 		fk_comprobante,
-		tipo_relacion,
-		cfdi_relacionados) 
+		id_documento,
+		id_pago,
+		serie,
+		folio,
+		monedaDR,
+		tipocambiodr,
+		metodoPDR,
+		numparcialidaddr,
+		impSaldoAnterior,
+		impPagadodr,
+		impSaldoInsoluto) 
 		VALUES (';
-		$sql.=$lastId.', ';
-		$sql.=$array_data[0]['fk_comprobante'];
-		$sql.="'04', ";
-		$sql.=$array_data[0]['fk_cfdi_uuid'];
+		$sql.=$comprobanteId.', ';
+		$sql.=$array_data['facid'].', ';
+		$sql.=$array_data['idDocumento'].", ";
+		$sql.=$array_data['pagcid'].', ';
+		$sql.="'".'PA-'.$array_data['pagcid']."', ";
+		$sql.="'".$array_data['pagcid']."'".", ";
+		$sql.=$array_data['monedaDR'].", ";
+		$sql.=$array_data['tipocambiodr'].', ';
+		$sql.=$array_data['metodoPDR'].", ";
+		$sql.=$array_data['numparcialidaddr'].', ';
+		$sql.=$array_data['impSaldoAnterior'].", ";
+		$sql.=$array_data['impPagadodr'].", ";
+		$sql.=$array_data['impSaldoInsoluto'];
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}
 
-		public function InsertIntoConceptosPago($array_data, $lastId) {
+		public function InsertIntoConceptosPago($array_data, $comprobanteId) {
 		$sql = 'INSERT INTO '.CFDI_CONCEPTOS .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -422,8 +542,8 @@ class ComprobanteCFDIDao {
 		clave_prod_serv,
 		clave_unidad) 
 		VALUES ';
-		$sql.="(".$lastId.", ";
-		$sql.=$array_data[$i]['fk_comprobante'].", ";
+		$sql.="(".$comprobanteId.", ";
+		$sql.=$array_data['facid'].", ";
 		$sql.="1, ";
 		$sql.="'Pago', ";
 		$sql.="0, ";
@@ -434,42 +554,43 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}	
 
-	public function InsertIntoCFDIComplementoPago($array_data, $lastId) {
+	public function InsertIntoCFDIComplementoPago($array_data, $comprobanteId) {
 		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
 		fk_cfdi,
 		fk_comprobante,
+		id_pago,
 		forma_pago,
 		moneda,
 		tipo_cambio,
 		monto,
 		num_operacion,
 		emisor_rfc,
-		emisor_banco_ordenante,
-		emisor_cuenta_ordenante,
-		beneficiario_cuenta,
+		nombre_banco_ordenante,
+		cuenta_ordenante,
+		cuenta_beneficiario,
 		tipo_cadena_pago,
 		certificado_pago,
 		cadena_pago,
 		sello_pago,
-		emisor_rfc_banco,
-		id_pago) 
+		rfc_emisor_cuenta_beneficiario) 
 		VALUES (';
-		$sql.=$lastId.', ';
-		$sql.=$array_data['fk_comprobante'].', ';
-		$sql.="'".$array_data['forma_pago']."', ";
-		$sql.="'".$array_data['moneda']."', ";
-		$sql.=$array_data['tipo_cambio'].',';
-		$sql.=$array_data['monto'].',';
-		$sql.="'".$array_data['num_operacion']."', ";
-		$sql.="'".$array_data['emisor_rfc']."', ";
-		$sql.="'".$array_data['emisor_banco_ordenante']."', ";
-		$sql.="'".$array_data['beneficiario_cuenta']."', ";
-		$sql.="'".$array_data['tipo_cadena_pago']."', ";
-		$sql.="'".$array_data['certificado_pago']."', ";
-		$sql.="'".$array_data['cadena_pago']."', ";
-		$sql.="'".$array_data['sello_pago']."', ";
-		$sql.="'".$array_data['emisor_rfc_banco']."', ";
-		$sql.="'".$array_data['id_pago']."'";	
+		$sql.=$comprobanteId.', ';
+		$sql.=$array_data['facid'].', ';
+		$sql.=$array_data['pagcid'].', ';
+		$sql.=$array_data['formpago'].", ";
+		$sql.=$array_data['monedapago'].", ";
+		$sql.=$array_data['tipocambio'].',';
+		$sql.=$array_data['montop'].',';
+		$sql.="'".$array_data['numoperacion']."', ";
+		$sql.="'".$array_data['rfcemisorctaorigen']."', ";
+		$sql.="'".$array_data['nombancoordenante']."', ";
+		$sql.="'".$array_data['ctaordenante']."', ";
+		$sql.="'".$array_data['ctabeneficiario']."', ";
+		$sql.="'".$array_data['tipocadenapago']."', ";
+		$sql.="'".$array_data['certificadopago']."', ";
+		$sql.="'".$array_data['cadenaoriginal']."', ";
+		$sql.="'".$array_data['sellopago']."', ";
+		$sql.="'".$array_data['rfcemisorctabeneficiario']."'";
 		$sql.=")";
 		$this->ExecuteQuery($sql);
 	}
@@ -505,5 +626,11 @@ class ComprobanteCFDIDao {
 		$sql.=$array_data['importe_saldo_insoluto'];
 		$sql.=")";
 		$this->ExecuteQuery($sql);
+	}
+
+	public function CheckIfExists($fk_comprobante) {
+		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$fk_comprobante;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
 	}
 }

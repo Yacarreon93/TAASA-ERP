@@ -84,8 +84,8 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->SetTitle($report_title);
 $pdf->setTitle($report_title);
 $pdf->AddPage();
-$pdf->createDynamicHeader($header);
-$pdf->createDynamicRows($data);
+$pdf->createDynamicHeader($header, null);
+$pdf->createDynamicRows($data, null);
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell(
                     $pdf->maxWidth / count($data[0]),

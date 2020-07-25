@@ -7,12 +7,16 @@ require_once DOL_DOCUMENT_ROOT.'/product/service/FacturePaiementsService.php';
 
 $account = GETPOST('account');
 $month = GETPOST('month');
+$year = GETPOST('year');
 
 if(!$account) {
     $account = 1;
 }
 if(!$month) {
     $month = 1;
+}
+if(!$year) {
+    $year = date("Y");
 }
 
 $sql = "SELECT
@@ -58,8 +62,13 @@ ORDER BY
     datef ASC,
     f.rowid DESC
 	 ) t1 ON t1.rowid = f.rowid
-WHERE MONTH(p.datep) = ".$month." AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")
-ORDER BY
+WHERE MONTH(p.datep) = ".$month;
+if(!$year) {
+  $sql.=" AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")";
+} else {
+  $sql.=" AND YEAR(p.datep) = ".$year." AND fk_statut != 3 AND (b.fk_account =".$account.")";
+}
+$sql.=" ORDER BY
 p.datep ASC,
 p.amount DESC";
 
@@ -104,9 +113,9 @@ while ($row = $db->fetch_object($result))
 
 $factureService = new FacturePaiementsService();
 //CREDITO
-$VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $account);
-$VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $account);
-$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $account);
+$VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $year, $account);
+$VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $year, $account);
+$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $year, $account);
 
 //CONTADO
 //$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
@@ -170,8 +179,11 @@ if($account == 1)
      $accountName = 'Leon ';
 }
 
+$dateObj   = DateTime::createFromFormat('!m', $month);
+$month_name = strftime('%B', $dateObj->getTimestamp());
+
 $report_title = strtr('REPORTE DE VENTAS DEL MES - $M $Y', array(
-    '$M' => getCurrentMonthNameStr(),
+    '$M' => $month_name,
     '$Y' => strftime('%G'),
 ));
 

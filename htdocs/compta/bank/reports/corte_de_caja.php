@@ -2,7 +2,7 @@
 
 require_once('../../../main.inc.php');
 require_once('./report.class.php');
-
+require_once DOL_DOCUMENT_ROOT.'/product/service/FacturePaiementsService.php';
 
 
 $langs->load("bills");
@@ -93,10 +93,11 @@ while ($i < $num)
         dateo   => dol_print_date($db->jdate($row->do),"day"),
         datev   => dol_print_date($db->jdate($row->dv),"day"),
         type    => $type,
-        thirdparty  => dol_trunc($row->thirdparty, 23),
+        thirdparty  => dol_trunc($row->thirdparty, 19),
         debe    => '$'.price($debe),
         haber   => '$'.price($haber),
     );
+    $date = $row->dv;
     if($type == 'Efectivo') {
         $total_efectivo += $haber;
     }
@@ -109,9 +110,24 @@ while ($i < $num)
     $i++;            
 }
 
-$pdf = new ReportPDF('l');
+$factureService = new FacturePaiementsService();
+//CREDITO
+$totalVendido = $factureService->GetTotalVendidoPorDia($db, $date, $account_id);
 
-$report_title = 'Reporte corte de caja';
+if($account_id == 1)
+{
+    $accountName = 'Aguascalientes';
+} else if($account_id == 3)
+{
+    $accountName = 'Lagos ';
+} else if($account_id == 5 )
+{
+     $accountName = 'Leon ';
+}
+
+$report_title = $accountName .' Reporte de ventas del mes';
+
+$pdf = new ReportPDF('l');
 
 // Títulos de las columnas
 $header = array(
@@ -126,15 +142,20 @@ $header = array(
 $header2 = array(
     'Efectivo',
     'Cheque',
-    'Transferencia'
+    'Transferencia',
+    'Vendido'
 );
  $data2[] = array(
         efectivo   => '$'.price($total_efectivo),
         cheque   =>  '$'.price($total_cheque),
-        transferencia    => '$'.price($total_transf)
+        transferencia    => '$'.price($total_transf),
+        vendido    => '$'.price($totalVendido)
     );
 
-$pdf->SetTitle($report_title, 10);
+$report_title = 'Corte de caja '.$accountName;
+// Carga de datos
+$pdf->SetFont('Arial', '', 11);
+$pdf->SetTitle($report_title);
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 11);
 $pdf->createDynamicHeader($header, 10);
