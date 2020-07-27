@@ -541,6 +541,19 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}
 
+	public function InsertIntoCFDIRelacionadosFromFacture($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_RELACIONADOS .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+		$sql.='(';
+		$sql.=$comprobanteId.', ';
+		$sql.=$array_data[0]['fk_comprobante'].')';
+		//print_r($sql);
+		//die();
+		$this->ExecuteQuery($sql);
+	}
+
 		public function InsertIntoConceptosPago($array_data, $comprobanteId) {
 		$sql = 'INSERT INTO '.CFDI_CONCEPTOS .' (
 		fk_cfdi,
@@ -603,6 +616,18 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data['rfcemisorctabeneficiario']."'";
 		$sql.=")";
 		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIComplementoPagoFromFacture($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobanteId.', ';
+			$sql.=$array_data[0]['fk_comprobante'].')';
+			//print_r($sql);
+			$this->ExecuteQuery($sql);
 	}
 
 	public function InsertIntoCFDIDocRelacionado($array_data, $lastId) {
