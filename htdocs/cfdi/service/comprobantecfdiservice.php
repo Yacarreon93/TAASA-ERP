@@ -41,6 +41,9 @@ class ComprobanteCFDIService {
 		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray,$comprobanteId);
 		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $comprobanteId);
 		$CFDIDao->InsertIntoConceptosPago($paymentArray, $comprobanteId);
+		$CFDIDao->InsertIntoConceptosTipoImpuestoPago($paymentArray, $comprobanteId);
+		$CFDIDao->InsertIntoImpuestosGlobalesPago($paymentArray, $comprobanteId);
+		$CFDIDao->InsertIntoImpuestosTotalesPago($paymentArray, $comprobanteId);
 		//$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $comprobanteId);
 	}
 

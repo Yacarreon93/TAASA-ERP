@@ -638,6 +638,39 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}
 
+	public function InsertIntoConceptosTipoImpuestoPago($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_CONCEPTOS_TIPO_IMPUESTO .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobanteId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
+	}
+	
+	public function InsertIntoImpuestosTotalesPago($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_TOTALES.' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobanteId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoImpuestosGlobalesPago($array_data, $comprobanteId) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante) 
+				VALUES';
+			$sql.='(';
+			$sql.=$comprobanteId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
+	}
+
 	public function CheckIfExists($fk_comprobante) {
 		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$fk_comprobante;
 		$result = $this->ExecuteQuery($sql);
