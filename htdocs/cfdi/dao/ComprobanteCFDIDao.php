@@ -73,6 +73,13 @@ class ComprobanteCFDIDao {
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
 	}
+	public function GetSocIdByFactureId($factureId) {
+		$sql = "SELECT fk_soc FROM llx_facture WHERE rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->fk_soc;
+	}
+
 	public function GetVendorAddressByFactureId($factureId) {
 		$sql = "SELECT
 		zip
@@ -468,6 +475,7 @@ class ComprobanteCFDIDao {
 
 	public function InsertIntoCFDIComprobantePago($factureId, $array_data) {
 		$lugar_de_expedicion = $this->GetVendorAddressByFactureId($factureId);
+		$fk_soc = $this->GetSocIdByFactureId($array_data['facid']);
 		$sql = 'INSERT INTO '.CFDI_COMPROBANTE .' (
 		serie,
 		folio,
@@ -480,6 +488,7 @@ class ComprobanteCFDIDao {
 		version,
 		fk_comprobante,
 		fk_payment,
+		fk_soc,
 		uso_cfdi) 
 		VALUES (';
 		$sql.="'".'PA-'.$array_data['pagcid']."', ";
@@ -493,6 +502,7 @@ class ComprobanteCFDIDao {
 		$sql.="'3.3', ";
 		$sql.="'".$array_data['facid']."'".", ";
 		$sql.="'".$array_data['pagcid']."'".", ";
+		$sql.=$fk_soc.", ";
 		$sql.="'P01'";
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
