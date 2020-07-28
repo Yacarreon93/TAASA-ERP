@@ -79,7 +79,7 @@ if($stock_id == 1) {
 
 $date = date('Y-m-d');
 
-$report_title = 'Reporte de inventario virtual '. $inventoryName. ' a ';
+$report_title = 'Reporte de inventario virtual '. $inventoryName;
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
@@ -91,6 +91,7 @@ $pdf->EnableHour();
 $pdf->AddPage();
 $pdf->createDynamicHeader($header, null);
 $pdf->createDynamicRows($data, null);
+$pdf->Ln();
 $pdf->SetFont('Arial', '', 11);
 $pdf->Write("Total", "Total en inventario ");
 $pdf->Write("Total", '$'.price($total));

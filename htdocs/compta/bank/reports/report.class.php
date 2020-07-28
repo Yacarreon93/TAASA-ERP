@@ -5,6 +5,35 @@ require_once('tfpdf/tfpdf.php');
 date_default_timezone_set('America/Mexico_City');
 setlocale(LC_TIME, 'es_ES');
 
+function getFullStrCurrentDate() {
+    return utf8_decode(strtr('$D $d/$m/$Y', array(
+        '$D' => getCurrentDayStr(),
+        '$d' => strftime('%d'),
+        '$m' => getCurrentMonthAbbrStr(),
+        '$Y' => strftime('%Y'),
+    )));
+}
+
+function getHour() {
+    return date("h:i:s a");
+}
+
+function getCurrentDayStr() {
+    return ucfirst(strftime('%A'));
+}
+
+function getCurrentMonthAbbrStr() {
+    return strtoupper(strftime('%b'));
+}
+
+function getCurrentMonthNameStr() {
+    return ucfirst(strftime('%B'));
+}
+
+function formatMoney($money) {
+    return money_format('$%.2n', $money);
+}
+
 class ReportPDF extends tFPDF
 {
     // Recibe la función cargadora de datos
@@ -15,15 +44,38 @@ class ReportPDF extends tFPDF
         $this->rowHeight = 7;
     }
 
+    function setTitle($title) {
+        $this->title = $title;
+    }
+
+    function setSubtitle($subtitle) {
+        $this->subtitle = $subtitle;
+    }
+
+    function enableHour() {
+        $this->hour = getHour();
+    }
+
     // Asignar el alto de las columnas
     function setRowHeight($height) {
         $this->rowHeight = $height;
     }
 
     function Header() {
-        $this->SetFontSize(14);
-        $this->Cell(100, 20, utf8_decode($this->title));
-        $this->Cell(90, 20, strftime('%A %d/%b/%G'), 0, 0, 'R');
+        $this->SetFont('', 'B', 14);
+        $this->Cell(1, 10, utf8_decode($this->title));
+        $this->SetFont('', '');
+        $this->Cell(0, 10, getFullStrCurrentDate(), 0, 0, 'R');
+        $this->Ln();
+        if (isset($this->subtitle)) {
+            $this->Cell(1, 5, utf8_decode($this->subtitle));
+        }
+        if (isset($this->hour)) {
+            $this->Cell(0, 10, "Hora: $this->hour", 0, 0, 'R');
+        }
+        if (isset($this->subtitle) || isset($this->hour)) {
+            $this->Ln();
+        }
         $this->Ln();
     }
 

@@ -156,6 +156,7 @@ $report_title = 'Corte de caja '.$accountName;
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
 $pdf->SetTitle($report_title);
+$pdf->EnableHour();
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 11);
 $pdf->createDynamicHeader($header, 10);
