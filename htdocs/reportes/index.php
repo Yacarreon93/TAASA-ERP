@@ -184,6 +184,8 @@ while ($row = $db->fetch_object($resVendor))
 }
 print "</select></td>
 <td><a id='unpaid_client_bills_total_link' target='_blank' href='../product/reports/UnpaidClientBillsTotalReport.php'>Totales de cuentas por cobrar</a><br></td></tr>";
+
+// Clientes por Venedor
 print "<tr>
 <td><select id='clients_per_vendor_select'>";
 for($i = 0; $i < sizeof($vendor_array); $i++)
@@ -194,7 +196,22 @@ for($i = 0; $i < sizeof($vendor_array); $i++)
 }
 print "</select></td>
 <td><a id='clients_per_vendor_link' target='_blank' href='../product/reports/ClientsPerVendorReport.php?vendor=13'>Clientes por Vendedor</a><br></td></tr>";
-print "</table></form><br>";
+
+// Cartera vencida
+print "<tr>";
+print "<form action='../product/reports/carteraVencida.php' target='_blank'>";
+print "<td><select name='vendor'>";
+for($i = 0; $i < sizeof($vendor_array); $i++)
+{
+  $vendor_id =  $vendor_array[$i]["id"];
+  $vendedor = $vendor_array[$i]["firstname"];
+  print "<option value='".$vendor_id."'>".$vendedor."</option>";
+}
+print "</select></td>";
+print "<td><button type=submit class='butAction'>Cartera vencida</button></td>";
+print "</form>";
+
+print "</table><br>";
 
 print "<script>
     $(function(){
