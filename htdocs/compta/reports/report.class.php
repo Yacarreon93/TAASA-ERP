@@ -33,8 +33,13 @@ function getCurrentMonthNameStr() {
     return ucfirst(strftime('%B'));
 }
 
+function asDollars($value) {
+    if ($value < 0) return '-'.asDollars(-$value);
+    return '$'.number_format($value, 2);
+}
+
 function formatMoney($money) {
-    return money_format('$%.2n', $money);
+    return function_exists('money_format') ? money_format('$%.2n', $money) : asDollars($money);
 }
 /*
 */
