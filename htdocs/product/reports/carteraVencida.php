@@ -40,11 +40,15 @@ $data = array();
 
 $object = new Client($db);
 
+$total = 0;
+
 while ($row = $db->fetch_object($result))
 {
     $object->id = $row->rowid; // set id para poder obtener la cartera vencida
 
     $cartera_vencida = $object->get_OutstandingBill();
+
+    $total += $cartera_vencida;
 
     $data[] = array(
         id => $row->rowid,
@@ -76,6 +80,7 @@ $pdf->SetTitle($report_title);
 $pdf->SetSubtitle($report_subtitle);
 $pdf->EnableHour();
 $pdf->AddPage();
+
 $pdf->createDynamicHeader($header,array(
     'bold' => true,
     'background' => array(
@@ -84,6 +89,14 @@ $pdf->createDynamicHeader($header,array(
         3 => [235, 235, 235],
     ),
 ));
+
 $pdf->createDynamicRows($data, null);
+
+// Total
+$pdf->SetFont('Arial', 'B');
+$pdf->SetFillColor(235, 235, 235);
+$pdf->Cell($columnWidth);
+$pdf->Cell($columnWidth, $pdf->rowHeight, 'TOTAL', 1, 0, 'L', 1);
+$pdf->Cell($columnWidth, $pdf->rowHeight, formatMoney($total), 1, 0, 'L', 1);
 
 $pdf->Output();
