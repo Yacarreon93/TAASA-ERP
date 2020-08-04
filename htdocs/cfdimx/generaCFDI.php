@@ -101,12 +101,12 @@ function getUnidadMedida( $db, $id ){
 				$obj = $db->fetch_object($resql);
 				if( $obj->umed!="" ){ $umed = utf8_decode($obj->umed); }else{ $umed = "NA"; }
 			}else{
-				$umed = "NA";
+				$umed = "ZZ";
 			}
 		}else{
-			$umed = "NA";
+			$umed = "ZZ";
 		}
-	}else{ $umed = "NA"; }
+	}else{ $umed = "ZZ"; }
 
 	return $umed;
 }
@@ -136,6 +136,34 @@ function getclaveprodserv( $db, $id ){
 	}else{ $claveprodserv = "01010101"; }
 
 	return $claveprodserv;
+}
+
+function getnoIdentificacion( $db, $id ){
+
+	if( $id!="" ){
+		$sql = "SHOW TABLES LIKE '".MAIN_DB_PREFIX."product_extrafields'";
+		$resql=$db->query($sql);
+		$existe_tabla = $db->num_rows($resql);
+		if( $existe_tabla>0 ){
+			$sql = "SHOW COLUMNS FROM ".MAIN_DB_PREFIX."product_extrafields LIKE 'noidenticfdi'";
+			$resql=$db->query($sql);
+			$existe_noidenticfdi = $db->num_rows($resql);
+			if( $existe_noidenticfdi > 0 ){
+				$sql = "SELECT * FROM ".MAIN_DB_PREFIX."product_extrafields WHERE fk_object = " . $id;
+				$resql=$db->query($sql);
+				$obj = $db->fetch_object($resql);
+				if( $obj->noidenticfdi!="" && $obj->noidenticfdi!=NULL && $obj->noidenticfdi!=null ){ 
+					$noIdentificacion =($obj->noidenticfdi); 
+				}else{ $noIdentificacion = NULL; }
+			}else{
+				$noIdentificacion = NULL;
+			}
+		}else{
+			$noIdentificacion = NULL;
+		}
+	}else{ $noIdentificacion = NULL; }
+
+	return $noIdentificacion;
 }
 
 function getU4DigCta( $id, $db ){
@@ -229,6 +257,7 @@ if ($resql){
 			$factura_iva = str_replace(",", "", number_format($obj->tva,2));
 			$factura_subtotal = str_replace(",", "", number_format($obj->total,2));
 			$factura_total = str_replace(",", "", number_format($obj->total_ttc,2));
+			$factura_total_origen = str_replace(",", "", number_format($obj->total_ttc,2));
 			$factura_fecha = $obj->datef;
 			$factura_fechac_unix = strtotime( $obj->datec );
 			$factura_hora = date("H:i:s", $factura_fechac_unix);
@@ -335,6 +364,7 @@ if($conf->global->MAIN_MODULE_MULTICURRENCY){
 }
 $descheader=0;
 $resql=$db->query($sql);
+$auxsubtotal=0;
 if ($resql){
 	$num_detalle_fact = $db->num_rows($resql);
 	$i=0;
@@ -428,10 +458,10 @@ if ($resql){
 						$objm = $db->fetch_object($resqlm);
 						if( $objm->umed!="" ){ $unidad = utf8_decode($objm->umed); }else{ $unidad = "NA"; }
 					}else{
-						$unidad = "NA";
+						$unidad = "ZZ";
 					}
 				}else{
-					$unidad = "NA";
+					$unidad = "ZZ";
 				}
 			}
 			
@@ -457,10 +487,36 @@ if ($resql){
 					$claveprodserv = "01010101";
 				}
 			}
+			if($obj->fk_product){
+				$noIdentificacion = getnoIdentificacion( $db, $obj->fk_product );
+			}else{
+				$sqlm = "SHOW TABLES LIKE '".MAIN_DB_PREFIX."facturedet_extrafields'";
+				$resqlm=$db->query($sqlm);
+				$existe_tabla = $db->num_rows($resqlm);
+				if( $existe_tabla>0 ){
+					$sqlm = "SHOW COLUMNS FROM ".MAIN_DB_PREFIX."facturedet_extrafields LIKE 'noidenticfdi'";
+					$resqlm=$db->query($sqlm);
+					$existe_noidenticfdi = $db->num_rows($resqlm);
+					if( $existe_noidenticfdi > 0 ){
+						$sqlm = "SELECT noidenticfdi FROM ".MAIN_DB_PREFIX."facturedet_extrafields WHERE fk_object = " . $obj->rowid;
+						$resqlm=$db->query($sqlm);
+						$objm = $db->fetch_object($resqlm);
+						if( $objm->noidenticfdi!="" && $objm->noidenticfdi!=NULL && $objm->noidenticfdi!=null){ $noIdentificacion = utf8_decode($objm->noidenticfdi); 
+						}else{ $noIdentificacion = NULL; }
+					}else{
+						$noIdentificacion = NULL;
+					}
+				}else{
+					$noIdentificacion = NULL;
+				}
+			}
 
+			$descprodl=null;
 			if($obj->remise_percent!=0  && $descumostrar==1){
 				$descuento=$obj->remise_percent/100;
 				$descuento2=($obj->subprice*$obj->qty)*$descuento;
+				$descuento2=str_replace(array("-",","), "",number_format($descuento2,2));
+				$descprodl=str_replace(array("-",","), "",number_format($descuento2,2));
 				$descheader=$descheader+$descuento2;
 				//$auxvuni=$obj->subprice-$descuento2;
 				$total_vuni = number_format($obj->subprice,$cfdi_decimal);
@@ -515,6 +571,8 @@ if ($resql){
 				$retencImpuestoISR=$rsret->impuesto;
 			}
 			
+			if($obj->total_tva > 0 ){ $vtasa='002'; }else{ $vtasa = '000'; }
+			
 			if($entraconcepto=='SI'){
 				$sqln2="SELECT preciousd,noidentificacion
 				FROM ".MAIN_DB_PREFIX."cfdimx_facture_comercio_extranjero_mercancia a
@@ -525,30 +583,33 @@ if ($resql){
 				if($numrn2>0){
 					$resuln2=$db->fetch_object($reqsn2);
 					$noiden=$resuln2->noidentificacion;
-				}
+				}				
+
 				$conceptos[$i] = array(
 						'descripcion' =>$desc,
 						'cantidad' =>str_replace($vowels, "",number_format($obj->qty,2)),
 						'valorUnitario'=>str_replace($vowels, "", $total_vuni),
 						'importe'=>str_replace($vowels, "", $total_ttc),
 						'importeImpuesto'=>str_replace($vowels, "",round(($obj->total_tva),6)),
-						'impuesto'=>'002',// IVA == 002
-						'tasa'=>($obj->tva_tx/100),
+						//'impuesto'=>'002',// IVA == 002
+						'impuesto'=> $vtasa,// IVA == 002
+						'tasa'=>number_format(($obj->tva_tx/100),6),
 						'unidad'=>$unidad,
 						'noIdentificacion'=>$noiden,
 						'tipoFactor'=>"Tasa",
 						'claveProdServ'=>$claveprodserv,
-						'base'=>str_replace($vowels, "", $total_ttc),
+						'base'=>str_replace($vowels, "", number_format($obj->total_ht,2)),
 						'retenBase'=>$retenBase, 
 						'retenImporte'=>$retenImporte,  
-						'retenTasa'=>$retenTasa, 
+						'retenTasa'=>number_format($retenTasa,6), 
 						'retenTipoFactor'=>$retenTipoFactor,  
 						'retencImpuesto'=>$retencImpuesto,
 						'retenBaseISR'=>$retenBaseISR,
 						'retenImporteISR'=>$retenImporteISR,
-						'retenTasaISR'=>$retenTasaISR,
+						'retenTasaISR'=>number_format($retenTasaISR,6),
 						'retenTipoFactorISR'=>$retenTipoFactorISR,
-						'retencImpuestoISR'=>$retencImpuestoISR
+						'retencImpuestoISR'=>$retencImpuestoISR,
+						'descuento'=>$descprodl
 				);
 				$conceptos2[$i] = array(
 						'descripcion' =>$desc,
@@ -556,7 +617,8 @@ if ($resql){
 						'valorUnitario'=>str_replace($vowels, "", $total_vuni),
 						'importe'=>str_replace($vowels, "", $total_ttc),
 						'importeImpuesto'=>str_replace($vowels, "",round(($obj->total_tva),6)),
-						'impuesto'=>'002',// IVA == 002
+						//'impuesto'=>'002',// IVA == 002
+						'impuesto'=> $vtasa,// IVA == 002
 						'tasa'=>$obj->tva_tx,
 						'unidad'=>$unidad,
 						'noIdentificacion'=>$noiden,
@@ -580,22 +642,24 @@ if ($resql){
 					'valorUnitario'=>str_replace($vowels, "", $total_vuni),
 					'importe'=>str_replace($vowels, "", $total_ttc),
 					'importeImpuesto'=>str_replace($vowels, "",round(($obj->total_tva),6)),
-					'impuesto'=>'002',// IVA == 002
-					'tasa'=>($obj->tva_tx/100),
+					//'impuesto'=>'002',// IVA == 002
+					'impuesto'=> $vtasa,// IVA == 002
+					'tasa'=>number_format(($obj->tva_tx/100),6),
 					'unidad'=>$unidad,
 					'tipoFactor'=>"Tasa",
 					'claveProdServ'=>$claveprodserv,
-					'base'=>str_replace($vowels, "", $total_ttc),
+					'base'=>str_replace($vowels, "", number_format($obj->total_ht,2)),
 					'retenBase'=>$retenBase, 
 					'retenImporte'=>$retenImporte,  
-					'retenTasa'=>$retenTasa, 
+					'retenTasa'=>number_format($retenTasa,6), 
 					'retenTipoFactor'=>$retenTipoFactor,  
 					'retencImpuesto'=>$retencImpuesto,
 					'retenBaseISR'=>$retenBaseISR,
 					'retenImporteISR'=>$retenImporteISR,
-					'retenTasaISR'=>$retenTasaISR,
+					'retenTasaISR'=>number_format($retenTasaISR,6),
 					'retenTipoFactorISR'=>$retenTipoFactorISR,
-					'retencImpuestoISR'=>$retencImpuestoISR
+					'retencImpuestoISR'=>$retencImpuestoISR,
+						'descuento'=>$descprodl
 				);
 				$conceptos2[$i] = array(
 						'descripcion' =>$desc,
@@ -603,7 +667,8 @@ if ($resql){
 						'valorUnitario'=>str_replace($vowels, "", $total_vuni),
 						'importe'=>str_replace($vowels, "", $total_ttc),
 						'importeImpuesto'=>str_replace($vowels, "",round(($obj->total_tva),6)),
-						'impuesto'=>'002',// IVA == 002
+						//'impuesto'=>'002',// IVA == 002
+						'impuesto'=> $vtasa,// IVA == 002
 						'tasa'=>$obj->tva_tx,
 						'unidad'=>$unidad,
 						'tipoFactor'=>"Tasa",
@@ -611,6 +676,7 @@ if ($resql){
 						'base'=>str_replace($vowels, "", $total_ttc)
 				);
 			}
+			$auxsubtotal+=str_replace($vowels, "",$total_ttc);
 			$i++;
 		}
 	}
@@ -633,13 +699,15 @@ if ($resql){
 			 	$numrn=$db->num_rows($rqn);
 			 	if($numrn>0){
 			 		$emisor_delompio = $obj->cod_municipio;
+			 		$col_emisor = $obj->cod_colonia;
 			 	}else{
 				 $emisor_delompio = utf8_decode($obj->emisor_delompio); // Convertir a Colonia
+				 $col_emisor = limpiar(html_entity_decode($obj->emisor_colonia));
 			 	}
 				 $emisor_calle = utf8_decode($obj->emisor_calle);
 				 $emisor_noint = utf8_decode($obj->emisor_noint);
 				 $emisor_noext = utf8_decode($obj->emisor_noext);
-				 $col_emisor = limpiar(html_entity_decode($obj->emisor_colonia));
+				 
 			 }
 			 $i++;
 		 }
@@ -647,12 +715,12 @@ if ($resql){
 }
 
 //Datos complementarios del receptor
-if($_REQUEST['tpdomi']){
-$resql=$db->query("SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE tpdomicilio='".$_REQUEST['tpdomi']."' AND receptor_rfc = '".$datareceptor_main["rfc"]."' AND entity_id = ".$conf->entity);
+//if($_REQUEST['tpdomi']){
+$resql=$db->query("SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE tpdomicilio='".$_REQUEST['tpdomi']."' AND receptor_rfc = '".$datareceptor_main["rfc"]."' AND entity_id = ".$conf->entity." AND fk_socid=".$datareceptor_main["rowid"]);
 dol_syslog("DOMICILIOS:: SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE tpdomicilio='".$_REQUEST['tpdomi']."' AND receptor_rfc = '".$datareceptor_main["rfc"]."' AND entity_id = ".$conf->entity);
-}else{
-	$resql=$db->query("SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp WHERE receptor_rfc = '".$datareceptor_main["rfc"]."' AND entity_id = ".$_SESSION['dol_entity']);
-}
+// }else{
+// 	$resql=$db->query("SELECT * FROM ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp WHERE receptor_rfc = '".$datareceptor_main["rfc"]."' AND entity_id = ".$_SESSION['dol_entity']);
+//}
 if ($resql){
 	 $num_emisor_datacomp = $db->num_rows($resql);
 	 $i = 0;
@@ -745,12 +813,21 @@ if(1){
 	$totalish=0;
 	$imporcen='';
 	if( $existe_ish > 0 ){
-		$sql="SELECT a.fk_product,a.total_ht,b.prodcfish,((b.prodcfish/100)*a.total_ht) as impish,c.ref,c.label
+		if($conf->global->MAIN_MODULE_MULTICURRENCY){
+			$sql="SELECT a.fk_product,a.multicurrency_total_ht as total_ht,b.prodcfish,((b.prodcfish/100)*a.multicurrency_total_ht) as impish,c.ref,c.label
+							FROM ".MAIN_DB_PREFIX."facturedet a,
+							(SELECT fk_object,prodcfish FROM ".MAIN_DB_PREFIX."product_extrafields WHERE prodcfish!=0 AND prodcfish IS NOT NULL) b,
+									".MAIN_DB_PREFIX."product c
+							WHERE a.fk_facture=".$id." AND
+								a.fk_product =b.fk_object AND a.fk_product=c.rowid ORDER BY a.rowid";
+		}else{
+			$sql="SELECT a.fk_product,a.total_ht,b.prodcfish,((b.prodcfish/100)*a.total_ht) as impish,c.ref,c.label
 							FROM ".MAIN_DB_PREFIX."facturedet a,
 							(SELECT fk_object,prodcfish FROM ".MAIN_DB_PREFIX."product_extrafields WHERE prodcfish!=0 AND prodcfish IS NOT NULL) b,
 									".MAIN_DB_PREFIX."product c
 							WHERE a.fk_facture=".$facid." AND
 								a.fk_product =b.fk_object AND a.fk_product=c.rowid ORDER BY a.rowid";
+		}
 		$ass=$db->query($sql);
 		$asf=$db->num_rows($ass);
 		if($asf>0){
@@ -918,12 +995,33 @@ if($factura_tipo==2){
 	$vowels = array(",");
 }
 $header["subTotal"]=(str_replace($vowels, "", number_format($factura_subtotal,2)));
-if($descheader!=0){
-	$header["subTotal"]=(str_replace($vowels, "", number_format($factura_subtotal+$descheader,2)));
-	$header["descuento"]=(str_replace($vowels, "", number_format($descheader,2)));
+function truncateFloat($number, $digitos)
+{
+    $raiz = 10;
+    $multiplicador = pow ($raiz,$digitos);
+    $resultado = ((int)($number * $multiplicador)) / $multiplicador;
+    return number_format($resultado, $digitos);
+
 }
 $header["total"]=(str_replace($vowels, "", number_format($factura_total,2)));
-
+if($descheader!=0){
+	$auxcp1=str_replace($vowels, "", number_format($descheader,2));
+	//$auxcp1=str_replace($vowels, "", truncateFloat($descheader,2));
+	//$auxcp2=str_replace($vowels, "", number_format($factura_subtotal,2));
+	//$sumcp3=$auxcp1+$auxcp2;
+	
+	$header["subTotal"]=(str_replace($vowels, "", number_format($auxsubtotal,2)));
+	$header["descuento"]=(str_replace($vowels, "", number_format($auxcp1,2)));
+	//$header["descuento"]=(str_replace($vowels, "", number_format($descheader,2)));
+	$auxcpp1=str_replace($vowels, "", number_format($auxsubtotal,2));
+	$auxcpp2=str_replace($vowels, "", number_format($factura_iva,2));
+	$sumcpp3=$auxsubtotal-$auxcp1+$auxcpp2;
+// 	print $auxsubtotal."::Sub<br>";
+// 	print $auxcp1."::descuento<br>";
+// 	print $sumcpp3."::Sub<br>";exit();
+	$factura_total=$sumcpp3;
+	$header["total"]=(str_replace($vowels, "", number_format($sumcpp3,2)));
+}
 $header["tipoDeComprobante"]=$tipoComprobante;
 $header["lugarExpedicion"]=limpiar($lugar_exp);
 if($factura_formapago==NULL || $factura_formapago==null || $factura_formapago==''){
@@ -984,6 +1082,9 @@ if( $cuenta!="" ){
 //ADICIONALES
 $adicionales=array();
 $adicionales["servicio_id"]="2";
+
+
+
 if( $retenciones!="" ){
 	$adicionales["retenciones"]=$retenciones;
 	$adicionales2["retenciones"]=$retenciones2;
@@ -1213,7 +1314,7 @@ if( $valida_rfc_emisor && $valida_rfc_receptor  ){
 
 		$res_control = $db->query( $sql_control );
 
-		if($db->num_rows($sql_control) < 1){
+		if(1/* $db->num_rows($sql_control) < 1 */){
 
 			//insert en tabla de control
 			unset($sql_control);
@@ -1257,6 +1358,7 @@ if( $valida_rfc_emisor && $valida_rfc_receptor  ){
 			//consulta tabla de control
 			// delete o update segun el caso
 			if( $result["return"]["rsp"]==1 ){
+				
 
 				$separa_ftimbrado = explode("T",$result["return"]["fechaTimbrado"]);
 
@@ -1285,7 +1387,7 @@ if( $valida_rfc_emisor && $valida_rfc_receptor  ){
 					echo $e->getMessage()."<br>";
 				}
 
-				$result["return"]["version"]=isset($result["return"]["version"])?$result["return"]["version"]:"1.0";// AMM solucion provicional
+				$result["return"]["version"]=isset($result["return"]["version"])?$result["return"]["version"]:"1.1";// AMM solucion provicional
 
 				if($cuenta==""){
 					$cuenta=0;
@@ -1347,8 +1449,19 @@ if( $valida_rfc_emisor && $valida_rfc_receptor  ){
 				$sql_control = " DELETE FROM ".MAIN_DB_PREFIX."cfdmix_control";
 				$sql_control .= " WHERE factura_seriefolio = '".$serie."-".$folio."'";
 				$res_control = $db->query( $sql_control );
-
-
+				if($factura_total_origen!=$header["total"] && $factura_tipo!=2){
+					if($conf->global->MAIN_MODULE_MULTICURRENCY){
+						if($header["moneda"]==$conf->currency){
+							$sqlupd="UPDATE ".MAIN_DB_PREFIX."facture SET multicurrency_total_ttc=".$header["total"].",total_ttc=".$header["total"]." WHERE rowid=".$facid;
+						}else{
+							$sqlupd="UPDATE ".MAIN_DB_PREFIX."facture SET multicurrency_total_ttc=".$header["total"]." WHERE rowid=".$facid;
+						}
+						$ass=$db->query($sqlupd);
+					}else{
+						$sqlupd="UPDATE ".MAIN_DB_PREFIX."facture SET total_ttc=".$header["total"]." WHERE rowid=".$facid;
+						$ass=$db->query($sqlupd);
+					}
+				}
 				$prmsnd["orden_compra"]=getOC( $facid, $db );
 				dol_syslog('ORDENpr:GEN:'.$prmsnd["orden_compra"]);
 				$prmsnd["logosmall"]=$conf->global->MAIN_INFO_SOCIETE_LOGO_SMALL;
@@ -1370,7 +1483,8 @@ if( $valida_rfc_emisor && $valida_rfc_receptor  ){
 							$prmsnd["certEmisor"] = $obj->certEmisor;
 							$prmsnd["u4dig"] = $obj->u4dig;
 							$prmsnd["fechaEmision"] = $obj->fecha_emision."T".$obj->hora_emision;
-			 $prmsnd["coccds"] = "||".$prmsnd["version"]."|".$prmsnd["uuid"]."|".$prmsnd["fechaTimbrado"]."|".$prmsnd["selloCFD"]."|".$prmsnd["selloSAT"]."||";
+						$prmsnd["coccds"] = "||".$prmsnd["version"]."|".$prmsnd["uuid"]."|".$prmsnd["fechaTimbrado"]."|".$prmsnd["selloCFD"]."|".$obj->certificado."||";			 
+//$prmsnd["coccds"] = "||".$prmsnd["version"]."|".$prmsnd["uuid"]."|".$prmsnd["fechaTimbrado"]."|".$prmsnd["selloCFD"]."|".$prmsnd["selloSAT"]."||";
 							$i++;
 						}
 					}
