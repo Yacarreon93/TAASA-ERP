@@ -63,6 +63,13 @@ class ComprobanteCFDIDao {
 		return $row->id;
 	}
 
+	public function GetComprobanteIdByPaymentId($paymentId) {
+		$sql = "SELECT id FROM cfdi_comprobante WHERE fk_payment = '".$paymentId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->id;
+	}
+
 	private function getDb() {
 		return $this->db;
 	}
@@ -73,6 +80,13 @@ class ComprobanteCFDIDao {
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
 	}
+	public function GetSocIdByFactureId($factureId) {
+		$sql = "SELECT fk_soc FROM llx_facture WHERE rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->fk_soc;
+	}
+
 	public function GetVendorAddressByFactureId($factureId) {
 		$sql = "SELECT
 		zip
@@ -468,6 +482,7 @@ class ComprobanteCFDIDao {
 
 	public function InsertIntoCFDIComprobantePago($factureId, $array_data) {
 		$lugar_de_expedicion = $this->GetVendorAddressByFactureId($factureId);
+		$fk_soc = $this->GetSocIdByFactureId($array_data['facid']);
 		$sql = 'INSERT INTO '.CFDI_COMPROBANTE .' (
 		serie,
 		folio,
@@ -480,6 +495,7 @@ class ComprobanteCFDIDao {
 		version,
 		fk_comprobante,
 		fk_payment,
+		fk_soc,
 		uso_cfdi) 
 		VALUES (';
 		$sql.="'".'PA-'.$array_data['pagcid']."', ";
@@ -487,18 +503,19 @@ class ComprobanteCFDIDao {
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
-		$sql.="'P', ";
+		$sql.="'PP', ";
 		$sql.="'".$lugar_de_expedicion."'".", ";
 		$sql.="5, ";
 		$sql.="'3.3', ";
 		$sql.="'".$array_data['facid']."'".", ";
 		$sql.="'".$array_data['pagcid']."'".", ";
+		$sql.=$fk_soc.", ";
 		$sql.="'P01'";
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}
 
-	public function InsertIntoCFDIRelacionados($array_data, $comprobanteId) {
+	public function InsertIntoCFDIRelacionados($array_data, $comprobantePagoId) {
 		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_RELACIONADOS .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -514,7 +531,7 @@ class ComprobanteCFDIDao {
 		impPagadodr,
 		impSaldoInsoluto) 
 		VALUES (';
-		$sql.=$comprobanteId.', ';
+		$sql.=$comprobantePagoId.', ';
 		$sql.=$array_data['facid'].', ';
 		$sql.=$array_data['idDocumento'].", ";
 		$sql.=$array_data['pagcid'].', ';
@@ -531,7 +548,20 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}
 
-		public function InsertIntoConceptosPago($array_data, $comprobanteId) {
+	public function InsertIntoCFDIRelacionadosFromFacture($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_COMPROBANTE_RELACIONADOS .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+		$sql.='(';
+		$sql.=$comprobanteId.', ';
+		$sql.=$array_data[0]['fk_comprobante'].')';
+		//print_r($sql);
+		//die();
+		$this->ExecuteQuery($sql);
+	}
+
+		public function InsertIntoConceptosPago($array_data, $comprobantePagoId) {
 		$sql = 'INSERT INTO '.CFDI_CONCEPTOS .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -542,7 +572,7 @@ class ComprobanteCFDIDao {
 		clave_prod_serv,
 		clave_unidad) 
 		VALUES ';
-		$sql.="(".$comprobanteId.", ";
+		$sql.="(".$comprobantePagoId.", ";
 		$sql.=$array_data['facid'].", ";
 		$sql.="1, ";
 		$sql.="'Pago', ";
@@ -554,7 +584,7 @@ class ComprobanteCFDIDao {
 		$this->ExecuteQuery($sql);
 	}	
 
-	public function InsertIntoCFDIComplementoPago($array_data, $comprobanteId) {
+	public function InsertIntoCFDIComplementoPago($array_data, $comprobantePagoId) {
 		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
 		fk_cfdi,
 		fk_comprobante,
@@ -574,7 +604,7 @@ class ComprobanteCFDIDao {
 		sello_pago,
 		rfc_emisor_cuenta_beneficiario) 
 		VALUES (';
-		$sql.=$comprobanteId.', ';
+		$sql.=$comprobantePagoId.', ';
 		$sql.=$array_data['facid'].', ';
 		$sql.=$array_data['pagcid'].', ';
 		$sql.=$array_data['formpago'].", ";
@@ -593,6 +623,18 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data['rfcemisorctabeneficiario']."'";
 		$sql.=")";
 		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIComplementoPagoFromFacture($array_data, $comprobanteId) {
+		$sql = 'INSERT INTO '.CFDI_COMPLEMENTO_PAGO .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobanteId.', ';
+			$sql.=$array_data[0]['fk_comprobante'].')';
+			//print_r($sql);
+			$this->ExecuteQuery($sql);
 	}
 
 	public function InsertIntoCFDIDocRelacionado($array_data, $lastId) {
@@ -626,6 +668,39 @@ class ComprobanteCFDIDao {
 		$sql.=$array_data['importe_saldo_insoluto'];
 		$sql.=")";
 		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoConceptosTipoImpuestoPago($array_data, $comprobantePagoId) {
+		$sql = 'INSERT INTO '.CFDI_CONCEPTOS_TIPO_IMPUESTO .' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobantePagoId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
+	}
+	
+	public function InsertIntoImpuestosTotalesPago($array_data, $comprobantePagoId) {
+		$sql = 'INSERT INTO '.CFDI_IMPUESTOS_TOTALES.' (
+		fk_cfdi,
+		fk_comprobante) 
+		VALUES';
+			$sql.='(';
+			$sql.=$comprobantePagoId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoImpuestosGlobalesPago($array_data, $comprobantePagoId) {
+			$sql = 'INSERT INTO '.CFDI_IMPUESTOS_GLOBALES .' (
+				fk_cfdi,
+				fk_comprobante) 
+				VALUES';
+			$sql.='(';
+			$sql.=$comprobantePagoId.', ';
+			$sql.=$array_data['facid'].')';
+			$this->ExecuteQuery($sql);
 	}
 
 	public function CheckIfExists($fk_comprobante) {

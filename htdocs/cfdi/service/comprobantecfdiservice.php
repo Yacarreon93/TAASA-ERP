@@ -11,7 +11,9 @@ class ComprobanteCFDIService {
 		if($cfdiExists) {
 			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
 			$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
-			$lastId = $CFDIDao->GetLastInsertedId();
+			$lastId = $CFDIDao->GetComprobanteIdByFactureId($factureId);
+			$CFDIDao->InsertIntoCFDIComplementoPagoFromFacture($comprobanteData,$lastId);
+			$CFDIDao->InsertIntoCFDIRelacionadosFromFacture($comprobanteData, $lastId);
 			$conceptosData = $CFDIDao->FetchConceptosData($factureId);
 			$CFDIDao->InsertIntoConceptosComprobante($conceptosData, $lastId);
 			$impuestosData =$CFDIDao->FetchImpuestosData($factureId);
@@ -26,7 +28,7 @@ class ComprobanteCFDIService {
 		if($cfdiExists) {
 			$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
 			$CFDIDao->InsertIntoCFDIComprobante($comprobanteData);
-			$lastId = $CFDIDao->GetLastInsertedId();
+			$lastId = $CFDIDao->GetComprobanteIdByFactureId($factureId);
 			$conceptosData = $CFDIDao->FetchConceptosData($factureId);
 			$CFDIDao->InsertIntoConceptosComprobante($conceptosData, $lastId);
 			$impuestosData =$CFDIDao->FetchImpuestosData($factureId);
@@ -38,10 +40,13 @@ class ComprobanteCFDIService {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$CFDIDao->InsertIntoCFDIComprobantePago($factureId, $paymentArray);
 		$comprobanteId = $CFDIDao->GetComprobanteIdByFactureId($factureId);
-		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray,$comprobanteId);
-		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $comprobanteId);
-		$CFDIDao->InsertIntoConceptosPago($paymentArray, $comprobanteId);
-		//$CFDIDao->InsertIntoCFDIDocRelacionado($paymentArray, $comprobanteId);
+		$comprobantePagoId = $CFDIDao->GetComprobanteIdByPaymentId($paymentId);
+		$CFDIDao->InsertIntoCFDIComplementoPago($paymentArray, $comprobantePagoId);
+		$CFDIDao->InsertIntoCFDIRelacionados($paymentArray, $comprobantePagoId);
+		$CFDIDao->InsertIntoConceptosPago($paymentArray, $comprobantePagoId);
+		$CFDIDao->InsertIntoConceptosTipoImpuestoPago($paymentArray, $comprobantePagoId);
+		$CFDIDao->InsertIntoImpuestosGlobalesPago($paymentArray, $comprobantePagoId);
+		$CFDIDao->InsertIntoImpuestosTotalesPago($paymentArray, $comprobantePagoId);
 	}
 
 	public function SaveCFDIMXFromFacture($db, $factureId) {
