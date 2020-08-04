@@ -503,7 +503,7 @@ class ComprobanteCFDIDao {
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
-		$sql.="'P', ";
+		$sql.="'PP', ";
 		$sql.="'".$lugar_de_expedicion."'".", ";
 		$sql.="5, ";
 		$sql.="'3.3', ";
