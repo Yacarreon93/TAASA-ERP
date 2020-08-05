@@ -182,8 +182,6 @@ if ($ret) {
         $lines_str .= (concatChart('*', ++$count)).' = Producto con I.V.A. tasa '.(intval($t)).'%';
         $lines_str .= '</p>';
     }
-    $lines_str .= '<p class="center">Recibi mercancia.</p>';
-    $lines_str .= '<p class="center"> ________________________________</p>';
 
     if ($ticket_type === 'credit') {
         $lines_str .= '<p class="center justify">Este documento ampara la cantidad que suman los cargos por el crédito que me(nos) fue otorgado y que corresponde al valor de las mercancías detalladas en la orden de venta con número de folio ' .$folio. ', mismas que recibí(recibimos) a mi(nuestra) entera satisfacción, por lo que la suscripción de este documento hace prueba de la recepción de las mercancías y del adeudo de su valor, mismo que deberá pagarse el día '.$payday_limit.'. La falta de pago oportuno del valor de las mercancías generará un interés moratorio del 3.00% mensual.</p>';
@@ -201,6 +199,9 @@ if ($ret) {
         $lines_str .= '<p class="center">Suscriptor</p>';
         $lines_str .= '<p class="center">>>> CUIDE SU CREDITO, PAGUE A TIEMPO <<<</p>';
 
+    } else {
+      $lines_str .= '<p class="center">Recibi mercancia.</p>';
+      $lines_str .= '<p class="center"> ________________________________</p>';
     }
 } else {
     echo "ERROR: Id de Factura requerido";
