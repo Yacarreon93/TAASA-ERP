@@ -192,7 +192,7 @@ if ($ret) {
         $lines_str .= '<p class="center">'.$societe->town.'</p>';
         $lines_str .= '<p class="center">'.$societe->phone.'</p>';
         $lines_str .= '<p class="center"> ________________________________</p>';
-        $lines_str .= '<p class="center justify">Por este Pagaré, me(nos) obligo(obligamos) a pagar incondicionalmente a la orden de TECNOLOGÍA Y APLICACIONES ALIMENTARIAS, S.A. DE C.V., en la ciudad de Aguascalientes, Ags., el día '.$payday_limit.', la cantidad de $'.price($object->total_ttc).'('.strtoupper(price2letters(price($object->total_ttc))).'). Este pagaré es el ___ de un serie de ____ pagarés. La falta de pago oportuno de este pagaré generará un interés moratorio del 3.00% mensual. Aguascalientes, Ags., a '.date('d').' de '.$monthName.' de '.date('Y').'</p>';
+        $lines_str .= '<p class="center justify">Por este Pagaré, me(nos) obligo(obligamos) a pagar incondicionalmente a la orden de TECNOLOGÍA Y APLICACIONES ALIMENTARIAS, S.A. DE C.V., en la ciudad de Aguascalientes, Ags., el día '.$payday_limit.', la cantidad de $'.price($object->total_ttc).'('.strtoupper(price2letters(price($object->total_ttc))).'). Este pagaré es el ___ de una serie de ____ pagarés. La falta de pago oportuno de este pagaré generará un interés moratorio del 3.00% mensual. Aguascalientes, Ags., a '.date('d').' de '.$monthName.' de '.date('Y').'</p>';
         $lines_str .= '<p class="center">'.$societe->name.'</p>';
         $lines_str .= '<p class="center">'.$societe->address.'</p>';
         $lines_str .= '<p class="center">'.$societe->town.'</p>';
