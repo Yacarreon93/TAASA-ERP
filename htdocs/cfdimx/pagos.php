@@ -485,6 +485,7 @@ if ($action == "guardar2") {
 			
 			$res2 = $db->query($sql2);
 
+			
 			//die('checkpoint 4'); // @BORRAR
 				
 			$service = new ComprobanteCFDIService();
@@ -1105,6 +1106,26 @@ if ($action == "cfdi2") {
 	$impPagadodr="";
 	$impSaldoInsoluto="";
 
+	if(!$pagoFacturado) {
+		$sqlfacture = "SELECT * 
+				FROM llx_facture 
+				WHERE rowid = ".GETPOST("facid");
+		$resFacture = $db->query($sqlfacture);
+		$rslFacture=$db->fetch_object($resFacture);
+
+		$sqlfacturePayments = "SELECT count(*) as numero, sum(amount) as pagado 
+				FROM llx_paiement_facture 
+				WHERE fk_facture = ".GETPOST("facid").
+				" AND fk_paiement != ".GETPOST("pagcid");
+		$resFacturePayments = $db->query($sqlfacturePayments);
+		$rslFacturePayments=$db->fetch_object($resFacturePayments);
+
+		$numparcialidaddr = (($rslFacturePayments->numero)+1);
+		$impSaldoAnterior = ($rslFacture->total_ttc - $rslFacturePayments->pagado);
+		$impPagadodr = $obpag->montant;
+		$impSaldoInsoluto = $impSaldoAnterior - $impPagadodr;
+	}
+
 	$facid_custom = GETPOST('facid'); // ".GETPOST('facid').",
 	$pagcid_custom = GETPOST('pagcid'); // ".GETPOST('pagcid').",
 	
@@ -1351,8 +1372,8 @@ if ($action == "cfdi2") {
 							WHERE id_pago = ".$pagcid_custom;
 		
 			$resCFDICheck = $db->query($sqlCFDICheck);
-		
-			if($resCFDICheck) {
+			$nmrCFDICheck=$db->num_rows($resCFDICheck);
+			if($nmrCFDICheck > 0){
 				$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = true;
 			}
 	
