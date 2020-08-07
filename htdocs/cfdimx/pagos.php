@@ -975,6 +975,7 @@ if ($action=="cfdi") {
 if ($action == "cfdi2") {
 
 	$pagoFacturado = false;
+	$pagoCancelado = false;
 	$uuidCFDIFinal = "";
 
 	$sqlpagoFacturado = "SELECT * FROM cfdi_comprobante
@@ -984,7 +985,10 @@ if ($action == "cfdi2") {
 	$nmrPagoFacturado=$db->num_rows($respagoFacturado);
 	if($nmrPagoFacturado>0){
 		$rsl=$db->fetch_object($respagoFacturado);
-		if($rsl->UUID!="Pendiente" && $rsl->UUID!=null){
+		if( $rsl->cancelado == 2) {
+			$pagoCancelado = true;
+		}
+		else if($rsl->UUID != "Pendiente" && $rsl->UUID != null){
 			$pagoFacturado = true;
 			$uuidCFDIFinal = $rsl->UUID;
 		}
@@ -1340,38 +1344,55 @@ if ($action == "cfdi2") {
 	print '<td colspan="3"><input type="text" name="impSaldoInsoluto" value="'.$impSaldoInsoluto.'" ></td></tr>';
 
 
-	if($pagoFacturado == false) {
-		$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = false;
-		$sqlCFDICheck = "SELECT * FROM cfdi_complemento_pago
-						WHERE id_pago = ".$pagcid_custom;
-	
-		$resCFDICheck = $db->query($sqlCFDICheck);
-	
-		if($resCFDICheck) {
-			$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = true;
-		}
-
-		print '<tr>';
-
-		print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0" colspan="2">';
-		print '</td>';
-	
-		print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0;font-weight:bold">';
-	
-		if ($nmr == 0) {
-			print 'Debe guardar la información del Pago para poder timbrarlo';
-		} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
-			print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
-		} else {
-			print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
-		}
-	
-		print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0">';
-		print '<input type="submit" name="guardar2" value="Guardar información" class="button">';
-		print '</td>';
+	if(!$pagoCancelado) {
+		if($pagoFacturado == false) {
+			$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = false;
+			$sqlCFDICheck = "SELECT * FROM cfdi_complemento_pago
+							WHERE id_pago = ".$pagcid_custom;
 		
-		print '</tr>';
-
+			$resCFDICheck = $db->query($sqlCFDICheck);
+		
+			if($resCFDICheck) {
+				$laInfoDelPagoEstaGuardadaEnLasNuevasTablas = true;
+			}
+	
+			print '<tr>';
+	
+			print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0" colspan="2">';
+			print '</td>';
+		
+			print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0;font-weight:bold">';
+		
+			if ($nmr == 0) {
+				print 'Debe guardar la información del Pago para poder timbrarlo';
+			} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
+				print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
+			} else {
+				print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
+			}
+		
+			print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0">';
+			print '<input type="submit" name="guardar2" value="Guardar información" class="button">';
+			print '</td>';
+			
+			print '</tr>';
+	
+		} else {
+			print '
+			<script>
+				var inputs = document.getElementsByTagName("INPUT");
+				for (var i = 0; i < inputs.length; i++) {
+					inputs[i].disabled = true;
+				}
+			</script>';
+			print '<tr></tr>';
+			print '<tr>';
+			print '<td class="titlefield"><strong>Pago Timbrado - UUID: '.$uuidCFDIFinal.'</strong></td>';
+			print '<td style="padding:10px 0">';
+			print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=validaCancelaTimbreProfact">Cancelar CFDI</a>';
+			print '</td>';
+		}
+	
 	} else {
 		print '
 		<script>
@@ -1382,9 +1403,9 @@ if ($action == "cfdi2") {
 		</script>';
 		print '<tr></tr>';
 		print '<tr>';
-		print '<td class="titlefield"><strong>Pago Timbrado - UUID: '.$uuidCFDIFinal.'</strong></td>';
+		print '<td class="titlefield" colspan="4" style="background:#871614"><strong>Pago Cancelado</strong></td>';
 	}
-
+	
 	print '</form>';
 	print '</table>';
 }
@@ -1726,6 +1747,34 @@ if($action=="timbrarCFDIProfact") {
 	SET
 		status = 0
 		WHERE fk_payment = ".GETPOST('pagcid','int');
+	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
+
+	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
+}
+
+if($action=="validaCancelaTimbreProfact") {
+	print '</div>';
+	print '<div style="background:#b2d6f7;border:#b2d6f7;padding:10px 0">';
+	print "<strong class='titlefield'>Confirmar borrar timbre de pago " . GETPOST('pagcid','int').'</strong>';
+	print '<br/><br/>';
+	print '<a class="butAction" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=cfdi2">Salir</a>';
+	print '<a class="butAction" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=cancelaTimbreProfact">Cancelar CFDI</a>';
+	print '<div>';
+}
+	
+if($action=="cancelaTimbreProfact") {
+
+	$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
+	SET
+		status = 0,
+		cancelado = 2
+		WHERE fk_payment = ".GETPOST('pagcid','int');
+	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
+
+	$sqlTimbrarCFDI = "UPDATE llx_cfdimx_recepcion_pagos
+	SET
+		cancelado = 1
+		WHERE fk_paiement = ".GETPOST('pagcid','int');
 	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
 
 	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
