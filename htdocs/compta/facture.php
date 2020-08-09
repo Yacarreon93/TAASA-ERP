@@ -3814,16 +3814,16 @@ else if ($id > 0 || ! empty($ref))
 	$result = $object->getLinesArray();
 
 	if($isTicket) {
-		print '	<form name="addproduct" id="addproduct" onsubmit="document.getElementById(\'addline\').disabled=true" action="' . $_SERVER["PHP_SELF"] . '?isTicket=true&id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
-		<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
+		print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?isTicket=true&id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
+		<input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">
 		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 		<input type="hidden" name="mode" value="">
 		<input type="hidden" name="id" value="' . $object->id . '">
 		<input type="hidden" name="isTicket" value="true">
 		';
 	} else {
-		print '	<form name="addproduct" onsubmit="document.getElementById(\'addline\').disabled=true" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
-		<input type="hidden" name="token" value="' . $_SESSION ['newtoken'] . '">
+		print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . (($action != 'editline') ? '#add' : '#line_' . GETPOST('lineid')) . '" method="POST">
+		<input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">
 		<input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
 		<input type="hidden" name="mode" value="">
 		<input type="hidden" name="id" value="' . $object->id . '">
