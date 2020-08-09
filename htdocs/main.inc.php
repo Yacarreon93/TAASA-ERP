@@ -303,7 +303,9 @@ if (! defined('NOTOKENRENEWAL'))
     $token = dol_hash(uniqid(mt_rand(),TRUE)); // Generates a hash of a random number
     // roulement des jetons car cree a chaque appel
     if (isset($_SESSION['newtoken'])) $_SESSION['token'] = $_SESSION['newtoken'];
+    if (isset($_SESSION['newtokentaasa'])) $_SESSION['tokentaasa'] = $_SESSION['newtokentaasa'];
     $_SESSION['newtoken'] = $token;
+    $_SESSION['newtokentaasa'] = $token;
 }
 if (! empty($conf->global->MAIN_SECURITY_CSRF))	// Check validity of token, only if option enabled (this option breaks some features sometimes)
 {
@@ -315,6 +317,18 @@ if (! empty($conf->global->MAIN_SECURITY_CSRF))	// Check validity of token, only
             //print 'Unset POST by CSRF protection in main.inc.php.';	// Do not output anything because this create problems when using the BACK button on browsers.
             unset($_POST);
         }
+    }
+}
+
+// TAASA Token validation
+
+if (isset($_POST['tokentaasa']) && isset($_SESSION['tokentaasa']))
+{
+    if (($_POST['tokentaasa'] != $_SESSION['tokentaasa']))
+    {
+        dol_syslog("Invalid tokentaasa in ".$_SERVER['HTTP_REFERER'].", action=".GETPOST('action').", _POST['tokentaasa']=".GETPOST('tokentaasa').", _SESSION['tokentaasa']=".$_SESSION['tokentaasa'],LOG_WARNING);
+        //print 'Unset POST by CSRF protection in main.inc.php.';	// Do not output anything because this create problems when using the BACK button on browsers.
+        unset($_POST);
     }
 }
 
