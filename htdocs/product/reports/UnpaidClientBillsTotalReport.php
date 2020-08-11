@@ -106,3 +106,4 @@ $pdf->SetFont('Arial','B',11);
 $pdf->Cell(80, 10, 'TOTAL POR COBRAR: $'.number_format($total, 2, '.', ','), 0, 0, 'L');
 
 $pdf->Output();
+$db->close();

@@ -127,3 +127,4 @@ $pdf->Cell(80, 10, 'TOTAL POR COBRAR: $'.number_format($total, 2, '.', ','), 0, 
 // $pdf->FancyTable($header,$data);
 
 $pdf->Output();
+$db->close();

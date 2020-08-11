@@ -295,3 +295,4 @@ $pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeContado + $imp
 // $pdf->FancyTable($header,$data);
 
 $pdf->Output();
+$db->close();

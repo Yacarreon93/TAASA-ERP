@@ -68,3 +68,4 @@ $pdf->SetFont('Arial', '', 11);
 // $pdf->FancyTable($header,$data);
 
 $pdf->Output();
+$db->close();

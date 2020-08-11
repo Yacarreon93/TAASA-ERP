@@ -103,3 +103,4 @@ $pdf->Write("Total", '$'.price($total));
 // $pdf->FancyTable($header,$data);
 
 $pdf->Output();
+$db->close();

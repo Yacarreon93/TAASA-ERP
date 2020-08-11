@@ -166,3 +166,4 @@ $pdf->AddPage();
 $pdf->createDynamicHeader($header2, 10);
 $pdf->createDynamicRows($data2, 7);
 $pdf->Output();
+$db->close();
