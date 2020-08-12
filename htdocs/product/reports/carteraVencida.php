@@ -46,7 +46,10 @@ while ($row = $db->fetch_object($result))
 {
     $object->id = $row->rowid; // set id para poder obtener la cartera vencida
 
-    $cartera_vencida = $object->get_OutstandingBill();
+    $cartera_vencida = $object->get_OutstandingBillOverdue();
+    if($cartera_vencida == 0) {
+    continue;
+    }
 
     $total += $cartera_vencida;
 
@@ -67,7 +70,7 @@ $pdf = new ReportPDF('l');
 $header = array(
     'Id',
     'Cliente',
-    'Riesgo alcanzado',
+    'Cartera Vencida',
 );
 
 $columnWidth = $pdf->maxWidth / count($header);

@@ -3321,6 +3321,51 @@ class Societe extends CommonObject
 		}
 		else
 			return 0;
+    }
+    
+        /**
+     *  Return amount of bill not paid that exceedes facture date limit
+     *
+     *  @return		int				Amount in debt for thirdparty
+     */
+    function get_OutstandingBillOverdue($date_limit = '')
+    {
+		/* Accurate value of remain to pay is to sum remaintopay for each invoice
+		$paiement = $invoice->getSommePaiement();
+		$creditnotes=$invoice->getSumCreditNotesUsed();
+		$deposits=$invoice->getSumDepositsUsed();
+		$alreadypayed=price2num($paiement + $creditnotes + $deposits,'MT');
+		$remaintopay=price2num($invoice->total_ttc - $paiement - $creditnotes - $deposits,'MT');
+        */
+        $date_limit = date("Y-m-d H:i:s");
+		$sql  = "SELECT rowid, total_ttc FROM ".MAIN_DB_PREFIX."facture as f";
+		$sql .= " WHERE fk_soc = ". $this->id;
+		$sql .= " AND paye = 0";
+		$sql .= " AND fk_statut <> 0";	// Not a draft
+		//$sql .= " AND (fk_statut <> 3 OR close_code <> 'abandon')";		// Not abandonned for undefined reason
+		$sql .= " AND fk_statut <> 3";		// Not abandonned
+		$sql .= " AND fk_statut <> 2";		// Not clasified as paid
+        $sql .= " AND date_lim_reglement < '".$date_limit."'"; 
+
+		dol_syslog("get_OutstandingBill", LOG_DEBUG);
+		$resql=$this->db->query($sql);
+		if ($resql)
+		{
+			$outstandingBill = 0;
+			require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
+			$facturestatic=new Facture($this->db);
+			while($obj=$this->db->fetch_object($resql)) {
+				$facturestatic->id=$obj->rowid;
+				$paiement = $facturestatic->getSommePaiement();
+				$creditnotes = $facturestatic->getSumCreditNotesUsed();
+				$deposits = $facturestatic->getSumDepositsUsed();
+
+				$outstandingBill+= $obj->total_ttc - $paiement - $creditnotes - $deposits;
+   			}
+   			return $outstandingBill;
+		}
+		else
+			return 0;
 	}
 
 	/**
