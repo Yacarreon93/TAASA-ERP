@@ -276,37 +276,10 @@ print "<script>
               document.getElementById('month10Products').value = month;
           }
       });
-
-      //changes unpaid client bills report link dinamically
-       $('#unpaid_client_bills_total_select').on('change', function () {
-          var vendor = $(this).val(); // get selected value
-          if (vendor) {
-              if(vendor == 1) {
-                var finalReportLink = '../product/reports/UnpaidClientBillsTotalReport.php';
-              } else {
-                var firstLinkPart = '../product/reports/UnpaidClientBillsTotalReportPerVendor.php?vendor=';
-                var finalReportLink = firstLinkPart.concat(vendor);
-              }
-              document.getElementById('unpaid_client_bills_total_link').href = finalReportLink;
-          }
-          return false;
-        });
-
-        //changes clients per vendor report link dinamically
-       $('#clients_per_vendor_select').on('change', function () {
-          var vendor = $(this).val(); // get selected value
-          if (vendor) {
-              var firstLinkPart = '../product/reports/ClientsPerVendorReport.php?vendor=';
-              var finalReportLink = firstLinkPart.concat(vendor);
-              document.getElementById('clients_per_vendor_link').href = finalReportLink;
-          }
-          return false;
-        });
-
     });
   </script>";
   } else {
-    print'<p>olooo</p>';
+    print'<p>No estas autorizado para ver este modulo.</p>';
   }
 
 
