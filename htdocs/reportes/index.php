@@ -174,7 +174,7 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "</form>";
   //top 10 productos
   print "<tr colspan='2'>";
-  print "<form action='../product/reports/topProducts.php' target='_blank'>";
+  print "<form action='../product/reports/topProductos.php' target='_blank'>";
   print "<tr><td><br><br></td>";
   print '<input type="hidden" id="month10Products" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Top 10 productos</button>";

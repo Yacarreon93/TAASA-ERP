@@ -1122,7 +1122,7 @@ if ($action == "cfdi2") {
 
 		$numparcialidaddr = (($rslFacturePayments->numero)+1);
 		$impSaldoAnterior = ($rslFacture->total_ttc - $rslFacturePayments->pagado);
-		$impPagadodr = $obpag->montant;
+		$impPagadodr = number_format($obpag->montant, 2);
 		$impSaldoInsoluto = $impSaldoAnterior - $impPagadodr;
 	}
 
