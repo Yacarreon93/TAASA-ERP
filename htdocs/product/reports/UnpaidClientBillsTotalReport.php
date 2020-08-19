@@ -13,21 +13,21 @@ if(!$year) {
     $year = date("Y");
 }
 
-if($month == 1) {
-    $month_temp = 12;
+if($month == 12) {
+    $month_temp = 1;
 } else {
-    $month_temp = $month -1;
+    $month_temp = $month +1;
 }
 
 setlocale(LC_ALL, 'es_ES');
 
 
-$dateObj   = DateTime::createFromFormat('!m', $month_temp);
+$dateObj   = DateTime::createFromFormat('!m', $month);
 $month_name = strftime('%B', $dateObj->getTimestamp());
-if($month <= 9) {
-    $dateBefore = $year . "0" .$month . "01000000";    
+if($month_temp <= 9) {
+    $dateBefore = $year . "0" .$month_temp . "01000000";    
 } else {
-    $dateBefore = $year . $month . "01000000";
+    $dateBefore = $year . $month_temp . "01000000";
 }
 
 $sql = 'SELECT
@@ -81,7 +81,10 @@ $header = array(
     'Total de deuda',
 );
 
-$report_title = 'Reporte de total de facturas pendientes de cobro - '.$month_name;
+$report_title = strtr('REPORTE DE TOTAL DE FACTURAS PENDIENTES DE COBRO - $M $Y', array(
+    '$M' => $month_name,
+    '$Y' => strftime('%G'),
+));
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);

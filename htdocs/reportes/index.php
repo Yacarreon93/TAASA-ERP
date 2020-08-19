@@ -77,30 +77,16 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<tr style='background-color:#7C8398; color:white'>
   <td  style='width:50%'>Sucursal<br></td>
   <td><select id='account_dynamic_select'>
-      <option value='1'>Aguascalientes Bodega</option>
-  <option value='2'>Aguascalientes Produccion</option>
-  <option value='3'>Leon</option>
-  <option value='4'>Lagos</option>
+      <option value='1'>Aguascalientes</option>
+  <option value='5'>Leon</option>
+  <option value='3'>Lagos</option>
   </select></td>
   </tr>";
-  //Cuentas por cobrar
-  print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
-  print "<tr colspan='2'>
-  <td><br><br></td>";
-  print '<input type="hidden" id="monthCuentasPorCobrar" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar</button></td>";
-  print "</form>";
-  //Existencias en almacen
-  print "<form action='../product/reports/currentStockReport.php' target='_blank'>";
-  print "<tr><td><br><br></td>";
-  print '<input type="hidden" id="stockExistenciasAlmacen" name="stockId" value="1">';
-  print "<td><button type=submit class='butAction'>Existencias en Almacen</button></td>";
-  print "</form>";
-  //Reporte de ventas
-  print "<form action='../product/reports/SalesReport.php' target='_blank'>";
-  print "<tr>
-  <td><select id='sales_report_dynamic_select'>
-      <option value='1'>Enero</option>
+   //Seleccion de mes
+   print "<tr style='background-color:#7C8398; color:white'>
+   <td  style='width:50%'>Mes<br></td>
+   <td><select id='sales_report_dynamic_select'>
+   <option value='1'>Enero</option>
   <option value='2'>Febrero</option>
   <option value='3'>Marzo</option>
   <option value='4'>Abril</option>
@@ -112,12 +98,30 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   <option value='10'>Octubre</option>
   <option value='11'>Noviembre</option>
   <option value='12'>Diciembre</option>
-  </select></td>";
+  </select></td>
+   </tr>";
+  //Cuentas por cobrar
+  print "<form action='../product/reports/UnpaidClientBillsTotalReportPerAccount.php' target='_blank'>";
+  print "<tr colspan='2'>
+  <td><br><br></td>";
+  print '<input type="hidden" id="monthCuentasPorCobrar" name="month" value="1">';
+  print '<input type="hidden" id="stockCuentasPorCobrar" name="account" value="1">';
+  print "<td><button type=submit class='butAction'>Cuentas por cobrar</button></td>";
+  print "</form>";
+  //Reporte de ventas
+  print "<form action='../product/reports/SalesReport.php' target='_blank'>";
+  print "<tr><td><br><br></td>";
   print '<input type="hidden" id="stockReporteVentas" name="stockId" value="1">';
   print '<input type="hidden" id="monthReporteVentas" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Reporte de ventas</button>";
   print "</form>";
-  print "</td></tr></table><br>";
+    //Existencias en almacen
+    print "<form action='../product/reports/currentStockReport.php' target='_blank'>";
+    print "<tr><td><br><br></td>";
+    print '<input type="hidden" id="stockExistenciasAlmacen" name="stockId" value="1">';
+    print "<td><button type=submit class='butAction'>Existencias en Almacen</button></td>";
+    print "</form>";
+    print "</td></tr></table><br>";
 
   //reportes generales
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
@@ -143,31 +147,38 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   //Antiguedad de saldos
   print "<tr colspan='2'>";
   print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
+  print "<tr><td><br><br></td>";
   print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button>";
   print "</form>";
-  print "<td><br></td></tr>'";
-  //Cuentas por cobrar
+  //Cuentas por cobrar Totales
   print "<tr colspan='2'>";
-  print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
-  print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar</button>";
+  print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
+  print "<tr><td><br><br></td>";
+  print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
+  print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button>";
   print "</form>";
-  print "<td><br></td></tr>'";
+   //Cuentas por cobrar
+   print "<tr colspan='2'>";
+   print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
+   print "<tr><td><br><br></td>";
+   print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
+   print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button>";
+   print "</form>";
   //Reporte de ventas general
   print "<tr colspan='2'>";
   print "<form action='../product/reports/SalesReport.php' target='_blank'>";
+  print "<tr><td><br><br></td>";
   print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Reporte de ventas general</button>";
+  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button>";
   print "</form>";
-  print "<td><br></td></tr>'";
   //top 10 productos
   print "<tr colspan='2'>";
-  print "<form action='../product/reports/top_products.php' target='_blank'>";
+  print "<form action='../product/reports/topProducts.php' target='_blank'>";
+  print "<tr><td><br><br></td>";
   print '<input type="hidden" id="month10Products" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Top 10 productos</button>";
   print "</form>";
-  print "<td><br></td></tr>'";
   print "</table><br>";
 
 
@@ -184,7 +195,6 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   <option value='4'>Lagos</option>
   </select></td>";
   print "</form>";
-  print "<td><br></td></tr>'";
   print "</table></form><br>";
 
   //Vendedores
@@ -192,55 +202,48 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<tr class=\"liste_titre\">";
   print '<td colspan="2">Vendedores</td></tr>';
 
-
+   //Seleccion de vendedor
   $sql = "SELECT rowid, firstname FROM llx_user WHERE job = 'Vendedor'";
-  $resVendor = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+   $resVendor = $db->query($sql) or die('ERROR en la consulta: '.$sql);
+
+   print "<tr style='background-color:#7C8398; color:white'>
+   <td  style='width:50%'>Vendedor<br></td>";
+   print "<td  style='width:50%'><select id='vendor_reports_dynamic_select'>";
+   $vendor_array = array();
+   $k = 0;
+   while ($row = $db->fetch_object($resVendor))
+   {
+     $vendor_array[$k]["id"] = $row->rowid;
+     $vendor_array[$k]["firstname"] = $row->firstname;
+     $vendor_id = $row->rowid;
+     $vendedor = $row->firstname;
+     print "<option value='".$vendor_id."'>".$vendedor."</option>";
+     $k++;
+   }
+   print "</select></td><tr/>";
 
   //Total de cuentas por cobrar
+  print "<tr colspan='2'>";
   print "<form action='../product/reports/UnpaidClientBillsTotalReportPerVendor.php' target='_blank'>";
-  print "<td  style='width:50%'><select name='vendor'>";
-  $vendor_array = array();
-  $k = 0;
-  while ($row = $db->fetch_object($resVendor))
-  {
-    $vendor_array[$k]["id"] = $row->rowid;
-    $vendor_array[$k]["firstname"] = $row->firstname;
-    $vendor_id = $row->rowid;
-    $vendedor = $row->firstname;
-    print "<option value='".$vendor_id."'>".$vendedor."</option>";
-    $k++;
-  }
-  print "</select></td>";
-  print "<td><button type=submit class='butAction'>Totales de cuentas por cobrar</button>";
+  print "<tr><td><br><br></td>";
+  print '<input type="hidden" id="vendorUnpaidClientBillsPerVendor" name="vendor" value="13">';
+  print "<td><button type=submit class='butAction'>Totales de cuentas por cobrar</button><td/><tr/>";
   print "</form>";
-  print "<td><br></td></tr>'";
 
   // Clientes por Venedor
+  print "<tr colspan='2'>";
   print "<form action='../product/reports/ClientsPerVendorReport.php' target='_blank'>";
-  print "<td  style='width:50%'><select name='vendor'>";
-  for($i = 0; $i < sizeof($vendor_array); $i++)
-  {
-    $vendor_id =  $vendor_array[$i]["id"];
-    $vendedor = $vendor_array[$i]["firstname"];
-    print "<option value='".$vendor_id."'>".$vendedor."</option>";
-  }
-  print "</select></td>";
-  print "<td><button type=submit class='butAction'>Clientes por Vendedor</button>";
+  print "<tr><td><br><br></td>";
+  print '<input type="hidden" id="vendorClientsPerVendor" name="vendor" value="13">';
+  print "<td><button type=submit class='butAction'>Clientes por Vendedor</button><td/><tr/>";
   print "</form>";
-  print "<td><br></td></tr>'";
 
   // Cartera vencida
-  print "<tr>";
+  print "<tr colspan='2'>";
   print "<form action='../product/reports/carteraVencida.php' target='_blank'>";
-  print "<td><select name='vendor'>";
-  for($i = 0; $i < sizeof($vendor_array); $i++)
-  {
-    $vendor_id =  $vendor_array[$i]["id"];
-    $vendedor = $vendor_array[$i]["firstname"];
-    print "<option value='".$vendor_id."'>".$vendedor."</option>";
-  }
-  print "</select></td>";
-  print "<td><button type=submit class='butAction'>Cartera vencida</button></td>";
+  print "<tr><td><br><br></td>";
+  print '<input type="hidden" id="vendorCarteraVencida" name="vendor" value="13">';
+  print "<td><button type=submit class='butAction'>Cartera vencida</button><td/><tr/>";
   print "</form>";
 
   print "</table><br>";
@@ -263,6 +266,7 @@ print "<script>
          if (stockId) { 
              document.getElementById('stockExistenciasAlmacen').value = stockId;
              document.getElementById('stockReporteVentas').value = stockId;
+             document.getElementById('stockCuentasPorCobrar').value = stockId;
          }
       });
 
@@ -271,11 +275,22 @@ print "<script>
          var month =  $(this).val(); // get selected value
         if (month) {
               document.getElementById('monthBillsToPay').value = month;
+              document.getElementById('monthUnpaidClientBillsTotal').value = month; 
               document.getElementById('monthUnpaidClientBills').value = month; 
               document.getElementById('monthGeneralSalesReport').value = month;
               document.getElementById('month10Products').value = month;
           }
       });
+
+      //changes vendor reports month dinamically
+      $('#vendor_reports_dynamic_select').on('change', function () {
+        var vendor =  $(this).val(); // get selected value
+       if (vendor) {
+             document.getElementById('vendorUnpaidClientBillsPerVendor').value = vendor;
+             document.getElementById('vendorClientsPerVendor').value = vendor; 
+             document.getElementById('vendorCarteraVencida').value = vendor; 
+         }
+     });
     });
   </script>";
   } else {

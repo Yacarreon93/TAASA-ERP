@@ -12,7 +12,21 @@ if(!$year) {
     $year = date("Y");
 }
 
-$dateBefore = $year . "0" .$month . "01000000";
+if($month == 12) {
+    $month_temp = 1;
+} else {
+    $month_temp = $month +1;
+}
+
+setlocale(LC_ALL, 'es_ES');
+
+$dateObj   = DateTime::createFromFormat('!m', $month);
+$month_name = strftime('%B', $dateObj->getTimestamp());
+if($month_temp <= 9) {
+    $dateBefore = $year . "0" .$month_temp . "01000000";    
+} else {
+    $dateBefore = $year . $month_temp . "01000000";
+}
 
 $sql = 'SELECT
     f.facnumber,
@@ -59,14 +73,13 @@ ORDER BY
     s.nom ASC,
     f.rowid DESC';
 
+$i = 0;
+$total = 0;
+$result = $db->query($sql);
 if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
-
-$i = 0;
-$total = 0;
-$result = $db->query($sql);
 $data = array();
 while ($row = $db->fetch_object($result))
 {
@@ -103,7 +116,10 @@ $header = array(
     'Abonado'
 );
 
-$report_title = 'Reporte de facturas pendientes de cobro';
+$report_title = strtr('REPORTE DE DETALLE DE FACTURAS PENDIENTES DE COBRO - $M $Y', array(
+    '$M' => $month_name,
+    '$Y' => strftime('%G'),
+));
 
 // Carga de datos
 $pdf->SetFont('Arial', '', 11);
