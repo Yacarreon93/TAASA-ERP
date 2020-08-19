@@ -6,7 +6,7 @@ setlocale(LC_TIME, 'es_ES');
 
 /** Se agrega la libreria PHPExcel */
 require_once '../../includes/phpexcel/PHPExcel.php';
-require_once '../../compta/facture/class/facturestats.class.php';
+require_once '../../compta/facture/class/facturestats.class.php'; // aquí viene dol_get_first_day y dol_get_last_day
 
 // Se crea el objeto PHPExcel
 $objPHPExcel = new PHPExcel();
