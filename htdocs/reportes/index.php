@@ -140,7 +140,7 @@ print "<tr colspan='2'>
 <td><a id='general_sales_report_link' target='_blank' href='../product/reports/SalesReport.php?month=1'>Reporte de ventas general</a></td></tr>'";
 //top 10 productos
 print "<tr colspan='2'>
-<td><a id='top_products_link' target='_blank' href='../product/reports/top_products.php?month=1'>Top 10 productos</a><br></td>'";
+<td><a id='top_products_link' target='_blank' href='../product/reports/topProductos.php?month=1'>Top 10 productos</a><br></td>'";
 print "</table></form><br>";
 
 
