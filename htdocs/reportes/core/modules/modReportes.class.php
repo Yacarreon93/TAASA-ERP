@@ -48,7 +48,7 @@ class modReportes extends DolibarrModules
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
 		$this->numero = 100021;
 		// Key text used to identify module (for permissions, menus, etc...)
-		$this->rights_class = 'modReportes';
+		$this->rights_class = 'reportes';
 
 		// Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
 		// It is used to group modules in module setup page
@@ -66,7 +66,7 @@ class modReportes extends DolibarrModules
 		// Name of image file used for this module.
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
-		$this->picto='generic';
+		$this->picto='dir';
 
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
 		// for default path (eg: /mymodule/core/xxxxx) (0=disable, 1=enable)
@@ -187,12 +187,12 @@ class modReportes extends DolibarrModules
 		 $this->menu[$r]=array(	'fk_menu'=>0,			                // Put 0 if this is a top menu
 									'type'=>'top',			                // This is a Top menu entry
 									'titre'=>'Reportes',
-									'mainmenu'=>'Reportes',
-									'leftmenu'=>'Reportes',
+									'mainmenu'=>'reportes',
+									'leftmenu'=>'reportes',
 									'url'=>'/reportes/index.php',
 								 'langs'=>'mylangfile@mymodule',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 							 'position'=>120,
-									'enabled'=>'$conf->modReportes->enabled',	// Define condition to show or hide menu entry. Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
+									'enabled'=>'$conf->reportes->enabled',	// Define condition to show or hide menu entry. Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->mymodule->level1->level2' if you want your menu with a permission rules
 	 							'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
