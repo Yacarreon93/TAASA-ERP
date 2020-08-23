@@ -14,19 +14,16 @@ $objPHPExcel = new PHPExcel();
 $month = GETPOST('month');
 $year = strftime('%Y');
 
-// Emula getAllByProduct de \compta\facture\class\facturestats.class.php
-
-$sql = "SELECT product.ref, COUNT(product.ref) as nb, product.rowid, product.label";
-$sql.= " FROM ".MAIN_DB_PREFIX."facture as f, ".MAIN_DB_PREFIX."facturedet as tl, ".MAIN_DB_PREFIX."product as product";
-$sql.= " WHERE f.fk_statut > 0";
-$sql.= " AND f.entity = ".$conf->entity;
-$sql.= " AND f.rowid = tl.fk_facture AND tl.fk_product = product.rowid";
+$sql = "SELECT
+fk_product, p.ref, p.label,sum(fd.qty) as cantidad
+FROM
+llx_facture AS f
+JOIN llx_facturedet AS fd ON f.rowid = fd.fk_facture
+JOIN llx_product as p ON fd.fk_product = p.rowid";
 $sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
-$sql.= " GROUP BY product.ref";
-$sql.= $db->order('nb','DESC');
-$sql.= $db->plimit(10);
-
-// Emula _getAllByProduct de \core\class\stats.class.php
+$sql.= "GROUP BY fk_product
+ORDER BY cantidad DESC
+LIMIT 10";
 
 $result=array();
 $limit = 10;
