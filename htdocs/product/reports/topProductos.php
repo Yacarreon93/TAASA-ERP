@@ -11,7 +11,8 @@ require_once '../../compta/facture/class/facturestats.class.php'; // aquí viene
 // Se crea el objeto PHPExcel
 $objPHPExcel = new PHPExcel();
 
-$month = GETPOST('month');
+$fromDate = GETPOST('fromDate');
+$toDate = GETPOST('toDate');
 $year = strftime('%Y');
 
 $sql = "SELECT
@@ -20,10 +21,13 @@ FROM
 llx_facture AS f
 JOIN llx_facturedet AS fd ON f.rowid = fd.fk_facture
 JOIN llx_product as p ON fd.fk_product = p.rowid";
-$sql.= " AND f.datef BETWEEN '".$db->idate(dol_get_first_day($year,$month,false))."' AND '".$db->idate(dol_get_last_day($year,$month,false))."'";
+$sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
 $sql.= "GROUP BY fk_product
 ORDER BY cantidad DESC
 LIMIT 10";
+
+print_r($sql);
+die();
 
 $result=array();
 $limit = 10;

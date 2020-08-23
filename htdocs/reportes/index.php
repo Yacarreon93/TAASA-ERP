@@ -143,41 +143,47 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   <option value='10'>Octubre</option>
   <option value='11'>Noviembre</option>
   <option value='12'>Diciembre</option>
-  </select></td>";
+  </select></td><tr/>";
   //Antiguedad de saldos
   print "<tr colspan='2'>";
   print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
-  print "<tr><td><br><br></td>";
+  print "<td><br><br></td>";
   print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button>";
-  print "</form>";
+  print "</form><tr/>";
   //Cuentas por cobrar Totales
   print "<tr colspan='2'>";
   print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
-  print "<tr><td><br><br></td>";
+  print "<td><br><br></td>";
   print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button>";
-  print "</form>";
+  print "</form><tr/>";
    //Cuentas por cobrar
    print "<tr colspan='2'>";
    print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
-   print "<tr><td><br><br></td>";
+   print "<td><br><br></td>";
    print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
    print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button>";
-   print "</form>";
+   print "</form><tr/>";
   //Reporte de ventas general
   print "<tr colspan='2'>";
   print "<form action='../product/reports/SalesReport.php' target='_blank'>";
-  print "<tr><td><br><br></td>";
+  print "<td><br><br></td>";
   print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
-  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button>";
-  print "</form>";
+  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button><td/>";
+  print "</form><tr/>";
   //top 10 productos
   print "<tr colspan='2'>";
   print "<form action='../product/reports/topProductos.php' target='_blank'>";
-  print "<tr><td><br><br></td>";
-  print '<input type="hidden" id="month10Products" name="month" value="1">';
+  print "<td>";
+  echo '<div id="theHidden">';
+  echo '</div>';
+  echo 'Semana:';
+  echo '<select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;">';
+  echo '</select>';
+  echo '<input type="hidden" value="" name="month_week" id="month_week">';
   print "<td><button type=submit class='butAction'>Top 10 productos</button>";
+  print '<input type="hidden" id="month10Products" name="month" value="1"><td/><tr/>';
   print "</form>";
   print "</table><br>";
 
@@ -293,6 +299,56 @@ print "<script>
      });
     });
   </script>";
+
+  echo '<script>
+  jQuery("#general_reports_dynamic_select").change(function(){
+    var year = new Date().getFullYear();
+      jQuery.post("ajax/getRanges.php", {month: jQuery("#general_reports_dynamic_select").val(), year}, function (data) {
+          var obj = JSON.parse(data);
+          $("#weekSelector").empty();
+          $("#weekSelector").append($("<option>", {
+          value: 0,
+          text: ""
+      }));
+          obj.forEach(myFunction);
+      });
+   });
+
+  var contador = 0;
+
+  function myFunction(item) {
+
+      $("#weekSelector").append($("<option>", {
+          value: item.from+"/"+item.to,
+          text: "del "+item.from+" al "+item.to
+      }));
+   }
+
+   jQuery("#weekSelector").change(function(){
+      dates = $(this).val().split("/");
+
+      $("#theHidden").empty();
+
+      $("#theHidden").append($("<input>", {
+          type: "hidden",
+          name: "fromDate",
+          value: dates[0]
+      }));
+
+      $("#theHidden").append($("<input>", {
+          type: "hidden",
+          name: "toDate",
+          value: dates[1]
+      }));
+
+   });
+
+   $("#theHidden").append($("<input>", {
+          type: "hidden",
+          value: dates[0]
+      }));
+
+  </script>';
   } else {
     print'<p>No estas autorizado para ver este modulo.</p>';
   }
