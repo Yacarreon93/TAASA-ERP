@@ -32,6 +32,7 @@ require '../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/paiement/class/paiement.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
 
 $langs->load('companies');
@@ -510,6 +511,9 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 
 		dol_fiche_end();
 
+		$societe = new Societe($db);
+		$societe->fetch($facture->socid);
+
         /*
          * List of unpaid invoices
          */
@@ -639,10 +643,12 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 
                     if ($action != 'add_paiement')
                     {
+						$disabled = $i === 1 && $societe->array_options['options_abono'] ? 'disabled' : ''; // deshabilitar abonos en las facturas mas recientes
+
 						if(!empty($conf->global->FAC_AUTO_FILLJS))
 							print img_picto("Auto fill",'rightarrow', "class='AutoFillAmout' data-rowname='".$namef."' data-value='".($sign * $remaintopay)."'");
                         print '<input type=hidden name="'.$nameRemain.'" value="'.$remaintopay.'">';
-                        print '<input type="text" size="8" name="'.$namef.'" value="'.$_POST[$namef].'">';
+                        print '<input type="text" size="8" name="'.$namef.'" value="'.$_POST[$namef].'" '.$disabled.'>';
                     }
                     else
                     {
@@ -697,7 +703,6 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 		{
             dol_print_error($db);
         }
-
 
         // Bouton Enregistrer
         if ($action != 'add_paiement')
