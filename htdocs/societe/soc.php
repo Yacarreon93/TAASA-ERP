@@ -1805,7 +1805,23 @@ else
             print $hookmanager->resPrint;
             if (empty($reshook) && ! empty($extrafields->attribute_label))
             {
-            	print $object->showOptionals($extrafields,'edit');
+                print $object->showOptionals($extrafields,'edit');
+            }
+
+            //Blocking user for editing extra values
+            if($user->id == '1' || $user->id == '18' || $user->id == '19') {
+                
+            } else {
+                print '<input type="hidden" name="options_commission" id="options_commission"/>';
+                print '<input type="hidden" name="options_abono" id="options_abono"/>';
+                print "<script>
+                $(function(){
+                            document.getElementById('options_commission').value = document.getElementsByName('options_commission')[0].value;
+                            document.getElementById('options_abono').value = document.getElementsByName('options_abono')[0].value;
+                            document.getElementsByName('options_commission')[0].disabled = true;
+                            document.getElementsByName('options_abono')[0].disabled = true;
+                    });
+                </script>";
             }
 
             // Webservices url/key
