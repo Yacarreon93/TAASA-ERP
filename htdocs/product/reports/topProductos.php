@@ -15,6 +15,9 @@ $fromDate = GETPOST('fromDate');
 $toDate = GETPOST('toDate');
 $year = strftime('%Y');
 
+$fromDate = $fromDate[6] . $fromDate[7] . $fromDate[8] . $fromDate[9] . $fromDate[3] . $fromDate[4] . $fromDate[0] . $fromDate[1] . "000000";
+$toDate = $toDate[6] . $toDate[7] . $toDate[8] . $toDate[9] . $toDate[3] . $toDate[4] . $toDate[0] . $toDate[1] . "235900";
+
 $sql = "SELECT
 fk_product, p.ref, p.label,sum(fd.qty) as cantidad
 FROM
@@ -25,9 +28,6 @@ $sql.= " AND f.datef BETWEEN '".$fromDate."' AND '".$toDate."'";
 $sql.= "GROUP BY fk_product
 ORDER BY cantidad DESC
 LIMIT 10";
-
-print_r($sql);
-die();
 
 $result=array();
 $limit = 10;

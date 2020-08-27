@@ -106,14 +106,14 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   <td><br><br></td>";
   print '<input type="hidden" id="monthCuentasPorCobrar" name="month" value="1">';
   print '<input type="hidden" id="stockCuentasPorCobrar" name="account" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar</button></td>";
+  print "<td><button type=submit class='butAction'>Cuentas por cobrar</button></td></tr>";
   print "</form>";
   //Reporte de ventas
   print "<form action='../product/reports/SalesReport.php' target='_blank'>";
   print "<tr><td><br><br></td>";
   print '<input type="hidden" id="stockReporteVentas" name="stockId" value="1">';
   print '<input type="hidden" id="monthReporteVentas" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Reporte de ventas</button>";
+  print "<td><button type=submit class='butAction'>Reporte de ventas</button></td></tr>";
   print "</form>";
     //Existencias en almacen
     print "<form action='../product/reports/currentStockReport.php' target='_blank'>";
@@ -149,21 +149,21 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
   print "<td><br><br></td>";
   print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button>";
+  print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button></td>";
   print "</form><tr/>";
   //Cuentas por cobrar Totales
   print "<tr colspan='2'>";
   print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
   print "<td><br><br></td>";
   print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button>";
+  print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button></td>";
   print "</form><tr/>";
    //Cuentas por cobrar
    print "<tr colspan='2'>";
    print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
    print "<td><br><br></td>";
    print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
-   print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button>";
+   print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button></td>";
    print "</form><tr/>";
   //Reporte de ventas general
   print "<tr colspan='2'>";
@@ -176,12 +176,11 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<tr colspan='2'>";
   print "<form action='../product/reports/topProductos.php' target='_blank'>";
   print "<td>";
-  echo '<div id="theHidden">';
-  echo '</div>';
-  echo 'Semana:';
-  echo '<select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;">';
-  echo '</select>';
-  echo '<input type="hidden" value="" name="month_week" id="month_week">';
+  print '<select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;">';
+  print '</select>';
+  print '<input type="hidden" value="" name="month_week" id="month_week"></td>';
+  print '<input type="hidden" name="fromDate" id="fromDate">';
+  print '<input type="hidden" name="toDate" id="toDate">';
   print "<td><button type=submit class='butAction'>Top 10 productos</button>";
   print '<input type="hidden" id="month10Products" name="month" value="1"><td/><tr/>';
   print "</form>";
@@ -327,26 +326,10 @@ print "<script>
    jQuery("#weekSelector").change(function(){
       dates = $(this).val().split("/");
 
-      $("#theHidden").empty();
-
-      $("#theHidden").append($("<input>", {
-          type: "hidden",
-          name: "fromDate",
-          value: dates[0]
-      }));
-
-      $("#theHidden").append($("<input>", {
-          type: "hidden",
-          name: "toDate",
-          value: dates[1]
-      }));
+      $("#fromDate").val(dates[0]);
+      $("#toDate").val(dates[1]);
 
    });
-
-   $("#theHidden").append($("<input>", {
-          type: "hidden",
-          value: dates[0]
-      }));
 
   </script>';
   } else {
