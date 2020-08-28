@@ -643,7 +643,7 @@ if ($action == 'create' || $action == 'confirm_paiement' || $action == 'add_paie
 
                     if ($action != 'add_paiement')
                     {
-						$disabled = $i === 1 && $societe->array_options['options_abono'] ? 'disabled' : ''; // deshabilitar abonos en las facturas mas recientes
+						$disabled = $i >= 1 && $societe->array_options['options_abono'] ? 'disabled' : ''; // deshabilitar abonos en las facturas mas recientes
 
 						if(!empty($conf->global->FAC_AUTO_FILLJS))
 							print img_picto("Auto fill",'rightarrow', "class='AutoFillAmout' data-rowname='".$namef."' data-value='".($sign * $remaintopay)."'");
