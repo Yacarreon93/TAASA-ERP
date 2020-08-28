@@ -50,19 +50,15 @@ else dol_print_error($db);
 $objPHPExcel->setActiveSheetIndex(0)
     ->mergeCells('A1:D1')
     ->setCellValue('A1', 'Top 10 Productos')
-    ->setCellValue('A3',  'ID')
-    ->setCellValue('B3',  'REF')
-    ->setCellValue('C3',  'ETIQUETA')
-    ->setCellValue('D3',  'CANTIDAD');
+    ->setCellValue('A3',  'NOMBRE')
+    ->setCellValue('C3',  'CANTIDAD');
 
 $i = 4;
 
 foreach ($result as $product) {
     $objPHPExcel->setActiveSheetIndex(0)
         ->setCellValue('A'.$i,  $product[0])
-        ->setCellValue('B'.$i,  $product[1])
-        ->setCellValue('C'.$i,  utf8_encode($product[2]))
-        ->setCellValue('D'.$i,  $product[3]);    
+        ->setCellValue('C'.$i,  utf8_encode($product[2]));   
     $i++;
 }
 
@@ -137,7 +133,7 @@ $center = array('alignment' => array(
 ));
 
 $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($estiloTituloReporte);
-$objPHPExcel->getActiveSheet()->getStyle('A3:D3')->applyFromArray($estiloTituloColumnas);
+$objPHPExcel->getActiveSheet()->getStyle('A3:C3')->applyFromArray($estiloTituloColumnas);
 $objPHPExcel->getActiveSheet()->getStyle('A4:C13')->applyFromArray($left);
 $objPHPExcel->getActiveSheet()->getStyle('D4:D13')->applyFromArray($center);
 
