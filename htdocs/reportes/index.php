@@ -115,13 +115,7 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print '<input type="hidden" id="monthReporteVentas" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Reporte de ventas</button></td></tr>";
   print "</form>";
-    //Existencias en almacen
-    print "<form action='../product/reports/currentStockReport.php' target='_blank'>";
-    print "<tr><td><br><br></td>";
-    print '<input type="hidden" id="stockExistenciasAlmacen" name="stockId" value="1">';
-    print "<td><button type=submit class='butAction'>Existencias en Almacen</button></td>";
-    print "</form>";
-    print "</td></tr></table><br>";
+  print "</table><br>";
 
   //reportes generales
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
@@ -185,22 +179,33 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print '<input type="hidden" id="month10Products" name="month" value="1"><td/><tr/>';
   print "</form>";
   print "</table><br>";
-
-
-  print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
-  print '<tr class="liste_titre">';
-  print '<td colspan="2">Cierre de inventario</td></tr>';
+  //Inventario
+    print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
+    print '<tr class="liste_titre">';
+    print '<td colspan="2">Reportes de almacen</td></tr>';
+    //Seleccion de almacen
+    print "<tr style='background-color:#7C8398; color:white'>
+    <td  style='width:50%'>Almacen<br></td>
+    <td><select id='almacen_dynamic_select'>
+    <option value='1'>Aguascalientes Bodega</option>
+    <option value='2'>Aguascalientes Produccion</option>
+    <option value='3'>Leon</option>
+    <option value='4'>Lagos</option>
+    </select></td>
+    </tr>";
   //Cierre de inventario
+  print "<tr>";
   print "<form action='../product/reports/cierre_de_inventario.php' target='_blank'>";
-  print "<td><button type=submit class='butAction'>Ir a Cierre de inventario</button>";
-  print "<td  style='width:50%'><select name='stock_id' >
-      <option value='1'>Aguascalientes Bodega</option>
-  <option value='2'>Aguascalientes Produccion</option>
-  <option value='3'>Leon</option>
-  <option value='4'>Lagos</option>
-  </select></td>";
-  print "</form>";
-  print "</table></form><br>";
+  print "<tr><td><br><br></td>";
+  print '<input type="hidden" id="stockCierreInventario" name="stock_id" value="1">';
+  print "<td><button type=submit class='butAction'>Ir a Cierre de inventario</button></td></form></tr>";
+    //Existencias en almacen
+    print "<form action='../product/reports/currentStockReport.php' target='_blank'>";
+    print "<tr><td><br><br></td>";
+    print '<input type="hidden" id="stockExistenciasAlmacen" name="stockId" value="1">';
+    print "<td><button type=submit class='butAction'>Existencias en Almacen</button></td>";
+    print "</form>";
+    print "</td></tr></table><br>";
 
   //Vendedores
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
@@ -269,11 +274,20 @@ print "<script>
         var stockId = document.getElementById('account_dynamic_select').value
         //changes current stock report
          if (stockId) { 
-             document.getElementById('stockExistenciasAlmacen').value = stockId;
              document.getElementById('stockReporteVentas').value = stockId;
              document.getElementById('stockCuentasPorCobrar').value = stockId;
          }
       });
+
+      //changes almacen report link dinamicly
+      $('#almacen_dynamic_select').on('change', function () {
+       var stockId = document.getElementById('almacen_dynamic_select').value
+       //changes current stock report
+        if (stockId) { 
+            document.getElementById('stockExistenciasAlmacen').value = stockId;
+            document.getElementById('stockCierreInventario').value = stockId;
+        }
+     });
 
       //changes general reports month dinamically
        $('#general_reports_dynamic_select').on('change', function () {
