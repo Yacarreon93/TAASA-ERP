@@ -136,7 +136,7 @@ if($action==""){
 				$nmr2=$db->num_rows($req2);
 				if($nmr2>0){
 					$rsl2=$db->fetch_object($req2);
-					if($rsl2->UUID!="Pendiente" && $rsl2->UUID!=null){
+					if($rsl2->UUID!="" && $rsl2->UUID!=null){
 						$uuidCFDI=$rsl2->UUID;
 					}
 				}
