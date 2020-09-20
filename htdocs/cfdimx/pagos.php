@@ -977,6 +977,7 @@ if ($action == "cfdi2") {
 
 	$pagoFacturado = false;
 	$pagoCancelado = false;
+	$CFDIPendiente = true;
 	$uuidCFDIFinal = "";
 
 	$sqlpagoFacturado = "SELECT * FROM cfdi_comprobante
@@ -989,8 +990,13 @@ if ($action == "cfdi2") {
 		if( $rsl->cancelado == 2) {
 			$pagoCancelado = true;
 		}
-		else if($rsl->UUID != "Pendiente" && $rsl->UUID != null){
+		else if($rsl->UUID == "Pendiente") {
 			$pagoFacturado = true;
+			$uuidCFDIFinal = $rsl->UUID;
+		}
+		else if($rsl->UUID != null){
+			$pagoFacturado = true;
+			$CFDIPendiente = false;
 			$uuidCFDIFinal = $rsl->UUID;
 		}
 	}
