@@ -991,7 +991,7 @@ if ($action == "cfdi2") {
 			$pagoCancelado = true;
 		}
 		else if($rsl->UUID == "Pendiente") {
-			$pagoFacturado = true;
+			//$pagoFacturado = true;
 			$uuidCFDIFinal = $rsl->UUID;
 		}
 		else if($rsl->UUID != null){
@@ -1112,6 +1112,7 @@ if ($action == "cfdi2") {
 	$impPagadodr="";
 	$impSaldoInsoluto="";
 
+	//Checkpoint 1 (bug saldo insoluto)
 	if(!$pagoFacturado) {
 		$sqlfacture = "SELECT * 
 				FROM llx_facture 
