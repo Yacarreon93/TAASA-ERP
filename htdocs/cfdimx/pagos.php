@@ -1024,7 +1024,6 @@ if ($action == "cfdi2") {
 	print '<tr><td>'.$langs->trans("Number").'</td><td colspan="3">';
 	print $form->editfieldval("Numero",'num_paiement',$obpag->numero,$obpag,$obpag->statut == 0 && $user->rights->fournisseur->facture->creer,'string','',null,$langs->trans('PaymentNumberUpdateSucceeded'));
 	print '</td></tr>';
-	
 	// Amount
 	print '<tr><td>'.$langs->trans('Amount').'</td><td colspan="3">'.price($obpag->montant,'',$langs,0,0,-1,$conf->currency).'</td></tr>';
 	
@@ -1126,11 +1125,11 @@ if ($action == "cfdi2") {
 				" AND fk_paiement != ".GETPOST("pagcid");
 		$resFacturePayments = $db->query($sqlfacturePayments);
 		$rslFacturePayments=$db->fetch_object($resFacturePayments);
-
 		$numparcialidaddr = (($rslFacturePayments->numero)+1);
 		$impSaldoAnterior = ($rslFacture->total_ttc - $rslFacturePayments->pagado);
 		$impPagadodr = number_format($obpag->montant, 2);
-		$impSaldoInsoluto = $impSaldoAnterior - $impPagadodr;
+		$impSaldoInsoluto = $impSaldoAnterior - $obpag->montant;
+		
 	}
 
 	$facid_custom = GETPOST('facid'); // ".GETPOST('facid').",
@@ -1173,6 +1172,10 @@ if ($action == "cfdi2") {
 		$impPagadodr=$rsl->impPagado;
 		$impSaldoInsoluto=$rsl->impSaldoInsoluto;
 	}
+
+	
+
+
 
 	print '<form method="POST" action="pagos.php?action=guardar2">';
 	print '<input type="hidden" name="facid" value="'.GETPOST("facid").'">';
