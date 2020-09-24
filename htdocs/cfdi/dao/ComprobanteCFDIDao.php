@@ -496,8 +496,7 @@ class ComprobanteCFDIDao {
 		fk_comprobante,
 		fk_payment,
 		fk_soc,
-		uso_cfdi,
-		UUID) 
+		uso_cfdi) 
 		VALUES (';
 		$sql.="'".'PA-'.$array_data['pagcid']."', ";
 		$sql.="'".$array_data['pagcid']."'".", ";
@@ -511,8 +510,7 @@ class ComprobanteCFDIDao {
 		$sql.="'".$array_data['facid']."'".", ";
 		$sql.="'".$array_data['pagcid']."'".", ";
 		$sql.=$fk_soc.", ";
-		$sql.="'P01'".", ";
-		$sql.="'Pendiente'";
+		$sql.="'P01'";
 		$sql.= ')';
 		$this->ExecuteQuery($sql);
 	}

@@ -977,7 +977,6 @@ if ($action == "cfdi2") {
 
 	$pagoFacturado = false;
 	$pagoCancelado = false;
-	$CFDIPendiente = true;
 	$uuidCFDIFinal = "";
 
 	$sqlpagoFacturado = "SELECT * FROM cfdi_comprobante
@@ -990,13 +989,8 @@ if ($action == "cfdi2") {
 		if( $rsl->cancelado == 2) {
 			$pagoCancelado = true;
 		}
-		else if($rsl->UUID == "Pendiente") {
-			//$pagoFacturado = true;
-			$uuidCFDIFinal = $rsl->UUID;
-		}
 		else if($rsl->UUID != null){
 			$pagoFacturado = true;
-			$CFDIPendiente = false;
 			$uuidCFDIFinal = $rsl->UUID;
 		}
 	}
@@ -1776,7 +1770,7 @@ if($action=="timbrarCFDIProfact") {
 	
 	$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
 	SET
-		status = 0
+		status = 0, UUID = 'Pendiente'
 		WHERE fk_payment = ".GETPOST('pagcid','int');
 	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
 

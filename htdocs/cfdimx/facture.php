@@ -2910,9 +2910,9 @@ if( $cfdi_tot>0 ){
 													print 'Fuera de fecha de timbrado';
 												}
 											}else{
-												if( $modo_timbrado==1 && $folios_disponibles>0 )
+												if( $modo_timbrado==1 )
 												{
-                                                    if($timbreProfact && ($user->id == 1)) {
+                                                    if($timbreProfact ) {
                                                         print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI Profact</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI Profact
                                                     } else {
                                                         print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//AMM boton generar CFDI
