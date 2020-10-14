@@ -57,6 +57,37 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
     $search_thirdparty="";
 }
 
+function printYearDropdown($id) {
+   $currentYear = date('Y');
+   $year_options = [];
+   $oldest_year = 2020;
+   for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
+     array_push($year_options, $i);
+   }
+   print "<select id='$id'>";
+   foreach ($year_options as $year) {
+     $selected = $year == $currentYear ? 'selected' : '';
+     print "<option value='$year' $selected>$year</option>";
+   }   
+   print "</select>";
+}
+
+function printMonthDropdown($id) {
+  print "<select id='$id'>
+  <option value='1'>Enero</option>
+  <option value='2'>Febrero</option>
+  <option value='3'>Marzo</option>
+  <option value='4'>Abril</option>
+  <option value='5'>Mayo</option>
+  <option value='6'>Junio</option>
+  <option value='7'>Julio</option>
+  <option value='8'>Agosto</option>
+  <option value='9'>Septiembre</option>
+  <option value='10'>Octubre</option>
+  <option value='11'>Noviembre</option>
+  <option value='12'>Diciembre</option>
+  </select>";
+}
 
 /*
  * View
@@ -116,20 +147,18 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<td><button type=submit class='butAction'>Reporte de ventas</button></td></tr>";
   print "</form>";
   print "</table><br>";
-
-  $currentYear = date('Y');
-  $year_options = [];
-  $oldest_year = 2020;
-
-  for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
-    array_push($year_options, $i);
-  }
   
   //reportes generales
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
   print "<tr class=\"liste_titre\">";
   print '<td colspan="3">Reportes de contabilidad generales</td></tr>';
   //Seleccion de año
+  $currentYear = date('Y');
+  $year_options = [];
+  $oldest_year = 2020;
+  for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
+    array_push($year_options, $i);
+  }
   print "<tr style='background-color:#7C8398; color:white'>
   <td style='width:50%'>Año<br></td>
   <td>
@@ -186,20 +215,40 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
   print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button></td>";
   print "</form></tr>";
-  //top 10 productos
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/topProductos.php' target='_blank'>";
+  print "</table><br>";
+  
+  /* REPORTES DE CONTABILIDAD GENERALES */
+  print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
+  print '<tr class="liste_titre"><td colspan="3">Reportes de contabilidad generales</td></tr>';
+  print '<form target="_blank">';
+  // Año
+  print "<tr style='background-color:#7C8398; color:white'>";
+  print "<td style='width:50%'>Año<br></td>";
   print "<td>";
-  print '<select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;">';
-  print '</select>';
+  printYearDropdown('general-reports-year');
+  print "</td>";
+  print "</tr>";
+  // Mes
+  print "<tr style='background-color:#7C8398; color:white'>";
+  print "<td style='width:50%'>Mes<br></td>";
+  print "<td>";
+  printMonthDropdown('general-reports-month');
+  print "</td>";
+  print "</tr>";
+  // Top 10 Productos
+  print "<tr>";
+  print '<td><select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;"></select></td>';
   print '<input type="hidden" value="" name="month_week" id="month_week"></td>';
   print '<input type="hidden" name="fromDate" id="fromDate">';
   print '<input type="hidden" name="toDate" id="toDate">';
-  print "<td><button type=submit class='butAction'>Top 10 productos</button>";
+  print "<input type='hidden' id='year10Products' name='year' value='$currentYear'>";
   print '<input type="hidden" id="month10Products" name="month" value="1"></td>';
-  print "</form>";
+  print "<td><button type=submit action='../product/reports/topProductos.php' class='butAction'>Top 10 productos</button></td>";
   print "</tr>";
+
+  print "</form>";
   print "</table><br>";
+
   //Inventario
     print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
     print '<tr class="liste_titre">';
@@ -310,6 +359,18 @@ print "<script>
         }
      });
 
+      //changes general reports month dinamically
+       $('#general_reports_dynamic_select').on('change', function () {
+         var month =  $(this).val(); // get selected value
+        if (month) {
+              document.getElementById('monthBillsToPay').value = month;
+              document.getElementById('monthUnpaidClientBillsTotal').value = month; 
+              document.getElementById('monthUnpaidClientBills').value = month; 
+              document.getElementById('monthGeneralSalesReport').value = month;
+              document.getElementById('month10Products').value = month;
+          }
+      });
+      
       //changes general reports month dinamically
        $('#general_reports_dynamic_select').on('change', function () {
          var month =  $(this).val(); // get selected value
