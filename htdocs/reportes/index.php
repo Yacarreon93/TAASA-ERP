@@ -117,10 +117,30 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "</form>";
   print "</table><br>";
 
+  $currentYear = date('Y');
+  $year_options = [];
+  $oldest_year = 2020;
+
+  for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
+    array_push($year_options, $i);
+  }
+  
   //reportes generales
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
   print "<tr class=\"liste_titre\">";
   print '<td colspan="3">Reportes de contabilidad generales</td></tr>';
+  //Seleccion de año
+  print "<tr style='background-color:#7C8398; color:white'>
+  <td style='width:50%'>Año<br></td>
+  <td>
+  <select id='general-reports-year'>";
+  foreach ($year_options as $year) {
+    $selected = $year == $currentYear ? 'selected' : '';
+    print "<option value='$year' $selected>$year</option>";
+  }   
+  print "</select>
+  </td>
+  </tr>";
   //Seleccion de mes
   print "<tr style='background-color:#7C8398; color:white'>
   <td  style='width:50%'>Mes<br></td>
@@ -137,35 +157,35 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   <option value='10'>Octubre</option>
   <option value='11'>Noviembre</option>
   <option value='12'>Diciembre</option>
-  </select></td><tr/>";
+  </select></td></tr>";
   //Antiguedad de saldos
   print "<tr colspan='2'>";
   print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
   print "<td><br><br></td>";
   print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button></td>";
-  print "</form><tr/>";
+  print "</form></tr>";
   //Cuentas por cobrar Totales
   print "<tr colspan='2'>";
   print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
   print "<td><br><br></td>";
   print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button></td>";
-  print "</form><tr/>";
+  print "</form></tr>";
    //Cuentas por cobrar
    print "<tr colspan='2'>";
    print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
    print "<td><br><br></td>";
    print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
    print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button></td>";
-   print "</form><tr/>";
+   print "</form></tr>";
   //Reporte de ventas general
   print "<tr colspan='2'>";
   print "<form action='../product/reports/SalesReport.php' target='_blank'>";
   print "<td><br><br></td>";
   print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
-  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button><td/>";
-  print "</form><tr/>";
+  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button></td>";
+  print "</form></tr>";
   //top 10 productos
   print "<tr colspan='2'>";
   print "<form action='../product/reports/topProductos.php' target='_blank'>";
@@ -176,8 +196,9 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print '<input type="hidden" name="fromDate" id="fromDate">';
   print '<input type="hidden" name="toDate" id="toDate">';
   print "<td><button type=submit class='butAction'>Top 10 productos</button>";
-  print '<input type="hidden" id="month10Products" name="month" value="1"><td/><tr/>';
+  print '<input type="hidden" id="month10Products" name="month" value="1"></td>';
   print "</form>";
+  print "</tr>";
   print "</table><br>";
   //Inventario
     print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
