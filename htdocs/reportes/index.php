@@ -61,7 +61,7 @@ function printYearDropdown($id) {
    $currentYear = date('Y');
    $year_options = [];
    $oldest_year = 2020;
-   for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
+   for ($i = $currentYear; $i >= $oldest_year ; $i--) { 
      array_push($year_options, $i);
    }
    print "<select id='$id'>";
@@ -73,20 +73,27 @@ function printYearDropdown($id) {
 }
 
 function printMonthDropdown($id) {
-  print "<select id='$id'>
-  <option value='1'>Enero</option>
-  <option value='2'>Febrero</option>
-  <option value='3'>Marzo</option>
-  <option value='4'>Abril</option>
-  <option value='5'>Mayo</option>
-  <option value='6'>Junio</option>
-  <option value='7'>Julio</option>
-  <option value='8'>Agosto</option>
-  <option value='9'>Septiembre</option>
-  <option value='10'>Octubre</option>
-  <option value='11'>Noviembre</option>
-  <option value='12'>Diciembre</option>
-  </select>";
+  $months = array(
+    1 => 'Enero',
+    2 => 'Febrero',
+    3 => 'Marzo',
+    4 => 'Abril',
+    5 => 'Mayo',
+    6 => 'Junio',
+    7 => 'Julio',
+    8 => 'Agosto',
+    9 => 'Septiembre',
+    10 => 'Octubre',
+    11 => 'Noviembre',
+    12 => 'Diciembre',
+  );
+  $currentMonth = date('m');
+  print "<select id='$id'>";
+  foreach ($months as $value => $label) {
+    $selected = $value == $currentMonth ? 'selected' : '';
+    print "<option value='$value' $selected >$label</option>";
+  }
+  print "</select>";
 }
 
 /*
@@ -358,30 +365,6 @@ print "<script>
             document.getElementById('stockCierreInventario').value = stockId;
         }
      });
-
-      //changes general reports month dinamically
-       $('#general_reports_dynamic_select').on('change', function () {
-         var month =  $(this).val(); // get selected value
-        if (month) {
-              document.getElementById('monthBillsToPay').value = month;
-              document.getElementById('monthUnpaidClientBillsTotal').value = month; 
-              document.getElementById('monthUnpaidClientBills').value = month; 
-              document.getElementById('monthGeneralSalesReport').value = month;
-              document.getElementById('month10Products').value = month;
-          }
-      });
-      
-      //changes general reports month dinamically
-       $('#general_reports_dynamic_select').on('change', function () {
-         var month =  $(this).val(); // get selected value
-        if (month) {
-              document.getElementById('monthBillsToPay').value = month;
-              document.getElementById('monthUnpaidClientBillsTotal').value = month; 
-              document.getElementById('monthUnpaidClientBills').value = month; 
-              document.getElementById('monthGeneralSalesReport').value = month;
-              document.getElementById('month10Products').value = month;
-          }
-      });
 
       //changes vendor reports month dinamically
       $('#vendor_reports_dynamic_select').on('change', function () {
