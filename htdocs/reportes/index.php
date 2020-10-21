@@ -180,7 +180,7 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   //Seleccion de mes
   print "<tr style='background-color:#7C8398; color:white'>
   <td  style='width:50%'>Mes<br></td>
-  <td><select id='general_reports_dynamic_select'>
+  <td><select id='general_reports_dynamic_select_x'>
       <option value='1'>Enero</option>
   <option value='2'>Febrero</option>
   <option value='3'>Marzo</option>
@@ -244,13 +244,10 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "</tr>";
   // Top 10 Productos
   print "<tr>";
-  print '<td><select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;"></select></td>';
-  print '<input type="hidden" value="" name="month_week" id="month_week"></td>';
+  print '<td><select id="weekSelector" class="flat" style="min-width: 100px; margin-left: 10px;"></select></td>';
   print '<input type="hidden" name="fromDate" id="fromDate">';
   print '<input type="hidden" name="toDate" id="toDate">';
-  print "<input type='hidden' id='year10Products' name='year' value='$currentYear'>";
-  print '<input type="hidden" id="month10Products" name="month" value="1"></td>';
-  print "<td><button type=submit action='../product/reports/topProductos.php' class='butAction'>Top 10 productos</button></td>";
+  print "<td><button type=submit formaction='../product/reports/topProductos.php' class='butAction'>Top 10 productos</button></td>";
   print "</tr>";
 
   print "</form>";
@@ -379,43 +376,38 @@ print "<script>
   </script>";
 
   echo '<script>
-  jQuery("#general_reports_dynamic_select").change(function(){
-    var year = new Date().getFullYear();
-      jQuery.post("ajax/getRanges.php", {month: jQuery("#general_reports_dynamic_select").val(), year}, function (data) {
-          var obj = JSON.parse(data);
-          $("#weekSelector").empty();
-          $("#weekSelector").append($("<option>", {
-          value: 0,
-          text: ""
-      }));
-          obj.forEach(myFunction);
+  function getWeekRanges() {
+    let month = $("#general-reports-month").val();
+    let year = $("#general-reports-year").val();
+    $.post("ajax/getRanges.php", { month, year }, function (data) {
+      let options = JSON.parse(data);
+      $("#weekSelector").empty();
+      options.forEach(function (option, index) {
+        $("#weekSelector").append($("<option>", {
+          value: option.from+"/"+option.to,
+          text: "del "+option.from+" al "+option.to,
+          selected: index === 0,
+        }));
       });
-   });
+      $("#fromDate").val(options[0].from);
+      $("#toDate").val(options[0].to);
+    });
+  };
 
-  var contador = 0;
+  getWeekRanges();
 
-  function myFunction(item) {
+  $("#general-reports-month").change(getWeekRanges);
+  $("#general-reports-year").change(getWeekRanges);
 
-      $("#weekSelector").append($("<option>", {
-          value: item.from+"/"+item.to,
-          text: "del "+item.from+" al "+item.to
-      }));
-   }
-
-   jQuery("#weekSelector").change(function(){
-      dates = $(this).val().split("/");
-
-      $("#fromDate").val(dates[0]);
-      $("#toDate").val(dates[1]);
-
-   });
-
+  $("#weekSelector").change(function () {
+    let dates = $(this).val().split("/");
+    $("#fromDate").val(dates[0]);
+    $("#toDate").val(dates[1]);
+  });
   </script>';
-  } else {
-    print'<p>No estas autorizado para ver este modulo.</p>';
-  }
-
-
+} else {
+  print'<p>No estas autorizado para ver este modulo.</p>';
+}
 
 llxFooter();
 
