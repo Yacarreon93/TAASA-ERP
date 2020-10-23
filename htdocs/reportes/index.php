@@ -57,14 +57,14 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
     $search_thirdparty="";
 }
 
-function printYearDropdown($id) {
+function printYearDropdown($id, $name = 'year') {
    $currentYear = date('Y');
    $year_options = [];
    $oldest_year = 2020;
    for ($i = $currentYear; $i >= $oldest_year ; $i--) { 
      array_push($year_options, $i);
    }
-   print "<select id='$id'>";
+   print "<select id='$id' name='$name'>";
    foreach ($year_options as $year) {
      $selected = $year == $currentYear ? 'selected' : '';
      print "<option value='$year' $selected>$year</option>";
@@ -72,7 +72,7 @@ function printYearDropdown($id) {
    print "</select>";
 }
 
-function printMonthDropdown($id) {
+function printMonthDropdown($id, $name = 'month') {
   $months = array(
     1 => 'Enero',
     2 => 'Febrero',
@@ -88,7 +88,7 @@ function printMonthDropdown($id) {
     12 => 'Diciembre',
   );
   $currentMonth = date('m');
-  print "<select id='$id'>";
+  print "<select id='$id' name='$name'>";
   foreach ($months as $value => $label) {
     $selected = $value == $currentMonth ? 'selected' : '';
     print "<option value='$value' $selected >$label</option>";
@@ -155,75 +155,6 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "</form>";
   print "</table><br>";
   
-  //reportes generales
-  print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
-  print "<tr class=\"liste_titre\">";
-  print '<td colspan="3">Reportes de contabilidad generales</td></tr>';
-  //Seleccion de año
-  $currentYear = date('Y');
-  $year_options = [];
-  $oldest_year = 2020;
-  for ($i = $currentYear + 5; $i >= $oldest_year ; $i--) { 
-    array_push($year_options, $i);
-  }
-  print "<tr style='background-color:#7C8398; color:white'>
-  <td style='width:50%'>Año<br></td>
-  <td>
-  <select id='general-reports-year'>";
-  foreach ($year_options as $year) {
-    $selected = $year == $currentYear ? 'selected' : '';
-    print "<option value='$year' $selected>$year</option>";
-  }   
-  print "</select>
-  </td>
-  </tr>";
-  //Seleccion de mes
-  print "<tr style='background-color:#7C8398; color:white'>
-  <td  style='width:50%'>Mes<br></td>
-  <td><select id='general_reports_dynamic_select_x'>
-      <option value='1'>Enero</option>
-  <option value='2'>Febrero</option>
-  <option value='3'>Marzo</option>
-  <option value='4'>Abril</option>
-  <option value='5'>Mayo</option>
-  <option value='6'>Junio</option>
-  <option value='7'>Julio</option>
-  <option value='8'>Agosto</option>
-  <option value='9'>Septiembre</option>
-  <option value='10'>Octubre</option>
-  <option value='11'>Noviembre</option>
-  <option value='12'>Diciembre</option>
-  </select></td></tr>";
-  //Antiguedad de saldos
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button></td>";
-  print "</form></tr>";
-  //Cuentas por cobrar Totales
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button></td>";
-  print "</form></tr>";
-   //Cuentas por cobrar
-   print "<tr colspan='2'>";
-   print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
-   print "<td><br><br></td>";
-   print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
-   print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button></td>";
-   print "</form></tr>";
-  //Reporte de ventas general
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/SalesReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
-  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button></td>";
-  print "</form></tr>";
-  print "</table><br>";
-  
   /* REPORTES DE CONTABILIDAD GENERALES */
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
   print '<tr class="liste_titre"><td colspan="3">Reportes de contabilidad generales</td></tr>';
@@ -241,6 +172,26 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<td>";
   printMonthDropdown('general-reports-month');
   print "</td>";
+  print "</tr>";
+  // Antiguedad de saldos
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/BillsToPayReport.php' class='butAction'>Antiguedad de Saldos</button></td>";
+  print "</tr>";
+  // Cuentas por cobrar Totales
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/UnpaidClientBillsTotalReport.php' class='butAction'>Cuentas por cobrar Totales</button></td>";
+  print "</tr>";
+  // Cuentas por cobrar
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/UnpaidClientBillsReport.php' class='butAction'>Cuentas por cobrar Detalle</button></td>";
+  print "</tr>";
+  // Reporte de ventas general
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/SalesReport.php' class='butAction'>Reporte de ventas general</button></td>";
   print "</tr>";
   // Top 10 Productos
   print "<tr>";
