@@ -37,6 +37,8 @@ if (! empty($conf->commande->enabled))
 if (! empty($conf->tax->enabled))
 	require_once DOL_DOCUMENT_ROOT.'/compta/sociales/class/chargesociales.class.php';
 
+define('DELETE_DRAFTS_ACTION', 'delete-drafts');
+
 // L'espace compta/treso doit toujours etre actif car c'est un espace partage
 // par de nombreux modules (banque, facture, commande a facturer, etc...) independamment
 // de l'utilisation de la compta ou non. C'est au sein de cet espace que chaque sous fonction
@@ -65,6 +67,9 @@ if ($user->societe_id > 0)
  * Actions
  */
 
+if ($action === DELETE_DRAFTS_ACTION) {
+
+}
 
 /*
  * View
@@ -305,6 +310,15 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 
 print '</div><div class="fichetwothirdright"><div class="ficheaddleft">';
 
+print '<div style="position:relative">';
+print '<div style="top:-30px;right:0;position:absolute">';
+print '<form method="get" action="">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="'.DELETE_DRAFTS_ACTION.'">';
+print '<input type="submit" value="Eliminar borradores" class="button">';
+print '</form>';
+print '</div>';
+print '</div>';
 
 // Last modified customer invoices
 if (! empty($conf->facture->enabled) && $user->rights->facture->lire)
@@ -497,7 +511,7 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 	}
 }
 
-
+die;
 
 // Last donations
 if (! empty($conf->don->enabled) && $user->rights->societe->lire)
@@ -953,6 +967,7 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 	}
 }
 
+die;
 
 
 // TODO Mettre ici recup des actions en rapport avec la compta
@@ -977,6 +992,7 @@ if ($resql)
 	print "</table><br>";
 }
 
+die;
 
 print '</div></div></div>';
 
