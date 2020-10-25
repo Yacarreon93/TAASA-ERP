@@ -511,7 +511,6 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 	}
 }
 
-die;
 
 // Last donations
 if (! empty($conf->don->enabled) && $user->rights->societe->lire)
@@ -967,8 +966,6 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 	}
 }
 
-die;
-
 
 // TODO Mettre ici recup des actions en rapport avec la compta
 $resql = 0;
@@ -991,8 +988,6 @@ if ($resql)
 	$db->free($resql);
 	print "</table><br>";
 }
-
-die;
 
 print '</div></div></div>';
 
