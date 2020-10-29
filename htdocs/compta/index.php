@@ -68,7 +68,15 @@ if ($user->societe_id > 0)
  */
 
 if ($action === DELETE_DRAFTS_ACTION) {
+	// Remove all no quote draft invoices, also remove the invoice details on cascade
+	$sql = "DELETE FROM ".MAIN_DB_PREFIX."facture WHERE fk_statut = 0 AND is_quote IS NULL";
+	$resql = $db->query($sql);
 
+	if ($resql) {
+		setEventMessage('Borradores eliminados');
+	} else {
+		setEventMessage('Algo falló');  dol_print_error($db); 
+	}
 }
 
 /*
