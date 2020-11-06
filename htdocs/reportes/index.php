@@ -57,6 +57,44 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
     $search_thirdparty="";
 }
 
+function printYearDropdown($id, $name = 'year') {
+   $currentYear = date('Y');
+   $year_options = [];
+   $oldest_year = 2020;
+   for ($i = $currentYear; $i >= $oldest_year ; $i--) { 
+     array_push($year_options, $i);
+   }
+   print "<select id='$id' name='$name'>";
+   foreach ($year_options as $year) {
+     $selected = $year == $currentYear ? 'selected' : '';
+     print "<option value='$year' $selected>$year</option>";
+   }   
+   print "</select>";
+}
+
+function printMonthDropdown($id, $name = 'month') {
+  $months = array(
+    1 => 'Enero',
+    2 => 'Febrero',
+    3 => 'Marzo',
+    4 => 'Abril',
+    5 => 'Mayo',
+    6 => 'Junio',
+    7 => 'Julio',
+    8 => 'Agosto',
+    9 => 'Septiembre',
+    10 => 'Octubre',
+    11 => 'Noviembre',
+    12 => 'Diciembre',
+  );
+  $currentMonth = date('m');
+  print "<select id='$id' name='$name'>";
+  foreach ($months as $value => $label) {
+    $selected = $value == $currentMonth ? 'selected' : '';
+    print "<option value='$value' $selected >$label</option>";
+  }
+  print "</select>";
+}
 
 /*
  * View
@@ -116,69 +154,56 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   print "<td><button type=submit class='butAction'>Reporte de ventas</button></td></tr>";
   print "</form>";
   print "</table><br>";
-
-  //reportes generales
+  
+  /* REPORTES DE CONTABILIDAD GENERALES */
   print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
-  print "<tr class=\"liste_titre\">";
-  print '<td colspan="3">Reportes de contabilidad generales</td></tr>';
-  //Seleccion de mes
-  print "<tr style='background-color:#7C8398; color:white'>
-  <td  style='width:50%'>Mes<br></td>
-  <td><select id='general_reports_dynamic_select'>
-      <option value='1'>Enero</option>
-  <option value='2'>Febrero</option>
-  <option value='3'>Marzo</option>
-  <option value='4'>Abril</option>
-  <option value='5'>Mayo</option>
-  <option value='6'>Junio</option>
-  <option value='7'>Julio</option>
-  <option value='8'>Agosto</option>
-  <option value='9'>Septiembre</option>
-  <option value='10'>Octubre</option>
-  <option value='11'>Noviembre</option>
-  <option value='12'>Diciembre</option>
-  </select></td><tr/>";
-  //Antiguedad de saldos
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/BillsToPayReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthBillsToPay" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Antiguedad de Saldos</button></td>";
-  print "</form><tr/>";
-  //Cuentas por cobrar Totales
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/UnpaidClientBillsTotalReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthUnpaidClientBillsTotal" name="month" value="1">';
-  print "<td><button type=submit class='butAction'>Cuentas por cobrar Totales</button></td>";
-  print "</form><tr/>";
-   //Cuentas por cobrar
-   print "<tr colspan='2'>";
-   print "<form action='../product/reports/UnpaidClientBillsReport.php' target='_blank'>";
-   print "<td><br><br></td>";
-   print '<input type="hidden" id="monthUnpaidClientBills" name="month" value="1">';
-   print "<td><button type=submit class='butAction'>Cuentas por cobrar Detalle</button></td>";
-   print "</form><tr/>";
-  //Reporte de ventas general
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/SalesReport.php' target='_blank'>";
-  print "<td><br><br></td>";
-  print '<input type="hidden" id="monthGeneralSalesReport" name="month" value="1">';
-  print "<td><button disabled='disabled' type=submit class='butAction'>Reporte de ventas general</button><td/>";
-  print "</form><tr/>";
-  //top 10 productos
-  print "<tr colspan='2'>";
-  print "<form action='../product/reports/topProductos.php' target='_blank'>";
+  print '<tr class="liste_titre"><td colspan="3">Reportes de contabilidad generales</td></tr>';
+  print '<form target="_blank">';
+  // Año
+  print "<tr style='background-color:#7C8398; color:white'>";
+  print "<td style='width:50%'>Año<br></td>";
   print "<td>";
-  print '<select id="weekSelector" class="flat" style="width:100px; margin-left: 10px;">';
-  print '</select>';
-  print '<input type="hidden" value="" name="month_week" id="month_week"></td>';
+  printYearDropdown('general-reports-year');
+  print "</td>";
+  print "</tr>";
+  // Mes
+  print "<tr style='background-color:#7C8398; color:white'>";
+  print "<td style='width:50%'>Mes<br></td>";
+  print "<td>";
+  printMonthDropdown('general-reports-month');
+  print "</td>";
+  print "</tr>";
+  // Antiguedad de saldos
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/BillsToPayReport.php' class='butAction'>Antiguedad de Saldos</button></td>";
+  print "</tr>";
+  // Cuentas por cobrar Totales
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/UnpaidClientBillsTotalReport.php' class='butAction'>Cuentas por cobrar Totales</button></td>";
+  print "</tr>";
+  // Cuentas por cobrar
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/UnpaidClientBillsReport.php' class='butAction'>Cuentas por cobrar Detalle</button></td>";
+  print "</tr>";
+  // Reporte de ventas general
+  print "<tr>";
+  print "<td></td>";
+  print "<td><button type=submit formaction='../product/reports/SalesReport.php' class='butAction'>Reporte de ventas general</button></td>";
+  print "</tr>";
+  // Top 10 Productos
+  print "<tr>";
+  print '<td><select id="weekSelector" class="flat" style="min-width: 100px; margin-left: 10px;"></select></td>';
   print '<input type="hidden" name="fromDate" id="fromDate">';
   print '<input type="hidden" name="toDate" id="toDate">';
-  print "<td><button type=submit class='butAction'>Top 10 productos</button>";
-  print '<input type="hidden" id="month10Products" name="month" value="1"><td/><tr/>';
+  print "<td><button type=submit formaction='../product/reports/topProductos.php' class='butAction'>Top 10 productos</button></td>";
+  print "</tr>";
+
   print "</form>";
   print "</table><br>";
+
   //Inventario
     print '<table class="noborder nohover" border="1" style="width:50%; border: 1px solid #ddd">';
     print '<tr class="liste_titre">';
@@ -289,18 +314,6 @@ print "<script>
         }
      });
 
-      //changes general reports month dinamically
-       $('#general_reports_dynamic_select').on('change', function () {
-         var month =  $(this).val(); // get selected value
-        if (month) {
-              document.getElementById('monthBillsToPay').value = month;
-              document.getElementById('monthUnpaidClientBillsTotal').value = month; 
-              document.getElementById('monthUnpaidClientBills').value = month; 
-              document.getElementById('monthGeneralSalesReport').value = month;
-              document.getElementById('month10Products').value = month;
-          }
-      });
-
       //changes vendor reports month dinamically
       $('#vendor_reports_dynamic_select').on('change', function () {
         var vendor =  $(this).val(); // get selected value
@@ -314,43 +327,38 @@ print "<script>
   </script>";
 
   echo '<script>
-  jQuery("#general_reports_dynamic_select").change(function(){
-    var year = new Date().getFullYear();
-      jQuery.post("ajax/getRanges.php", {month: jQuery("#general_reports_dynamic_select").val(), year}, function (data) {
-          var obj = JSON.parse(data);
-          $("#weekSelector").empty();
-          $("#weekSelector").append($("<option>", {
-          value: 0,
-          text: ""
-      }));
-          obj.forEach(myFunction);
+  function getWeekRanges() {
+    let month = $("#general-reports-month").val();
+    let year = $("#general-reports-year").val();
+    $.post("ajax/getRanges.php", { month, year }, function (data) {
+      let options = JSON.parse(data);
+      $("#weekSelector").empty();
+      options.forEach(function (option, index) {
+        $("#weekSelector").append($("<option>", {
+          value: option.from+"/"+option.to,
+          text: "del "+option.from+" al "+option.to,
+          selected: index === 0,
+        }));
       });
-   });
+      $("#fromDate").val(options[0].from);
+      $("#toDate").val(options[0].to);
+    });
+  };
 
-  var contador = 0;
+  getWeekRanges();
 
-  function myFunction(item) {
+  $("#general-reports-month").change(getWeekRanges);
+  $("#general-reports-year").change(getWeekRanges);
 
-      $("#weekSelector").append($("<option>", {
-          value: item.from+"/"+item.to,
-          text: "del "+item.from+" al "+item.to
-      }));
-   }
-
-   jQuery("#weekSelector").change(function(){
-      dates = $(this).val().split("/");
-
-      $("#fromDate").val(dates[0]);
-      $("#toDate").val(dates[1]);
-
-   });
-
+  $("#weekSelector").change(function () {
+    let dates = $(this).val().split("/");
+    $("#fromDate").val(dates[0]);
+    $("#toDate").val(dates[1]);
+  });
   </script>';
-  } else {
-    print'<p>No estas autorizado para ver este modulo.</p>';
-  }
-
-
+} else {
+  print'<p>No estas autorizado para ver este modulo.</p>';
+}
 
 llxFooter();
 
