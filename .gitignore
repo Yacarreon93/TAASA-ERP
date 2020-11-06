@@ -1,5 +1,6 @@
 htdocs/conf/conf.php
 documents/
+queries/
 
 *.DS_STORE
 
