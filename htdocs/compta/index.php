@@ -315,18 +315,19 @@ if (! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture-
 	}
 }
 
+if($user->id == '1' || $user->id == '18' || $user->id == '19') {
+	print '</div><div class="fichetwothirdright"><div class="ficheaddleft">';
 
-print '</div><div class="fichetwothirdright"><div class="ficheaddleft">';
-
-print '<div style="position:relative">';
-print '<div style="top:-30px;right:0;position:absolute">';
-print '<form method="get" action="">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="'.DELETE_DRAFTS_ACTION.'">';
-print '<input type="submit" value="Eliminar borradores" class="button">';
-print '</form>';
-print '</div>';
-print '</div>';
+	print '<div style="position:relative">';
+	print '<div style="top:-30px;right:0;position:absolute">';
+	print '<form method="get" action="">';
+	print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+	print '<input type="hidden" name="action" value="'.DELETE_DRAFTS_ACTION.'">';
+	print '<input type="submit" value="Eliminar borradores" class="button">';
+	print '</form>';
+	print '</div>';
+	print '</div>';
+}
 
 // Last modified customer invoices
 if (! empty($conf->facture->enabled) && $user->rights->facture->lire)
