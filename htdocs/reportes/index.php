@@ -220,7 +220,7 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
     </tr>";
   //Cierre de inventario
   print "<tr>";
-  print "<form action='../product/reports/cierre_de_inventario.php' target='_blank'>";
+  print "<form action='../product/cierre_de_inventario.php' target='_blank'>";
   print "<tr><td><br><br></td>";
   print '<input type="hidden" id="stockCierreInventario" name="stock_id" value="1">';
   print "<td><button type=submit class='butAction'>Ir a Cierre de inventario</button></td></form></tr>";
