@@ -62,7 +62,7 @@ $hideref = (GETPOST('hideref', 'int') ? GETPOST('hideref', 'int') : (! empty($co
 // Security check
 $fieldid = (! empty($ref) ? 'facnumber' : 'rowid');
 if ($user->societe_id) $socid = $user->societe_id;
-$result = restrictedArea($user, 'facture', $id, '', '', 'fk_soc', $fieldid);
+$result = 1;
 
 // Nombre de ligne pour choix de produit/service predefinis
 $NBLINES = 4;
@@ -80,9 +80,9 @@ if ($id > 0 || ! empty($ref)) {
 // Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
 $hookmanager->initHooks(array('invoicecard','globalcard'));
 
-$permissionnote = $user->rights->facture->creer; // Used by the include of actions_setnotes.inc.php
-$permissiondellink=$user->rights->facture->creer;	// Used by the include of actions_dellink.inc.php
-$permissiontoedit = $user->rights->facture->creer; // Used by the include of actions_lineupdonw.inc.php
+$permissionnote = true; // Used by the include of actions_setnotes.inc.php
+$permissiondellink=true;	// Used by the include of actions_dellink.inc.php
+$permissiontoedit = true; // Used by the include of actions_lineupdonw.inc.php
 
 /*
  * Actions
@@ -101,7 +101,7 @@ if (empty($reshook))
 	include DOL_DOCUMENT_ROOT.'/core/actions_lineupdown.inc.php';	// Must be include, not include_once
 
 	// Action clone object
-	if ($action == 'confirm_clone' && $confirm == 'yes' && $user->rights->facture->creer) {
+	if ($action == 'confirm_clone' && $confirm == 'yes' && true) {
 	//	if (1 == 0 && empty($_REQUEST["clone_content"]) && empty($_REQUEST["clone_receivers"])) {
 	//		$mesgs [] = '<div class="error">' . $langs->trans("NoCloneOptionsSpecified") . '</div>';
 	//	} else {
@@ -123,7 +123,7 @@ if (empty($reshook))
 	}
 
 	// Change status of invoice
-	else if ($action == 'reopen' && $user->rights->facture->creer) {
+	else if ($action == 'reopen' && true) {
 		$result = $object->fetch($id);
 		if ($object->statut == 2 || ($object->statut == 3 && $object->close_code != 'replaced')) {
 			$result = $object->set_unpaid($user);
@@ -141,7 +141,7 @@ if (empty($reshook))
 	}
 
 	// Delete line
-	else if ($action == 'confirm_deleteline' && $confirm == 'yes' && $user->rights->facture->creer)
+	else if ($action == 'confirm_deleteline' && $confirm == 'yes' && true)
 	{
 		$object->fetch($id);
 		$object->fetch_thirdparty();
@@ -180,7 +180,7 @@ if (empty($reshook))
 	}
 
 	//Delete all lines
-		else if ($action == 'confirm_deletealllines' && $user->rights->facture->creer)
+		else if ($action == 'confirm_deletealllines' && true)
 	{
 		$object->fetch($id);
 
@@ -218,14 +218,14 @@ if (empty($reshook))
 	}
 
 	// Delete link of credit note to invoice
-	else if ($action == 'unlinkdiscount' && $user->rights->facture->creer)
+	else if ($action == 'unlinkdiscount' && true)
 	{
 		$discount = new DiscountAbsolute($db);
 		$result = $discount->fetch(GETPOST("discountid"));
 		$discount->unlink_invoice();
 	}
 
-	else if ($action == 'set_thirdparty' && $user->rights->facture->creer)
+	else if ($action == 'set_thirdparty' && true)
 	{
 		$object->fetch($id);
 		$object->setValueFrom('fk_soc', $socid);
@@ -237,13 +237,13 @@ if (empty($reshook))
 		exit();
 	}
 
-	else if ($action == 'classin' && $user->rights->facture->creer)
+	else if ($action == 'classin' && true)
 	{
 		$object->fetch($id);
 		$object->setProject($_POST['projectid']);
 	}
 
-	else if ($action == 'setmode' && $user->rights->facture->creer)
+	else if ($action == 'setmode' && true)
 	{
 		$object->fetch($id);
 		$result = $object->setPaymentMethods(GETPOST('mode_reglement_id', 'int'));
@@ -251,7 +251,7 @@ if (empty($reshook))
 			dol_print_error($db, $object->error);
 	}
 
-	else if ($action == 'setinvoicedate' && $user->rights->facture->creer)
+	else if ($action == 'setinvoicedate' && true)
 	{
 		$object->fetch($id);
 		$old_date_lim_reglement = $object->date_lim_reglement;
@@ -275,7 +275,7 @@ if (empty($reshook))
 		if ($result < 0) dol_print_error($db, $object->error);
 	}
 
-	else if ($action == 'setconditions' && $user->rights->facture->creer)
+	else if ($action == 'setconditions' && true)
 	{
 		$object->fetch($id);
 		$object->cond_reglement_code = 0; // To clean property
@@ -291,7 +291,7 @@ if (empty($reshook))
 		if ($result < 0) dol_print_error($db, $object->error);
 	}
 
-	else if ($action == 'setpaymentterm' && $user->rights->facture->creer)
+	else if ($action == 'setpaymentterm' && true)
 	{
 		$object->fetch($id);
 		$object->date_lim_reglement = dol_mktime(12, 0, 0, $_POST['paymenttermmonth'], $_POST['paymenttermday'], $_POST['paymenttermyear']);
@@ -304,7 +304,7 @@ if (empty($reshook))
 			dol_print_error($db, $object->error);
 	}
 
-	else if ($action == 'setrevenuestamp' && $user->rights->facture->creer)
+	else if ($action == 'setrevenuestamp' && true)
 	{
 		$object->fetch($id);
 		$object->revenuestamp = GETPOST('revenuestamp');
@@ -321,18 +321,18 @@ if (empty($reshook))
     }
 
 	// bank account
-	else if ($action == 'setbankaccount' && $user->rights->facture->creer)
+	else if ($action == 'setbankaccount' && true)
 	{
 	    $result=$object->setBankAccount(GETPOST('fk_account', 'int'));
 	}
 
-	else if ($action == 'setremisepercent' && $user->rights->facture->creer)
+	else if ($action == 'setremisepercent' && true)
 	{
 		$object->fetch($id);
 		$result = $object->set_remise($user, $_POST['remise_percent']);
 	}
 
-	else if ($action == "setabsolutediscount" && $user->rights->facture->creer)
+	else if ($action == "setabsolutediscount" && true)
 	{
 		// POST[remise_id] ou POST[remise_id_for_payment]
 		if (! empty($_POST["remise_id"])) {
@@ -358,7 +358,7 @@ if (empty($reshook))
 		}
 	}
 
-	else if ($action == 'set_ref_client' && $user->rights->facture->creer)
+	else if ($action == 'set_ref_client' && true)
 	{
 		$object->fetch($id);
 		$object->set_ref_client($_POST['ref_client']);
@@ -366,7 +366,7 @@ if (empty($reshook))
 
 	// Classify to validated
 	else if ($action == 'confirm_valid' && $confirm == 'yes' &&
-        ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->creer))
+        ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty(true))
        	|| (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->validate)))
 	)
 	{
@@ -450,7 +450,7 @@ if (empty($reshook))
 
 	// Go back to draft status (unvalidate)
 	else if ($action == 'confirm_modif' &&
-		((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->creer))
+		((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty(true))
        	|| (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->unvalidate)))
 	)
 	{
@@ -561,7 +561,7 @@ if (empty($reshook))
 	}
 
 	// Convertir en reduc
-	else if ($action == 'confirm_converttoreduc' && $confirm == 'yes' && $user->rights->facture->creer)
+	else if ($action == 'confirm_converttoreduc' && $confirm == 'yes' && true)
 	{
 		$object->fetch($id);
 		$object->fetch_thirdparty();
@@ -646,7 +646,7 @@ if (empty($reshook))
 	/*
 	 * Insert new invoice in database
 	*/
-	else if ($action == 'add' && $user->rights->facture->creer)
+	else if ($action == 'add' && true)
 	{
 		if ($socid > 0) $object->socid = GETPOST('socid', 'int');
 
@@ -1259,7 +1259,7 @@ if (empty($reshook))
 	}
 
 	// Add a new line
-	else if ($action == 'addline' && $user->rights->facture->creer)
+	else if ($action == 'addline' && true)
 	{
 		$langs->load('errors');
 		$error = 0;
@@ -1606,7 +1606,7 @@ if (empty($reshook))
 		}
 	}
 
-	elseif ($action == 'updateligne' && $user->rights->facture->creer && ! GETPOST('cancel'))
+	elseif ($action == 'updateligne' && true && ! GETPOST('cancel'))
 	{
 		if (! $object->fetch($id) > 0)	dol_print_error($db);
 		$object->fetch_thirdparty();
@@ -1766,7 +1766,7 @@ if (empty($reshook))
 		}
 	}
 
-	else if ($action == 'updatealllines' && $user->rights->facture->creer && $_POST['all_percent'] == $langs->trans('Modifier'))
+	else if ($action == 'updatealllines' && true && $_POST['all_percent'] == $langs->trans('Modifier'))
 	{
 		if (!$object->fetch($id) > 0) dol_print_error($db);
 		if (!is_null(GETPOST('all_progress')) && GETPOST('all_progress') != "")
@@ -1783,7 +1783,7 @@ if (empty($reshook))
 		}
 	}
 
-	else if ($action == 'updateligne' && $user->rights->facture->creer && $_POST['cancel'] == $langs->trans('Cancel')) {
+	else if ($action == 'updateligne' && true && $_POST['cancel'] == $langs->trans('Cancel')) {
 		if($isTicket) {
 			header('Location: ' . $_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $id); // Pour reaffichage de la fiche en cours d'edition
 		} else {
@@ -1919,7 +1919,7 @@ if (empty($reshook))
 
 	include DOL_DOCUMENT_ROOT.'/core/actions_printing.inc.php';
 
-	if (! empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && $user->rights->facture->creer)
+	if (! empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && true)
 	{
 		if ($action == 'addcontact')
 		{
@@ -2928,7 +2928,7 @@ else if ($id > 0 || ! empty($ref))
 		print '<table class="nobordernopadding" width="100%"><tr><td>';
 		print $langs->trans('RevenueStamp');
 		print '</td>';
-		if ($action != 'editrevenuestamp' && ! empty($object->brouillon) && $user->rights->facture->creer)
+		if ($action != 'editrevenuestamp' && ! empty($object->brouillon) && true)
 			print '<td align="right"><a href="' . $_SERVER["PHP_SELF"] . '?action=editrevenuestamp&amp;facid=' . $object->id . '">' . img_edit($langs->trans('SetRevenuStamp'), 1) . '</a></td>';
 		print '</tr></table>';
 		print '</td><td colspan="3">';
@@ -3035,7 +3035,7 @@ else if ($id > 0 || ! empty($ref))
 		$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
 
 	// Form to add new line
-	if (($object->statut == 0) && $user->rights->facture->creer && $action != 'valid' && $action != 'editline' && ($object->is_first() || !$object->situation_cycle_ref))
+	if (($object->statut == 0) && true && $action != 'valid' && $action != 'editline' && ($object->is_first() || !$object->situation_cycle_ref))
 	{
 		if ($action != 'editline')
 		{
@@ -3085,7 +3085,7 @@ else if ($id > 0 || ! empty($ref))
 				{
 					if (! $objectidnext && $object->is_last_in_cycle())
 					{
-					    if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->creer))
+					    if ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty(true))
        						|| (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->facture->invoice_advance->unvalidate)))
 						{
 							print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER['PHP_SELF'] . '?facid=' . $object->id . '&amp;action=modif">' . $langs->trans('Modify') . '</a></div>';
@@ -3105,7 +3105,7 @@ else if ($id > 0 || ! empty($ref))
 				|| ($object->type == Facture::TYPE_CREDIT_NOTE && empty($discount->id))
 				|| ($object->type == Facture::TYPE_DEPOSIT && empty($discount->id)))
 				&& ($object->statut == 2 || $object->statut == 3)
-				&& $user->rights->facture->creer)				// A paid invoice (partially or completely)
+				&& true)				// A paid invoice (partially or completely)
 			{
 				if (! $objectidnext && $object->close_code != 'replaced') 				// Not replaced by another invoice
 				{
@@ -3186,11 +3186,11 @@ else if ($id > 0 || ! empty($ref))
 				}
 
 				// For credit note
-				if ($object->type == Facture::TYPE_CREDIT_NOTE && $object->statut == 1 && $object->paye == 0 && $user->rights->facture->creer && $object->getSommePaiement() == 0) {
+				if ($object->type == Facture::TYPE_CREDIT_NOTE && $object->statut == 1 && $object->paye == 0 && true && $object->getSommePaiement() == 0) {
 					print '<div class="inline-block divButAction"><a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?facid=' . $object->id . '&amp;action=converttoreduc">' . $langs->trans('ConvertToReduc') . '</a></div>';
 				}
 				// For deposit invoice
-				if ($object->type == Facture::TYPE_DEPOSIT && $object->paye == 1 && $resteapayer == 0 && $user->rights->facture->creer && empty($discount->id))
+				if ($object->type == Facture::TYPE_DEPOSIT && $object->paye == 1 && $resteapayer == 0 && true && empty($discount->id))
 				{
 					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?facid='.$object->id.'&amp;action=converttoreduc">'.$langs->trans('ConvertToReduc').'</a></div>';
 				}
