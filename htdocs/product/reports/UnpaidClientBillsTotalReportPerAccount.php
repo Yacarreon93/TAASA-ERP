@@ -93,7 +93,7 @@ if($account == 1)
 
 $report_title = strtr('REPORTE DE TOTALES PENDIENTES DE COBRO - $M $Y', array(
     '$M' => $month_name,
-    '$Y' => strftime('%G'),
+    '$Y' => $year,
 ));
 
 $report_subtitle = "CUENTA: $accountName";

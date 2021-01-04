@@ -182,9 +182,11 @@ if($account == 1)
 $dateObj   = DateTime::createFromFormat('!m', $month);
 $month_name = strftime('%B', $dateObj->getTimestamp());
 
+$yearTemp = 
+
 $report_title = strtr('REPORTE DE VENTAS DEL MES - $M $Y', array(
     '$M' => $month_name,
-    '$Y' => strftime('%G'),
+    '$Y' =>  $year,
 ));
 
 $report_subtitle = "CUENTA: $accountName";

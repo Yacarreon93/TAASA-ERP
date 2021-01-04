@@ -83,7 +83,7 @@ $header = array(
 
 $report_title = strtr('REPORTE DE TOTAL DE FACTURAS PENDIENTES DE COBRO - $M $Y', array(
     '$M' => $month_name,
-    '$Y' => strftime('%G'),
+    '$Y' => $year,
 ));
 
 // Carga de datos
