@@ -105,7 +105,7 @@ if ($resql)
 $vendorInitials = getInitials($vendor);
 
 // Demo data
-$telephone = '01 (449) 963 91 05';
+$telephone = '(449) 551 10 21';
 $rfc = 'TAA121024V48';
 $folio = $object->ref;
 $today = date('d/m/Y');
