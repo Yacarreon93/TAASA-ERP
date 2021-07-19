@@ -58,4 +58,26 @@ class ComprobanteCFDIService {
 			$CFDIDao->InsertIntoCFDIMXComprobante($comprobanteData);
 		}
 	}
+
+	public function GetComprobanteData($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
+		return $comprobanteData;
+	}
+
+	public function FetchConceptosDataCFDI($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$conceptosData = $CFDIDao->FetchConceptosDataCFDI($factureId);
+		$impuestosData = $CFDIDao->FetchImpuestosDataCFDI($factureId);
+		for($i=0; $i < sizeof($conceptosData); $i++) {
+			$conceptosData[$i]['Taxes'] = $impuestosData[$i];
+		}
+		return $conceptosData;
+	}
+
+	public function GetClientDataByFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$clientData = $CFDIDao->GetSocDataByFactureId($factureId);
+		return $clientData;
+	}
 }

@@ -74,6 +74,19 @@ class ComprobanteCFDIDao {
 		return $this->db;
 	}
 
+	public function GetSocDataByFactureId($factureId) {
+		$sql = "SELECT nom, siren FROM llx_facture as f JOIN llx_societe as s ON f.fk_soc = s.rowid WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					name=>$row->nom,
+					rfc=> $row->siren,
+			);
+		}
+		return $data;
+	}
+
 	public function GetVendorAddress($vendor_id) {
 		$sql = "SELECT zip FROM llx_user WHERE rowid = '".$vendor_id."'";
 		$result = $this->ExecuteQuery($sql);
@@ -97,6 +110,50 @@ class ComprobanteCFDIDao {
 		$result = $this->ExecuteQuery($sql);
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
+	}
+
+	public function FetchConceptosDataCFDI($id) {
+		$sql = "SELECT
+			p.rowid AS id_concepto,
+			qty AS cantidad,
+			umed AS unidad,
+			p.label AS descripcion,
+			subprice AS valor_unitario,
+			total_ht AS importe,
+			total_ttc AS total,
+			claveprodserv AS clave_prod_serv,
+			umed AS clave_unidad,
+			NULL AS descuento
+		FROM
+			llx_facturedet AS f
+		JOIN llx_facturedet_extrafields AS fe ON f.rowid = fe.fk_object
+		JOIN llx_product AS p ON fk_product = p.rowid
+		WHERE
+		fk_facture = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		if (!$result) {
+				echo 'Error: '. $this->db->lasterror;
+				die;
+		}
+
+		while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					ProductCode=>$row->clave_prod_serv,
+					IdentificationNumber=>$row->id_concepto,
+					Description=> $row->descripcion,
+					Unit=>$row->unidad,
+					UnitCode=>$row->clave_unidad,
+					UnitPrice=>round($row->valor_unitario, 2),
+					Quantity=> $row->cantidad,
+					Subtotal=> round($row->importe, 2),
+					Discount=> 0,
+					Taxes=> 'foo',
+					Total=> round($row->total, 2)
+			);
+		}
+		return $data;
 	}
 
 	public function FetchConceptosData($id) {
@@ -139,6 +196,43 @@ class ComprobanteCFDIDao {
 					descuento=> 0,
 					fk_comprobante=>$id
 			);
+		}
+		return $data;
+	}
+
+	public function FetchImpuestosDataCFDI($id) {
+		$sql = "SELECT
+			p.rowid AS id_concepto,
+			'T' AS tipo_impuesto_federal,
+			total_tva AS importe,
+			'002' AS impuesto,
+			f.tva_tx AS tasa_o_cuota,
+			'Tasa' AS tipo_factor,
+			total_ht AS base
+		FROM
+			llx_facturedet AS f
+		JOIN llx_product AS p ON fk_product = p.rowid
+		WHERE
+			fk_facture = ".$id;
+		$result = $this->ExecuteQuery($sql);
+		$impuestosFlag = false;
+
+		while ($row =  $this->db->fetch_object($result))
+		{
+			$tasa_o_cuota = ($row->tasa_o_cuota / 100);
+			if($tasa_o_cuota == 0.16) {
+				$rate = 0.16;
+			} else {
+				$rate = 0;
+			}
+
+			$data[] = array(array(
+				Total=>round($row->importe, 2),
+				Name=>"IVA",
+				Base=> round($row->base, 2),
+				Rate => $rate,
+				IsRetention => "false"
+			));
 		}
 		return $data;
 	}
