@@ -34,6 +34,7 @@ define("CFDI_IMPUESTOS_TOTALES", "cfdi_impuestos_totales");
 define("CFDI_IMPUESTOS_GLOBALES", "cfdi_impuestos_globales");
 define("CFDI_COMPLEMENTO_PAGO", "cfdi_complemento_pago");
 define("CFDI_DOC_RELACIONADO", "cfdi_doc_relacionado");
+define("CFDI_CONTROL_TABLE", "cfdi_control_table");
 
 
 class ComprobanteCFDIDao {
@@ -795,6 +796,47 @@ class ComprobanteCFDIDao {
 			$sql.=$comprobantePagoId.', ';
 			$sql.=$array_data['facid'].')';
 			$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIControlTable($comprobantePagoId, $array_data) {
+		$sql = 'INSERT INTO '.CFDI_CONTROL_TABLE .' (
+			generated_id,
+			cfdi_type,
+			Folio,
+			fk_comprobante,
+			date,
+			cert_number,
+			receiver_rfc,
+			uuid,
+			cfdi_sign,
+			sat_cert_number,
+			sat_sign,
+			rfc_prov_cert,
+			status,
+			original_string)
+			VALUES';
+		$sql.='(';
+		$sql.="'".$array_data['Id']."', ";
+		$sql.="'".$array_data['CfdiType']."', ";
+		$sql.="'".$array_data['Folio']."', ";
+		$sql.=$comprobantePagoId.', ';
+		$sql.="'".$array_data['Date']."', ";
+		$sql.="'".$array_data['CertNumber']."', ";
+		$sql.="'".$array_data['Receiver']['Rfc']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['Uuid']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['CfdiSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatCertNumber']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['RfcProvCertif']."', ";
+		$sql.="'".$array_data['Status']."', ";
+		$sql.="'".$array_data['OriginalString']."')";
+		$this->ExecuteQuery($sql);
+	}
+
+	public function UpdateCFDIUUID($fk_comprobante, $array_data) {
+		$sql = "UPDATE cfdi_comprobante SET status = 1, UUID = '".$array_data['Uuid']."' WHERE fk_comprobante= ".$fk_comprobante;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
 	}
 
 	public function CheckIfExists($fk_comprobante) {

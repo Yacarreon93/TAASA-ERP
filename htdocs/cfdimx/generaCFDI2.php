@@ -16,7 +16,6 @@
 	$new_cfdi = array( 
 		//Datos generales
 		"NameId" => "1",
-		"Serie" => $serie,
 		"Folio" => $cfdi_main_data[0]['folio'],
 		"CfdiType"=> "I",
 		"ExpeditionPlace" => trim($cfdi_main_data[0]['lugar_de_expedicion']),
@@ -37,18 +36,17 @@
 	$new_cfdi["Items"] = $cfdi_products;
 	$result = json_encode($new_cfdi);
 
-	print_r($result);
+	$make_call = callAPI('https://apisandbox.facturama.mx/2/cfdis/', $result);
+	$response = json_decode($make_call, true);
+	$errors   = $response['response']['errors'];
+	$data     = $response['response']['data'][0];
 
-	//$make_call = callAPI('https://apisandbox.facturama.mx/2/cfdis/', $result);
-	//$response = json_decode($make_call, true);
-	//$errors   = $response['response']['errors'];
-	//$data     = $response['response']['data'][0];
+	$service->UpdateControlTable($db, $id, $response);
+	$service->UpdateUUID($db, $id, $response['Complement']['TaxStamp']);
 
-	//print_r($response);
-	
-	//print '<script>
-	//location.href="facture.php?facid='.$_REQUEST["facid"].'&cfdi_commit=100";
-	//</script>';
+	print '<script>
+	location.href="facture.php?facid='.$_REQUEST["facid"].'&cfdi_commit=1";
+	</script>';
 
 
 	function callAPI( $url, $data){

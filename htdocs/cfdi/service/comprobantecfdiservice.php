@@ -80,4 +80,16 @@ class ComprobanteCFDIService {
 		$clientData = $CFDIDao->GetSocDataByFactureId($factureId);
 		return $clientData;
 	}
+
+	public function UpdateControlTable($db, $factureId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$clientData = $CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
+		return $clientData;
+	}
+
+	public function UpdateUUID($db, $factureId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$clientData = $CFDIDao->UpdateCFDIUUID($factureId, $data);
+		return $clientData;
+	}
 }
