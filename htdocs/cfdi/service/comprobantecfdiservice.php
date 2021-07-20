@@ -58,4 +58,110 @@ class ComprobanteCFDIService {
 			$CFDIDao->InsertIntoCFDIMXComprobante($comprobanteData);
 		}
 	}
+
+	public function GetComprobanteData($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteData($factureId);
+		return $comprobanteData;
+	}
+
+	public function GetComprobantePagoData($db, $pagoId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobantePagoData($pagoId);
+		return $comprobanteData;
+	}
+
+	public function GetComprobanteRelacionadoData($db, $pagoId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteRelacionadoData($pagoId);
+		return $comprobanteData;
+	}
+
+	public function GetComprobanteInfo($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteInfo($factureId);
+		return $comprobanteData;
+	}
+
+	public function FetchConceptosDataCFDI($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$conceptosData = $CFDIDao->FetchConceptosDataCFDI($factureId);
+		$impuestosData = $CFDIDao->FetchImpuestosDataCFDI($factureId);
+		for($i=0; $i < sizeof($conceptosData); $i++) {
+			$conceptosData[$i]['Taxes'] = $impuestosData[$i];
+		}
+		return $conceptosData;
+	}
+
+	public function GetClientDataByFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$clientData = $CFDIDao->GetSocDataByFactureId($factureId);
+		return $clientData;
+	}
+
+	public function GetVendorEmailByFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$data = $CFDIDao->GetVendorEmailByFactureId($factureId);
+		return $data;
+	}
+
+	public function UpdateControlTable($db, $factureId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
+	}
+
+	public function UpdateUUID($db, $factureId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$CFDIDao->UpdateCFDIUUID($factureId, $data);
+	}
+
+	public function UpdatePaymentCFDIUUID($db, $pagoId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$CFDIDao->UpdatePaymentCFDIUUID($pagoId, $data);
+	}
+
+	public function GetCFDIId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiId = $CFDIDao->GetCFDIId($factureId);
+		return $cfdiId;
+	}
+
+	public function CancelCFDI($cfdiId) {
+		$cancelUrl = 'https://api.facturama.mx/cfdi/'.$cfdiId.'?type=issued';
+		$curl = curl_init();
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $cancelUrl);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
+        'Content-Type: application/json',
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        // EXECUTE:
+        $result = curl_exec($curl);
+        if(!$result){die("Connection Failure");}
+        curl_close($curl);
+        return $result;
+	}
+
+	public function SendCFDI($cfdiId, $email) {
+		$sendUrl = 'https://api.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_POST, 1);
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $sendUrl);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
+		'Content-Type: application/json',
+		'Content-Length: 0'
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        // EXECUTE:
+        $result = curl_exec($curl);
+        if(!$result){die("Connection Failure");}
+		curl_close($curl);
+        return $result;
+	}
 }
