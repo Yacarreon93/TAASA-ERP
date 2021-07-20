@@ -83,13 +83,36 @@ class ComprobanteCFDIService {
 
 	public function UpdateControlTable($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		$clientData = $CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
-		return $clientData;
+		$CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
 	}
 
 	public function UpdateUUID($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
-		$clientData = $CFDIDao->UpdateCFDIUUID($factureId, $data);
-		return $clientData;
+		$CFDIDao->UpdateCFDIUUID($factureId, $data);
+	}
+
+	public function GetCFDIId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiId = $CFDIDao->GetCFDIId($factureId);
+		return $cfdiId;
+	}
+
+	public function CancelCFDI($cfdiId) {
+		$cancelUrl = 'https://apisandbox.facturama.mx/cfdi/'.$cfdiId.'?type=issued';
+		$curl = curl_init();
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $cancelUrl);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+        'Content-Type: application/json',
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        // EXECUTE:
+        $result = curl_exec($curl);
+        if(!$result){die("Connection Failure");}
+        curl_close($curl);
+        return $result;
 	}
 }

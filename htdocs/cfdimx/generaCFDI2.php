@@ -2,6 +2,8 @@
 
 	require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
 
+	define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
+
 	$service = new ComprobanteCFDIService();
 	$service->SaveAllFactures($db, $id);
 
@@ -36,7 +38,7 @@
 	$new_cfdi["Items"] = $cfdi_products;
 	$result = json_encode($new_cfdi);
 
-	$make_call = callAPI('https://apisandbox.facturama.mx/2/cfdis/', $result);
+	$make_call = callAPI(API_URL, $result);
 	$response = json_decode($make_call, true);
 	$errors   = $response['response']['errors'];
 	$data     = $response['response']['data'][0];

@@ -839,6 +839,13 @@ class ComprobanteCFDIDao {
 		return $result;
 	}
 
+	public function GetCFDIId($fk_comprobante) {
+		$sql = "SELECT generated_id FROM cfdi_control_table WHERE fk_comprobante =".$fk_comprobante;
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->generated_id;
+	}
+
 	public function CheckIfExists($fk_comprobante) {
 		$sql = "SELECT fk_comprobante FROM cfdi_comprobante WHERE fk_comprobante =".$fk_comprobante;
 		$result = $this->ExecuteQuery($sql);
