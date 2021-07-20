@@ -1767,12 +1767,85 @@ if($action=="cfdi1"){
 }
 
 if($action=="timbrarCFDIProfact") {
+
+	$pagoId = GETPOST('pagcid','int');
 	
-	$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
-	SET
-		status = 0, UUID = 'Pendiente'
-		WHERE fk_payment = ".GETPOST('pagcid','int');
-	$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
+	//$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
+	//SET
+	//	status = 0, UUID = 'Pendiente'
+	//	WHERE fk_payment = ".GETPOST('pagcid','int');
+	//$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
+
+	$service = new ComprobanteCFDIService();
+
+	$cfdi_main_data = $service->GetComprobantePagoData($db, $pagoId);
+	$cfdi_related_data = $service->GetComprobanteRelacionadoData($db, $pagoId);
+	$cfdi_soc_data = $service->GetClientDataByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
+	$cfdi_info = $service->GetComprobanteInfo($db, $cfdi_main_data[0]['fk_comprobante']);
+
+	$new_cfdi = array( 
+		//Datos generales
+		"NameId" => "14",
+		"CfdiType"=> "P",
+		"ExpeditionPlace" => trim($cfdi_main_data[0]['expeditionPlace']),
+		//Receptor
+		"Receiver" => array(
+			"Name" => $cfdi_soc_data[0]['name'],
+			"CfdiUse" => $cfdi_main_data[0]['cfdiUse'],
+			"rfc" => $cfdi_soc_data[0]['rfc']),
+		//complemento
+		"Complemento" => array(
+			"Payments" => array( array(
+				"Date" => $cfdi_main_data[0]['date'],
+				"PaymentForm"=>  $cfdi_info[0]['forma_pago'],
+				"Currency" => $cfdi_related_data[0]['monedaP'],
+				"Amount" => $cfdi_related_data[0]['impPagado'],
+				"RelatedDocuments" => array( array(
+					"Uuid" => $cfdi_related_data[0]['idDocumento'],
+					"Folio"=> $cfdi_info[0]['folio'],
+					"Currency" => $cfdi_related_data[0]['monedaP'],
+					"PaymentMethod" => $cfdi_related_data[0]['metodoDePagoDR'],
+					"PartialityNumber" => $cfdi_related_data[0]['numParcialidad'],
+					"PreviousBalanceAmount"=> $cfdi_related_data[0]['impSaldoAnt'],
+					"AmountPaid" => $cfdi_related_data[0]['impPagado']
+				))
+			))
+		)
+	);
+	$paymentJson = json_encode($new_cfdi);
+
+	$curl = curl_init();
+	curl_setopt($curl, CURLOPT_POST, 1);
+	if ($paymentJson)
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $paymentJson);
+
+	// OPTIONS:
+	curl_setopt($curl, CURLOPT_URL, 'https://apisandbox.facturama.mx/2/cfdis/');
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+	'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+	'Content-Type: application/json',
+	));
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	// EXECUTE:
+	$result = curl_exec($curl);
+	if(!$result){die("Connection Failure");}
+	curl_close($curl);
+
+	$resultFinal = json_decode($result, true);
+
+	//$service->UpdateControlTable($db, $id, $result);
+	$service->UpdatePaymentCFDIUUID($db, $pagoId, $resultFinal['Complement']['TaxStamp']);
+
+	if($cfdi_soc_data[0]['email']) {
+		$sendResponse = $service->sendCFDI($resultFinal['Id'], $cfdi_soc_data[0]['email']);
+	}
+
+	$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
+
+	if($vendorEmail) {
+		$service->sendCFDI($resultFinal['Id'], $vendorEmail);
+	}
 
 	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
 }

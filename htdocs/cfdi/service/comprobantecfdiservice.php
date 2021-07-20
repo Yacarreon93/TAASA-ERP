@@ -65,6 +65,24 @@ class ComprobanteCFDIService {
 		return $comprobanteData;
 	}
 
+	public function GetComprobantePagoData($db, $pagoId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobantePagoData($pagoId);
+		return $comprobanteData;
+	}
+
+	public function GetComprobanteRelacionadoData($db, $pagoId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteRelacionadoData($pagoId);
+		return $comprobanteData;
+	}
+
+	public function GetComprobanteInfo($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$comprobanteData = $CFDIDao->FetchComprobanteInfo($factureId);
+		return $comprobanteData;
+	}
+
 	public function FetchConceptosDataCFDI($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$conceptosData = $CFDIDao->FetchConceptosDataCFDI($factureId);
@@ -95,6 +113,11 @@ class ComprobanteCFDIService {
 	public function UpdateUUID($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$CFDIDao->UpdateCFDIUUID($factureId, $data);
+	}
+
+	public function UpdatePaymentCFDIUUID($db, $pagoId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$CFDIDao->UpdatePaymentCFDIUUID($pagoId, $data);
 	}
 
 	public function GetCFDIId($db, $factureId) {

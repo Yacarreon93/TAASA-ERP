@@ -371,6 +371,59 @@ class ComprobanteCFDIDao {
 		return $data;
 	}
 
+	public function FetchComprobantePagoData($id) {
+		$sql = "SELECT * FROM cfdi_comprobante WHERE fk_payment = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		while ($row = $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					expeditionPlace=> $row->lugar_de_expedicion,
+					date=>$row->fecha,
+					paymentForm=> $row->forma_pago,
+					currency=>$row->moneda,
+					cfdiUse=>$row->uso_cfdi,
+					fk_comprobante=>$row->fk_comprobante
+			);
+		}
+		return $data;
+	}
+
+	public function FetchComprobanteRelacionadoData($id) {
+		$sql = "SELECT fk_paiement, idDocumento, monedaP, impPagado, impSaldoAnt, metodoDePagoDR, numParcialidad FROM llx_cfdimx_recepcion_pagos AS rp 
+		JOIN llx_cfdimx_recepcion_pagos_docto_relacionado AS rd 
+		ON rd.fk_recepago = rp.rowid
+		WHERE fk_paiement = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		while ($row = $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					idDocumento=>$row->idDocumento,
+					impPagado=>$row->impPagado,
+					impSaldoAnt=> $row->impSaldoAnt,
+					metodoDePagoDR=>$row->metodoDePagoDR,
+					numParcialidad=>$row->numParcialidad,
+					monedaP=>$row->monedaP
+			);
+		}
+		return $data;
+	}
+
+	public function FetchComprobanteInfo($id) {
+		$sql = "SELECT folio, forma_pago FROM cfdi_comprobante WHERE ISNULL(fk_payment) AND fk_comprobante = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		while ($row = $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					folio=> $row->folio,
+					forma_pago=> $row->forma_pago
+			);
+		}
+		return $data;
+	}
+
 	public function InsertIntoCFDIComprobante($array_data) {
 		$sql = 'INSERT INTO '.CFDI_COMPROBANTE .' (
 		serie,
@@ -848,6 +901,12 @@ class ComprobanteCFDIDao {
 
 	public function UpdateCFDIUUID($fk_comprobante, $array_data) {
 		$sql = "UPDATE cfdi_comprobante SET status = 1, UUID = '".$array_data['Uuid']."' WHERE fk_comprobante= ".$fk_comprobante;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
+	public function UpdatePaymentCFDIUUID($pagoId, $array_data) {
+		$sql = "UPDATE cfdi_comprobante SET status = 1, UUID = '".$array_data['Uuid']."' WHERE fk_payment= ".$pagoId;
 		$result = $this->ExecuteQuery($sql);
 		return $result;
 	}
