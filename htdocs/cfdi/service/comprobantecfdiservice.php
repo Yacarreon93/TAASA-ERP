@@ -127,13 +127,13 @@ class ComprobanteCFDIService {
 	}
 
 	public function CancelCFDI($cfdiId) {
-		$cancelUrl = 'https://apisandbox.facturama.mx/cfdi/'.$cfdiId.'?type=issued';
+		$cancelUrl = 'https://api.facturama.mx/cfdi/'.$cfdiId.'?type=issued';
 		$curl = curl_init();
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
         // OPTIONS:
         curl_setopt($curl, CURLOPT_URL, $cancelUrl);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-        'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
         'Content-Type: application/json',
         ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
@@ -146,13 +146,13 @@ class ComprobanteCFDIService {
 	}
 
 	public function SendCFDI($cfdiId, $email) {
-		$sendUrl = 'https://apisandbox.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
+		$sendUrl = 'https://api.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_POST, 1);
         // OPTIONS:
         curl_setopt($curl, CURLOPT_URL, $sendUrl);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-        'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
 		'Content-Type: application/json',
 		'Content-Length: 0'
         ));

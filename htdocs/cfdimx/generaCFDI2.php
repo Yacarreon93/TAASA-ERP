@@ -2,7 +2,7 @@
 
 	require_once DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php';
 
-	define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
+	define("API_URL", "https://api.facturama.mx/2/cfdis/");
 
 	$service = new ComprobanteCFDIService();
 	$service->SaveAllFactures($db, $id);
@@ -70,7 +70,7 @@
         // OPTIONS:
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-        'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
         'Content-Type: application/json',
         ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);

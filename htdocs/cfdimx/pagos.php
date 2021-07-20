@@ -1820,9 +1820,9 @@ if($action=="timbrarCFDIProfact") {
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $paymentJson);
 
 	// OPTIONS:
-	curl_setopt($curl, CURLOPT_URL, 'https://apisandbox.facturama.mx/2/cfdis/');
+	curl_setopt($curl, CURLOPT_URL, 'https://api.facturama.mx//2/cfdis/');
 	curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-	'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+	'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
 	'Content-Type: application/json',
 	));
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
