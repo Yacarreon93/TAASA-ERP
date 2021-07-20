@@ -81,6 +81,12 @@ class ComprobanteCFDIService {
 		return $clientData;
 	}
 
+	public function GetVendorEmailByFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$data = $CFDIDao->GetVendorEmailByFactureId($factureId);
+		return $data;
+	}
+
 	public function UpdateControlTable($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
@@ -113,6 +119,26 @@ class ComprobanteCFDIService {
         $result = curl_exec($curl);
         if(!$result){die("Connection Failure");}
         curl_close($curl);
+        return $result;
+	}
+
+	public function SendCFDI($cfdiId, $email) {
+		$sendUrl = 'https://apisandbox.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_POST, 1);
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $sendUrl);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: Basic cHJ1ZWJhczpwcnVlYmFzMjAxMQ==',
+		'Content-Type: application/json',
+		'Content-Length: 0'
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        // EXECUTE:
+        $result = curl_exec($curl);
+        if(!$result){die("Connection Failure");}
+		curl_close($curl);
         return $result;
 	}
 }

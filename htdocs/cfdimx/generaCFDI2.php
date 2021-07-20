@@ -46,6 +46,16 @@
 	$service->UpdateControlTable($db, $id, $response);
 	$service->UpdateUUID($db, $id, $response['Complement']['TaxStamp']);
 
+	if($cfdi_soc_data[0]['email']) {
+		$sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
+	}
+
+	$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
+
+	if($vendorEmail) {
+		$service->sendCFDI($response['Id'], $vendorEmail);
+	}
+
 	print '<script>
 	location.href="facture.php?facid='.$_REQUEST["facid"].'&cfdi_commit=1";
 	</script>';

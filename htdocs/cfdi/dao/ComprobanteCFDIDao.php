@@ -76,13 +76,14 @@ class ComprobanteCFDIDao {
 	}
 
 	public function GetSocDataByFactureId($factureId) {
-		$sql = "SELECT nom, siren FROM llx_facture as f JOIN llx_societe as s ON f.fk_soc = s.rowid WHERE f.rowid = '".$factureId."'";
+		$sql = "SELECT nom, siren, email FROM llx_facture as f JOIN llx_societe as s ON f.fk_soc = s.rowid WHERE f.rowid = '".$factureId."'";
 		$result = $this->ExecuteQuery($sql);
 		while ($row =  $this->db->fetch_object($result))
 		{
 				$data[] = array(
 					name=>$row->nom,
-					rfc=> $row->siren,
+					email=>$row->email,
+					rfc=> $row->siren
 			);
 		}
 		return $data;
@@ -111,6 +112,18 @@ class ComprobanteCFDIDao {
 		$result = $this->ExecuteQuery($sql);
 		$row =  $this->db->fetch_object($result);
 		return $row->zip;
+	}
+
+	public function GetVendorEmailByFactureId($factureId) {
+		$sql = "SELECT
+		email
+		FROM llx_facture AS f
+		JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+		JOIN llx_user AS u ON fe.vendor = u.rowid
+		WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->email;
 	}
 
 	public function FetchConceptosDataCFDI($id) {
