@@ -50,10 +50,10 @@
 		$sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
 	}
 
-	$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
+	$authorEmail = $service->GetAuthorEmailByFactureId($db, $id);
 
-	if($vendorEmail) {
-		$service->sendCFDI($response['Id'], $vendorEmail);
+	if($authorEmail) {
+		$service->sendCFDI($response['Id'], $authorEmail);
 	}
 
 	print '<script>

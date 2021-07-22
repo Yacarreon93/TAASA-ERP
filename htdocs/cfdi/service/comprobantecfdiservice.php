@@ -105,6 +105,12 @@ class ComprobanteCFDIService {
 		return $data;
 	}
 
+	public function GetAuthorEmailByFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$data = $CFDIDao->GetAuthorEmailByFactureId($factureId);
+		return $data;
+	}
+
 	public function UpdateControlTable($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$CFDIDao->InsertIntoCFDIControlTable($factureId, $data);

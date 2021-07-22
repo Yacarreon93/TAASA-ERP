@@ -126,6 +126,17 @@ class ComprobanteCFDIDao {
 		return $row->email;
 	}
 
+	public function GetAuthorEmailByFactureId($factureId) {
+		$sql = "SELECT
+		email
+		FROM llx_facture AS f
+		JOIN llx_user_relations AS u ON f.fk_user_author = u.fk_user
+		WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->email;
+	}
+
 	public function FetchConceptosDataCFDI($id) {
 		$sql = "SELECT
 			p.rowid AS id_concepto,
