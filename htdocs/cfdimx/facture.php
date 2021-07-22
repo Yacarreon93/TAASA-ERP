@@ -2846,7 +2846,6 @@ if( $cfdi_tot>0 ){
 						// --> DIXI
 						if($status_conf==1){
 							if( $cfdi_tot>0 ){
-                               // print('there is cfdimx');
 								if( $cfdi_cancela==1 ){
 				
 									print '<div style="font-size:12px; color:990000">CFDI Cancelado</div>';
@@ -2881,14 +2880,12 @@ if( $cfdi_tot>0 ){
 									$sql = "
 								SELECT * FROM  ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp
 								WHERE receptor_rfc = '" . $soc_rfc . "' AND entity_id = " . $_SESSION['dol_entity'];
-									//echo $sql;
 									$resql=$db->query($sql);
 									if ($resql){
 										$tot_rec_dom_receptor =1;//= $db->num_rows($resql);
 										if($tot_rec_dom_receptor<1)
 										{
 										}else{
-										//		print('we have direction');
 												
 											//if($object->getLibStatut(1,$totalpaye)=='Borrador' || getLinkGeneraCFDI($status,$id,$db)=='Fuera de fecha de timbrado'){
 											//	if($object->getLibStatut(1,$totalpaye)=='Borrador'){
@@ -2898,15 +2895,13 @@ if( $cfdi_tot>0 ){
 												//	print 'Fuera de fecha de timbrado';
 												//}
 											//}else{
-                                               // print('ololol');
 												if( true )
 												{
-                                                 //   print('yes');
                                                     if($timbreProfact ) {
                                                    //     print('herER===???');
                                                    print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2" method="POST">
                                                    <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
-                                                   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" />';
+                                                   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
                                                        // print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI </a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI 
                                                     } else {
                                                         print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//AMM boton generar CFDI
