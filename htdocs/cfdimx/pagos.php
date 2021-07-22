@@ -1391,7 +1391,10 @@ if ($action == "cfdi2") {
 			if ($nmr == 0) {
 				print 'Debe guardar la información del Pago para poder timbrarlo';
 			} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
-				print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
+				print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact" method="POST">
+                                                   <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
+                                                   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
+				//print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
 			} else {
 				print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
 			}

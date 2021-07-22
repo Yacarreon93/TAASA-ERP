@@ -2862,7 +2862,7 @@ if( $cfdi_tot>0 ){
                                         if ($user->rights->facture->supprimer) {
                                             echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de cancelar la factura?\')" name="cancelaCFDIaction" value="Cancelar CFDI" class="button">';
                                         }
-                                        echo '<input type="reenviar" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button">';
+                                        echo '<input type="reenviar" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
 										echo '</form>';
 										echo '</p>';
 										echo '</div>';
