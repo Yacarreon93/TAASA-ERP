@@ -661,6 +661,7 @@ class ComprobanteCFDIDao {
 		subtotal,
 		moneda,
 		total,
+		forma_pago,
 		tipo_comprobante,
 		lugar_de_expedicion,
 		status,
@@ -675,6 +676,7 @@ class ComprobanteCFDIDao {
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
+		$sql.=$array_data['formpago'].", ";
 		$sql.="'PP', ";
 		$sql.="'".$lugar_de_expedicion."'".", ";
 		$sql.="5, ";

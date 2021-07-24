@@ -574,6 +574,22 @@ if ($action == "guardar2") {
 
 			$resCFDIDoc = $db->query($sqlCFDIDoc);
 
+			$checkComprobanteQuery = "SELECT * FROM cfdi_comprobante WHERE fk_payment =".$pagcid_custom;
+			$resq = $db->query($checkComprobanteQuery);
+			$numrC = $db->num_rows($resq);
+			if($numrC > 0) {
+				$sqlComprobante= "UPDATE cfdi_comprobante
+				SET
+				forma_pago=".(GETPOST('formpago')!=''?"'".GETPOST('formpago')."'":'NULL')."
+				WHERE fk_payment = ".$pagcid_custom;
+				$resComprobante = $db->query($sqlComprobante);
+			} else {
+				$service = new ComprobanteCFDIService();
+				$service->SaveCFDIFromPayment($db, $facid_custom, $pagcid_custom, $data_custom);
+			}
+
+			
+
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."'</script>";
 		} else {
 			print "<script>window.location.href='pagos.php?action=cfdi2&facid=".$facid_custom."&pagcid=".$pagcid_custom."&mesg=err1'</script>";
@@ -986,6 +1002,7 @@ if ($action == "cfdi2") {
 	$nmrPagoFacturado=$db->num_rows($respagoFacturado);
 	if($nmrPagoFacturado>0){
 		$rsl=$db->fetch_object($respagoFacturado);
+		$statusCheck = $rsl->status;
 		if( $rsl->cancelado == 2) {
 			$pagoCancelado = true;
 		}
@@ -1387,16 +1404,9 @@ if ($action == "cfdi2") {
 			print '</td>';
 		
 			print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0;font-weight:bold">';
-		
+
 			if ($nmr == 0) {
 				print 'Debe guardar la información del Pago para poder timbrarlo';
-			} else if ($laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
-				print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact" method="POST">
-                                                   <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
-                                                   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
-				//print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
-			} else {
-				print 'Intenta guardar nuevamente la información del Pago para poder timbrarlo';
 			}
 		
 			print '<td style="background:#b2d6f7;border:#b2d6f7;padding:10px 0">';
@@ -1436,6 +1446,16 @@ if ($action == "cfdi2") {
 	
 	print '</form>';
 	print '</table>';
+
+	if($statusCheck == 99) { //Pending status, search id
+
+	}
+	else if ($nmr > 0 && $laInfoDelPagoEstaGuardadaEnLasNuevasTablas) {
+		print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact" method="POST">
+										   <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
+										   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
+		//print '<a class="butAction" style="float:right" href="pagos.php?facid='.$object->id.'&pagcid='.GETPOST('pagcid','int').'&action=timbrarCFDIProfact">Generar CFDI</a>';
+	}
 }
 
 if($action=="cfdi1"){
@@ -1772,84 +1792,95 @@ if($action=="cfdi1"){
 if($action=="timbrarCFDIProfact") {
 
 	$pagoId = GETPOST('pagcid','int');
-	
-	//$sqlTimbrarCFDI = "UPDATE cfdi_comprobante
-	//SET
-	//	status = 0, UUID = 'Pendiente'
-	//	WHERE fk_payment = ".GETPOST('pagcid','int');
-	//$resTimbrarCFDI = $db->query($sqlTimbrarCFDI);
 
-	$service = new ComprobanteCFDIService();
+	$checkComprobanteQuery = "SELECT status FROM cfdi_comprobante WHERE fk_payment =".$pagoId;
+			$resq = $db->query($checkComprobanteQuery);
+			$row =  $db->fetch_object($result);
+			$statusCheck = $row->status;
 
-	$cfdi_main_data = $service->GetComprobantePagoData($db, $pagoId);
-	$cfdi_related_data = $service->GetComprobanteRelacionadoData($db, $pagoId);
-	$cfdi_soc_data = $service->GetClientDataByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
-	$cfdi_info = $service->GetComprobanteInfo($db, $cfdi_main_data[0]['fk_comprobante']);
+	if($statusCheck == 5) {
 
-	$new_cfdi = array( 
-		//Datos generales
-		"NameId" => "14",
-		"CfdiType"=> "P",
-		"ExpeditionPlace" => trim($cfdi_main_data[0]['expeditionPlace']),
-		//Receptor
-		"Receiver" => array(
-			"Name" => $cfdi_soc_data[0]['name'],
-			"CfdiUse" => $cfdi_main_data[0]['cfdiUse'],
-			"rfc" => $cfdi_soc_data[0]['rfc']),
-		//complemento
-		"Complemento" => array(
-			"Payments" => array( array(
-				"Date" => $cfdi_main_data[0]['date'],
-				"PaymentForm"=>  $cfdi_info[0]['forma_pago'],
-				"Currency" => $cfdi_related_data[0]['monedaP'],
-				"Amount" => $cfdi_related_data[0]['impPagado'],
-				"RelatedDocuments" => array( array(
-					"Uuid" => $cfdi_related_data[0]['idDocumento'],
-					"Folio"=> $cfdi_info[0]['folio'],
+		$sqlSetStatus = "UPDATE cfdi_comprobante
+		SET
+		status = 99
+		WHERE fk_payment = ".$pagoId;
+		$resSetStatus = $db->query($sqlSetStatus);
+
+		$service = new ComprobanteCFDIService();
+
+		$cfdi_main_data = $service->GetComprobantePagoData($db, $pagoId);
+		$cfdi_related_data = $service->GetComprobanteRelacionadoData($db, $pagoId);
+		$cfdi_soc_data = $service->GetClientDataByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
+		$cfdi_info = $service->GetComprobanteInfo($db, $cfdi_main_data[0]['fk_comprobante']);
+
+		$new_cfdi = array( 
+			//Datos generales
+			"NameId" => "14",
+			"CfdiType"=> "P",
+			"ExpeditionPlace" => trim($cfdi_main_data[0]['expeditionPlace']),
+			//Receptor
+			"Receiver" => array(
+				"Name" => $cfdi_soc_data[0]['name'],
+				"CfdiUse" => $cfdi_main_data[0]['cfdiUse'],
+				"rfc" => $cfdi_soc_data[0]['rfc']),
+			//complemento
+			"Complemento" => array(
+				"Payments" => array( array(
+					"Date" => $cfdi_main_data[0]['date'],
+					"PaymentForm"=>  $cfdi_main_data[0]['paymentForm'],
 					"Currency" => $cfdi_related_data[0]['monedaP'],
-					"PaymentMethod" => $cfdi_related_data[0]['metodoDePagoDR'],
-					"PartialityNumber" => $cfdi_related_data[0]['numParcialidad'],
-					"PreviousBalanceAmount"=> $cfdi_related_data[0]['impSaldoAnt'],
-					"AmountPaid" => $cfdi_related_data[0]['impPagado']
+					"Amount" => $cfdi_related_data[0]['impPagado'],
+					"RelatedDocuments" => array( array(
+						"Uuid" => $cfdi_related_data[0]['idDocumento'],
+						"Folio"=> $cfdi_info[0]['folio'],
+						"Currency" => $cfdi_related_data[0]['monedaP'],
+						"PaymentMethod" => $cfdi_related_data[0]['metodoDePagoDR'],
+						"PartialityNumber" => $cfdi_related_data[0]['numParcialidad'],
+						"PreviousBalanceAmount"=> $cfdi_related_data[0]['impSaldoAnt'],
+						"AmountPaid" => $cfdi_related_data[0]['impPagado']
+					))
 				))
-			))
-		)
-	);
-	$paymentJson = json_encode($new_cfdi);
+			)
+		);
+		$paymentJson = json_encode($new_cfdi);
 
-	$curl = curl_init();
-	curl_setopt($curl, CURLOPT_POST, 1);
-	if ($paymentJson)
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $paymentJson);
+		//print_r($paymentJson);
+		//die();
 
-	// OPTIONS:
-	curl_setopt($curl, CURLOPT_URL, 'https://api.facturama.mx//2/cfdis/');
-	curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-	'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
-	'Content-Type: application/json',
-	));
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-	// EXECUTE:
-	$result = curl_exec($curl);
-	if(!$result){die("Connection Failure");}
-	curl_close($curl);
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_POST, 1);
+		if ($paymentJson)
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $paymentJson);
 
-	$resultFinal = json_decode($result, true);
+		// OPTIONS:
+		curl_setopt($curl, CURLOPT_URL, 'https://api.facturama.mx//2/cfdis/');
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+		'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
+		'Content-Type: application/json',
+		));
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		// EXECUTE:
+		$result = curl_exec($curl);
+		if(!$result){die("Connection Failure");}
+		curl_close($curl);
 
-	//$service->UpdateControlTable($db, $id, $result);
-	$service->UpdatePaymentCFDIUUID($db, $pagoId, $resultFinal['Complement']['TaxStamp']);
+		$resultFinal = json_decode($result, true);
 
-	if($cfdi_soc_data[0]['email']) {
-		$sendResponse = $service->sendCFDI($resultFinal['Id'], $cfdi_soc_data[0]['email']);
-	}
+		//$service->UpdateControlTable($db, $id, $result);
+		$service->UpdatePaymentCFDIUUID($db, $pagoId, $resultFinal['Complement']['TaxStamp']);
 
-	$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
+		if($cfdi_soc_data[0]['email']) {
+			$sendResponse = $service->sendCFDI($resultFinal['Id'], $cfdi_soc_data[0]['email']);
+		}
 
-	if($vendorEmail) {
-		$service->sendCFDI($resultFinal['Id'], $vendorEmail);
-	}
+		$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
 
+		if($vendorEmail) {
+			$service->sendCFDI($resultFinal['Id'], $vendorEmail);
+		}
+	} 
+	print('Redirecting...');
 	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
 }
 
