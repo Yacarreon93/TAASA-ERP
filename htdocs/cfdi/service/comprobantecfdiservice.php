@@ -116,6 +116,11 @@ class ComprobanteCFDIService {
 		$CFDIDao->InsertIntoCFDIControlTable($factureId, $data);
 	}
 
+	public function UpdateControlTableFromPayment($db, $factureId, $data) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$CFDIDao->InsertIntoCFDIControlTableFromPayment($factureId, $data);
+	}
+
 	public function UpdateUUID($db, $factureId, $data) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$CFDIDao->UpdateCFDIUUID($factureId, $data);
@@ -129,6 +134,12 @@ class ComprobanteCFDIService {
 	public function GetCFDIId($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$cfdiId = $CFDIDao->GetCFDIId($factureId);
+		return $cfdiId;
+	}
+
+	public function GetComprobanteIdFromFactureId($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiId = $CFDIDao->GetComprobanteIdByFactureId($factureId);
 		return $cfdiId;
 	}
 

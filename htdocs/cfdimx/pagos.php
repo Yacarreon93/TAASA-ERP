@@ -1793,10 +1793,11 @@ if($action=="timbrarCFDIProfact") {
 
 	$pagoId = GETPOST('pagcid','int');
 
-	$checkComprobanteQuery = "SELECT status FROM cfdi_comprobante WHERE fk_payment =".$pagoId;
+	$checkComprobanteQuery = "SELECT id, status FROM cfdi_comprobante WHERE fk_payment =".$pagoId;
 			$resq = $db->query($checkComprobanteQuery);
 			$row =  $db->fetch_object($result);
 			$statusCheck = $row->status;
+			$comprobantePagoId = $row->id;
 
 	if($statusCheck == 5) {
 
@@ -1816,6 +1817,7 @@ if($action=="timbrarCFDIProfact") {
 		$new_cfdi = array( 
 			//Datos generales
 			"NameId" => "14",
+			"Folio"=> $comprobantePagoId,
 			"CfdiType"=> "P",
 			"ExpeditionPlace" => trim($cfdi_main_data[0]['expeditionPlace']),
 			//Receptor
@@ -1832,7 +1834,6 @@ if($action=="timbrarCFDIProfact") {
 					"Amount" => $cfdi_related_data[0]['impPagado'],
 					"RelatedDocuments" => array( array(
 						"Uuid" => $cfdi_related_data[0]['idDocumento'],
-						"Folio"=> $cfdi_info[0]['folio'],
 						"Currency" => $cfdi_related_data[0]['monedaP'],
 						"PaymentMethod" => $cfdi_related_data[0]['metodoDePagoDR'],
 						"PartialityNumber" => $cfdi_related_data[0]['numParcialidad'],
@@ -1867,19 +1868,19 @@ if($action=="timbrarCFDIProfact") {
 
 		$resultFinal = json_decode($result, true);
 
-		//$service->UpdateControlTable($db, $id, $result);
+		$service->UpdateControlTableFromPayment($db, $pagoId, $resultFinal);
 		$service->UpdatePaymentCFDIUUID($db, $pagoId, $resultFinal['Complement']['TaxStamp']);
 
 		if($cfdi_soc_data[0]['email']) {
 			$sendResponse = $service->sendCFDI($resultFinal['Id'], $cfdi_soc_data[0]['email']);
 		}
 
-		$vendorEmail = $service->GetVendorEmailByFactureId($db, $id);
+		$vendorEmail = $service->GetVendorEmailByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
 
 		if($vendorEmail) {
 			$service->sendCFDI($resultFinal['Id'], $vendorEmail);
 		}
-	} 
+	}
 	print('Redirecting...');
 	print "<script>window.location.href='pagos.php?action=cfdi2&facid=".GETPOST("facid")."&pagcid=".GETPOST("pagcid")."'</script>";
 }

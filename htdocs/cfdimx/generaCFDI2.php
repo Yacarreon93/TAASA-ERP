@@ -11,6 +11,7 @@
 
 	$cfdi_main_data = $service->GetComprobanteData($db, $id);
 	$cfdi_soc_data = $service->GetClientDataByFactureId($db, $id);
+	$comprobanteId = $service->GetComprobanteIdFromFactureId($db, $id);
 
 	strtok($cfdi_main_data[0]['serie'], '-');
 	$serie = strtok('-');
@@ -18,7 +19,7 @@
 	$new_cfdi = array( 
 		//Datos generales
 		"NameId" => "1",
-		"Folio" => $cfdi_main_data[0]['folio'],
+		"Folio" => $comprobanteId,
 		"CfdiType"=> "I",
 		"ExpeditionPlace" => trim($cfdi_main_data[0]['lugar_de_expedicion']),
 		"PaymentForm" => $cfdi_main_data[0]['forma_pago'],
