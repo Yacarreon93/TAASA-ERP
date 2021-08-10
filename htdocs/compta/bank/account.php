@@ -1027,7 +1027,7 @@ if ($id > 0 || ! empty($ref))
 				else
 				{
 					print '<td align="center">';
-					if ($user->rights->banque->modifier || $user->rights->banque->consolidate)
+					if ($user->id == '1' || $user->id == '18')
 					{
 						print '<a href="'.DOL_URL_ROOT.'/compta/bank/ligne.php?rowid='.$objp->rowid.'&amp;account='.$object->id.'&amp;page='.$page.'">';
 						print img_edit();
@@ -1035,7 +1035,7 @@ if ($id > 0 || ! empty($ref))
 					}
 					else
 					{
-						print '<a href="'.DOL_URL_ROOT.'/compta/bank/ligne.php?rowid='.$objp->rowid.'&amp;account='.$object->id.'&amp;page='.$page.'">';
+						//print '<a href="'.DOL_URL_ROOT.'/compta/bank/ligne.php?rowid='.$objp->rowid.'&amp;account='.$object->id.'&amp;page='.$page.'">';
 						print img_view();
 						print '</a>';
 					}
@@ -1047,7 +1047,7 @@ if ($id > 0 || ! empty($ref))
 						}
 					}
 					print '&nbsp;';
-					if ($user->rights->banque->modifier)
+					if ($user->id == '1' || $user->id == '18')
 					{
 						print '<a href="'.$_SERVER["PHP_SELF"].'?action=delete&amp;rowid='.$objp->rowid.'&amp;id='.$object->id.'&amp;page='.$page.'">';
 						print img_delete();
