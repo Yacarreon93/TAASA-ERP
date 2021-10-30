@@ -2313,6 +2313,29 @@ if( $cfdi_tot>0 ){
                 location.href="?facid='.$_REQUEST["facid"].'";
                 </script>';
 
+            }
+            
+            if( isset( $_REQUEST["reenviaCFDIaction"] ) ){
+                //Cancel in web service
+                $service = new ComprobanteCFDIService();
+                $cfdiId = $service->GetCFDIId($db, $id);
+
+                $cfdi_soc_data = $service->GetClientDataByFactureId($db, $id);
+                $vendorEmail = $service->GetAuthorEmailByFactureId($db, $id);
+
+                if($cfdi_soc_data[0]['email']) {
+                    $sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
+                }
+
+                if($vendorEmail) {
+                    $service->sendCFDI($response['Id'], $vendorEmail);
+                }
+
+                echo '
+                <script>
+                location.href="?facid='.$_REQUEST["facid"].'";
+                </script>';
+
 			}
 
 			if( $msg_cfdi_final!="" ){
@@ -2839,6 +2862,7 @@ if( $cfdi_tot>0 ){
                                         if ($user->rights->facture->supprimer) {
                                             echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de cancelar la factura?\')" name="cancelaCFDIaction" value="Cancelar CFDI" class="button">';
                                         }
+                                        echo '<input type="reenviar" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
 										echo '</form>';
 										echo '</p>';
 										echo '</div>';
@@ -2848,6 +2872,7 @@ if( $cfdi_tot>0 ){
 								}
 							}
 							if( $cfdi_tot<1 ){
+                              // print('there is no cfdimx');
 				
 								if( $soc_rfc!="" ){
 				
@@ -2855,7 +2880,6 @@ if( $cfdi_tot>0 ){
 									$sql = "
 								SELECT * FROM  ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp
 								WHERE receptor_rfc = '" . $soc_rfc . "' AND entity_id = " . $_SESSION['dol_entity'];
-									//echo $sql;
 									$resql=$db->query($sql);
 									if ($resql){
 										$tot_rec_dom_receptor =1;//= $db->num_rows($resql);
@@ -2863,19 +2887,22 @@ if( $cfdi_tot>0 ){
 										{
 										}else{
 												
-												
-											if($object->getLibStatut(1,$totalpaye)=='Borrador' || getLinkGeneraCFDI($status,$id,$db)=='Fuera de fecha de timbrado'){
-												if($object->getLibStatut(1,$totalpaye)=='Borrador'){
-													print 'No puede timbrar un borrador';
-												}
-												if(getLinkGeneraCFDI($status,$id,$db)=='Fuera de fecha de timbrado'){
-													print 'Fuera de fecha de timbrado';
-												}
-											}else{
-												if( $modo_timbrado==1 )
+											//if($object->getLibStatut(1,$totalpaye)=='Borrador' || getLinkGeneraCFDI($status,$id,$db)=='Fuera de fecha de timbrado'){
+											//	if($object->getLibStatut(1,$totalpaye)=='Borrador'){
+											//		print 'No puede timbrar un borrador';
+											//	}
+												//if(getLinkGeneraCFDI($status,$id,$db)=='Fuera de fecha de timbrado'){
+												//	print 'Fuera de fecha de timbrado';
+												//}
+											//}else{
+												if( true )
 												{
                                                     if($timbreProfact ) {
-                                                        print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI Profact</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI Profact
+                                                   //     print('herER===???');
+                                                   print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2" method="POST">
+                                                   <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
+                                                   print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
+                                                       // print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI </a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI 
                                                     } else {
                                                         print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;//AMM boton generar CFDI
                                                     }
@@ -2884,7 +2911,7 @@ if( $cfdi_tot>0 ){
 												{
 													print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;&amp;action=generaCFDI">Generar CFDI</a>'."<br>".$msg_dom_receptor." ".$msg_mail;
 												}
-											}
+											
 										}
 									}else{
 										$msg_cfdi_final = "El RFC del receptor es requerido para generar el comprobante";

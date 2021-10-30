@@ -126,6 +126,17 @@ class ComprobanteCFDIDao {
 		return $row->email;
 	}
 
+	public function GetAuthorEmailByFactureId($factureId) {
+		$sql = "SELECT
+		email
+		FROM llx_facture AS f
+		JOIN llx_user_relations AS u ON f.fk_user_author = u.fk_user
+		WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->email;
+	}
+
 	public function FetchConceptosDataCFDI($id) {
 		$sql = "SELECT
 			p.rowid AS id_concepto,
@@ -650,6 +661,7 @@ class ComprobanteCFDIDao {
 		subtotal,
 		moneda,
 		total,
+		forma_pago,
 		tipo_comprobante,
 		lugar_de_expedicion,
 		status,
@@ -664,6 +676,7 @@ class ComprobanteCFDIDao {
 		$sql.="0, ";
 		$sql.="'XXX', ";
 		$sql.="0, ";
+		$sql.=$array_data['formpago'].", ";
 		$sql.="'PP', ";
 		$sql.="'".$lugar_de_expedicion."'".", ";
 		$sql.="5, ";
@@ -870,6 +883,41 @@ class ComprobanteCFDIDao {
 			cfdi_type,
 			Folio,
 			fk_comprobante,
+			date,
+			cert_number,
+			receiver_rfc,
+			uuid,
+			cfdi_sign,
+			sat_cert_number,
+			sat_sign,
+			rfc_prov_cert,
+			status,
+			original_string)
+			VALUES';
+		$sql.='(';
+		$sql.="'".$array_data['Id']."', ";
+		$sql.="'".$array_data['CfdiType']."', ";
+		$sql.="'".$array_data['Folio']."', ";
+		$sql.=$comprobantePagoId.', ';
+		$sql.="'".$array_data['Date']."', ";
+		$sql.="'".$array_data['CertNumber']."', ";
+		$sql.="'".$array_data['Receiver']['Rfc']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['Uuid']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['CfdiSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatCertNumber']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['RfcProvCertif']."', ";
+		$sql.="'".$array_data['Status']."', ";
+		$sql.="'".$array_data['OriginalString']."')";
+		$this->ExecuteQuery($sql);
+	}
+
+	public function InsertIntoCFDIControlTableFromPayment($comprobantePagoId, $array_data) {
+		$sql = 'INSERT INTO '.CFDI_CONTROL_TABLE .' (
+			generated_id,
+			cfdi_type,
+			Folio,
+			fk_payment,
 			date,
 			cert_number,
 			receiver_rfc,

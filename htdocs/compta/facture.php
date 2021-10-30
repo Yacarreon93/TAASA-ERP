@@ -2826,6 +2826,19 @@ else if ($id > 0 || ! empty($ref))
 	}
 	dol_fiche_head($head, 'compta', $langs->trans('InvoiceCustomer'), 0, 'bill');
 
+	$service = new ComprobanteCFDIService();
+	$comprobanteId = $service->GetComprobanteIdFromFactureId($db, $object->id);
+	if($comprobanteId) {
+		print('<table class="border" width="100%"><tbody>');
+		print('<tr><td width="20%">');
+		print('Id Timbrado:');
+		print('</div></td>');
+		print('<td>');
+		print('<div class="inline-block floatleft refid refidpadding">');
+		print_r($comprobanteId);
+		print('</div></td></tr></tbody></table>');
+	}
+
 	$formconfirm = '';
 
 	// Confirmation de la conversion de l'avoir en reduc
