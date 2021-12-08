@@ -149,10 +149,30 @@ if($user->id == '1' || $user->id == '18' || $user->id == '19') {
   //Reporte de ventas
   print "<form action='../product/reports/SalesReport.php' target='_blank'>";
   print "<tr><td><br><br></td>";
-  print '<input type="hidden" id="stockReporteVentas" name="stockId" value="1">';
+  print '<input type="hidden" id="stockReporteVentas" name="account" value="1">';
   print '<input type="hidden" id="monthReporteVentas" name="month" value="1">';
   print "<td><button type=submit class='butAction'>Reporte de ventas</button></td></tr>";
   print "</form>";
+
+  // Reporte de Tickets
+  print "<form action='../product/reports/TicketsReport.php' target='_blank'>";
+  print "<tr>";
+  print "<td></td>";
+  print '<input type="hidden" id="stockReporteTickets" name="account" value="1">';
+  print '<input type="hidden" id="monthReporteTickets" name="month" value="1">';
+  print "<td><button type=submit class='butAction'>Reporte de tickets</button></td>";
+  print "</tr>";
+  print "</form>";
+  // Reporte de Facturas
+  print "<form action='../product/reports/FacturesReport.php' target='_blank'>";
+  print "<tr>";
+  print "<td></td>";
+  print '<input type="hidden" id="stockReporteFacturas" name="account" value="1">';
+  print '<input type="hidden" id="monthReporteFacturas" name="month" value="1">';
+  print "<td><button type=submit class='butAction'>Reporte de facturas</button></td>";
+  print "</tr>";
+  print "</form>";
+
   print "</table><br>";
   
   /* REPORTES DE CONTABILIDAD GENERALES */
@@ -291,6 +311,8 @@ print "<script>
         if (month) {
               document.getElementById('monthCuentasPorCobrar').value = month;
               document.getElementById('monthReporteVentas').value = month;
+              document.getElementById('monthReporteTickets').value = month;
+              document.getElementById('monthReporteFacturas').value = month;
           }
       });
 
@@ -301,6 +323,8 @@ print "<script>
          if (stockId) { 
              document.getElementById('stockReporteVentas').value = stockId;
              document.getElementById('stockCuentasPorCobrar').value = stockId;
+             document.getElementById('stockReporteTickets').value = stockId;
+             document.getElementById('stockReporteFacturas').value = stockId;
          }
       });
 

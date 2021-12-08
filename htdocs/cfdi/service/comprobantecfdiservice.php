@@ -181,4 +181,10 @@ class ComprobanteCFDIService {
 		curl_close($curl);
         return $result;
 	}
+
+	public function CheckForDuplicate($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiId = $CFDIDao->CheckForDuplicate($factureId);
+		return $cfdiId;
+	}
 }

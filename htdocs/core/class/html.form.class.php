@@ -867,6 +867,96 @@ class Form
     	return $out;
     }
 
+    function select_company_tickets($selected='', $htmlname='socid', $filter='', $showempty=0, $showtype=0, $forcecombo=0, $events=array(), $limit=0, $morecss='minwidth100')
+    {
+        global $conf,$user,$langs;
+
+        $out=''; $num=0;
+        $outarray=array();
+
+        // On recherche les societes
+        $sql = "SELECT DISTINCT s.rowid, s.nom as name, s.client, s.fournisseur, s.code_client, s.code_fournisseur
+        FROM llx_societe as s, llx_societe_commerciaux as sc
+         WHERE nom LIKE '%VENTA%'";
+        dol_syslog(get_class($this)."::select_thirdparty_list", LOG_DEBUG);
+        $resql=$this->db->query($sql);
+        if ($resql)
+        {
+           	if ($conf->use_javascript_ajax && ! $forcecombo)
+            {
+				include_once DOL_DOCUMENT_ROOT . '/core/lib/ajax.lib.php';
+            	$comboenhancement =ajax_combobox($htmlname, $events, $conf->global->COMPANY_USE_SEARCH_TO_SELECT);
+            	$out.= $comboenhancement;
+            	$nodatarole=($comboenhancement?' data-role="none"':'');
+            }
+
+            // Construct $out and $outarray
+            $out.= '<select id="'.$htmlname.'" class="flat'.($morecss?' '.$morecss:'').'" name="'.$htmlname.'"'.$nodatarole.'>'."\n";
+
+            $textifempty='';
+            // Do not use textempty = ' ' or '&nbsp;' here, or search on key will search on ' key'.
+            //$textifempty=' ';
+            //if (! empty($conf->use_javascript_ajax) || $forcecombo) $textifempty='';
+            if ($showempty) $out.= '<option value="-1">'.$textifempty.'</option>'."\n";
+
+            $num = $this->db->num_rows($resql);
+            $i = 0;
+            if ($num)
+            {
+                while ($i < $num)
+                {
+                    $obj = $this->db->fetch_object($resql);
+                    $label='';
+                    if ($conf->global->SOCIETE_ADD_REF_IN_LIST) {
+                    	if (($obj->client) && (!empty($obj->code_client))) {
+                    		$label = $obj->code_client. ' - ';
+                    	}
+                    	if (($obj->fournisseur) && (!empty($obj->code_fournisseur))) {
+                    		$label .= $obj->code_fournisseur. ' - ';
+                    	}
+                    	$label.=' '.$obj->name;
+                    }
+                    else
+                    {
+                    	$label=$obj->name;
+                    }
+
+                    if ($showtype)
+                    {
+                        if ($obj->client || $obj->fournisseur) $label.=' (';
+                        if ($obj->client == 1 || $obj->client == 3) $label.=$langs->trans("Customer");
+                        if ($obj->client == 2 || $obj->client == 3) $label.=($obj->client==3?', ':'').$langs->trans("Prospect");
+                        if ($obj->fournisseur) $label.=($obj->client?', ':'').$langs->trans("Supplier");
+                        if ($obj->client || $obj->fournisseur) $label.=')';
+                    }
+                    if ($selected > 0 && $selected == $obj->rowid)
+                    {
+                        $out.= '<option value="'.$obj->rowid.'" selected>'.$label.'</option>';
+                    }
+                    else
+					{
+                        $out.= '<option value="'.$obj->rowid.'">'.$label.'</option>';
+                    }
+
+                    array_push($outarray, array('key'=>$obj->rowid, 'value'=>$obj->rowid, 'label'=>$label));
+
+                    $i++;
+                    if (($i % 10) == 0) $out.="\n";
+                }
+            }
+            $out.= '</select>'."\n";
+        }
+        else
+        {
+            dol_print_error($this->db);
+        }
+
+        $this->result=array('nbofthirdparties'=>$num);
+
+        if ($outputmode) return $outarray;
+        return $out;
+    }
+
     /**
      *  Output html form to select a third party
      *

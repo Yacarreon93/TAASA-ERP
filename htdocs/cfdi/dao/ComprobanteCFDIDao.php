@@ -971,4 +971,10 @@ class ComprobanteCFDIDao {
 		$result = $this->ExecuteQuery($sql);
 		return $result;
 	}
+
+	public function CheckForDuplicate($fk_comprobante) {
+		$sql = "INSERT INTO duplicate_avoid (fk_object) VALUES ('".$fk_comprobante."')";
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
 }

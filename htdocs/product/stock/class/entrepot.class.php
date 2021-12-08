@@ -422,6 +422,49 @@ class Entrepot extends CommonObject
 		return $liste;
 	}
 
+		/**
+	 *  Return list of warehouses for tickets
+	 *
+	 *	@param	int		$status		Status
+	 * 	@return array				Array list of warehouses
+	 */
+	function list_array_ticket()
+	{
+		$liste = array();
+
+		$sql = "SELECT rowid, label
+		FROM llx_entrepot WHERE label = 'tickets'";
+
+		$result = $this->db->query($sql);
+		if ($result)
+		{
+				$obj=$this->db->fetch_object($result);
+
+				$this->id             = $obj->rowid;
+				$this->ref            = $obj->rowid;
+				$this->libelle        = $obj->label;
+				$this->description    = $obj->description;
+				$this->statut         = $obj->statut;
+				$this->lieu           = $obj->lieu;
+				$this->address        = $obj->address;
+				$this->zip            = $obj->zip;
+				$this->town           = $obj->town;
+				$this->country_id     = $obj->country_id;
+
+				include_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
+	            $tmp=getCountry($this->country_id,'all');
+				$this->country=$tmp['label'];
+				$this->country_code=$tmp['code'];
+
+				return 1;
+		}
+		else
+		{
+			$this->error=$this->db->error();
+			return -1;
+		}
+	}
+
 	/**
 	 *	Return number of unique different product into a warehosue
 	 *

@@ -1875,7 +1875,7 @@ if($action=="timbrarCFDIProfact") {
 			$sendResponse = $service->sendCFDI($resultFinal['Id'], $cfdi_soc_data[0]['email']);
 		}
 
-		$vendorEmail = $service->GetVendorEmailByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
+		$vendorEmail = $service->GetAuthorEmailByFactureId($db, $cfdi_main_data[0]['fk_comprobante']);
 
 		if($vendorEmail) {
 			$service->sendCFDI($resultFinal['Id'], $vendorEmail);

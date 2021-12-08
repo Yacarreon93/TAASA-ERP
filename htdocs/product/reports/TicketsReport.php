@@ -9,9 +9,6 @@ $account = GETPOST('account');
 $month = GETPOST('month');
 $year = GETPOST('year');
 
-if(!$account) {
-    $account = 1;
-}
 if(!$month) {
     $month = 1;
 }
@@ -40,6 +37,7 @@ JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
 WHERE
     f.fk_soc = s.rowid
 AND f.entity = 1
+AND fe.isticket = 1
 GROUP BY
     f.rowid,
     f.facnumber,
@@ -113,14 +111,9 @@ while ($row = $db->fetch_object($result))
 
 $factureService = new FacturePaiementsService();
 //CREDITO
-$VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $year, $account);
-$VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $year, $account);
-$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $year, $account);
-
-//CONTADO
-//$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
-//$VendidoContadoConIVA = $factureService->getTotalFacturasConIVAAContado($db, $month, $account);
-//$IVAContado = $factureService->getTotalIVAFacturasContado($db, $month, $account);
+$VendidoCreditoSinIVA = $factureService->getTotalSoloTicketsSinIVAACredito($db, $month, $year, $account);
+$VendidoCreditoConIVA = $factureService->getTotalSoloTicketsConIVAACredito($db, $month, $year, $account);
+$IVACredito = $factureService->getTotalIVASoloTicketsACredito($db, $month, $year, $account);
 
 $totals = array();
 
@@ -184,7 +177,7 @@ $month_name = strftime('%B', $dateObj->getTimestamp());
 
 $yearTemp = 
 
-$report_title = strtr('REPORTE DE VENTAS DEL MES - $M $Y', array(
+$report_title = strtr('REPORTE DE TICKETS DEL MES - $M $Y', array(
     '$M' => $month_name,
     '$Y' =>  $year,
 ));

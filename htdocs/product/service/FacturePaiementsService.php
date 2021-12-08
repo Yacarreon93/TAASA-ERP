@@ -92,6 +92,110 @@ class FacturePaiementsService {
 		return $data;
 	}
 
+	public function getTotalSoloTicketsSinIVAACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total_ttc
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(total_ttc) AS total_ttc
+		FROM
+			llx_facture as f
+		JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND fe.isticket = 1
+		AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = '".$year."' ";
+		$sql.= "AND tva = 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+		$result = $db->query($sql);	
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->total_ttc) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total_ttc;
+			}
+		    $data[] = array(
+				fecha=>$row->datef,
+		        total=> $totalTemp
+		    );
+		}
+		return $data;
+	}
+
+	public function getTotalSoloFacturasSinIVAACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total_ttc
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(total_ttc) AS total_ttc
+		FROM
+			llx_facture as f
+		JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND (isticket != 1 OR ISNULL(isticket))
+		AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = '".$year."' ";
+		$sql.= "AND tva = 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+		$result = $db->query($sql);	
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->total_ttc) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total_ttc;
+			}
+		    $data[] = array(
+				fecha=>$row->datef,
+		        total=> $totalTemp
+		    );
+		}
+		return $data;
+	}
+
 	public function getTotalFacturasConIVAACredito($db, $month, $year, $account) {
 		$sql = "SELECT DISTINCT
 	dateo,
@@ -140,6 +244,110 @@ class FacturePaiementsService {
 		return $data;
 	}
 
+	public function getTotalSoloTicketsConIVAACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(total) AS total
+		FROM
+			llx_facture as f
+		JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND fe.isticket = 1
+		AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = ".$year;
+		$sql.= " AND tva != 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+		$result = $db->query($sql);
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->total) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total;
+			}
+		    $data[] = array(
+					fecha=>$row->datef,
+					total=> $totalTemp
+		    );
+		}
+		return $data;
+	}
+
+	public function getTotalSoloFacturasConIVAACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.total
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(total) AS total
+		FROM
+			llx_facture as f
+		JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND (isticket != 1 OR ISNULL(isticket))
+		AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = ".$year;
+		$sql.= " AND tva != 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+		$result = $db->query($sql);
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->total) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->total;
+			}
+		    $data[] = array(
+					fecha=>$row->datef,
+					total=> $totalTemp
+		    );
+		}
+		return $data;
+	}
+
 	public function getTotalIVAFacturasACredito($db, $month, $year, $account) {
 		$sql = "SELECT DISTINCT
 	dateo,
@@ -155,6 +363,112 @@ class FacturePaiementsService {
 		WHERE
 			fk_cond_reglement = 2
 		AND fk_account = ".$account."
+			AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = ".$year;
+	$sql.= " AND tva != 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+
+		$result = $db->query($sql);
+
+		if (!$result) {
+				echo 'Error: '.$db->lasterror;
+				die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->tva) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->tva;
+			}
+				$data[] = array(
+					fecha=>$row->datef,
+					total=> $totalTemp
+				);
+		}
+		return $data;
+	}
+
+	public function getTotalIVASoloTicketsACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.tva
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(tva) AS tva
+		FROM
+			llx_facture as f
+			JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND fe.isticket = 1
+			AND MONTH (datef) = ".$month."
+		AND YEAR (DATEf) = ".$year;
+	$sql.= " AND tva != 0
+		GROUP BY
+			datef
+		ORDER BY
+			datef ASC
+	) t1 ON t1.datef = dateo
+	WHERE
+		MONTH (dateo) = ".$month."
+	AND YEAR (dateo) = '".$year."'";
+
+		$result = $db->query($sql);
+
+		if (!$result) {
+				echo 'Error: '.$db->lasterror;
+				die;
+		}
+
+		while ($row = $db->fetch_object($result))
+		{
+			if(!$row->tva) {
+				$totalTemp = 0;
+			} else {
+				$totalTemp = $row->tva;
+			}
+				$data[] = array(
+					fecha=>$row->datef,
+					total=> $totalTemp
+				);
+		}
+		return $data;
+	}
+
+	public function getTotalIVASoloFacturasACredito($db, $month, $year, $account) {
+		$sql = "SELECT DISTINCT
+	dateo,
+	t1.tva
+	FROM
+		llx_bank
+	LEFT OUTER JOIN (
+		SELECT
+			datef,
+			SUM(tva) AS tva
+		FROM
+			llx_facture as f
+			JOIN
+			llx_facture_extrafields as fe
+        ON f.rowid = fe.fk_object
+		WHERE
+			fk_cond_reglement = 2
+		AND fk_account = ".$account."
+		AND (isticket != 1 OR ISNULL(isticket))
 			AND MONTH (datef) = ".$month."
 		AND YEAR (DATEf) = ".$year;
 	$sql.= " AND tva != 0

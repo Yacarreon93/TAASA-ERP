@@ -229,7 +229,7 @@ if( isset($_REQUEST["action"]) && $_REQUEST["action"] == "generaCFDI"){
     
 
 } else if( isset($_REQUEST["action"]) && $_REQUEST["action"] == "generaCFDI2"){
-    include("generaCFDI2.php");
+    //include("generaCFDI2.php");
 
 }
 
@@ -2899,8 +2899,9 @@ if( $cfdi_tot>0 ){
 												{
                                                     if($timbreProfact ) {
                                                    //     print('herER===???');
-                                                   print '<form name="generarCFDI" id="generarCFDI" action="' . $_SERVER["PHP_SELF"] . '?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2" method="POST">
+                                                   print '<form name="generarCFDI" id="generarCFDI" action="/cfdimx/facture_cfdi.php?action=generaCFDI2" method="POST">
                                                    <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">';
+                                                   print '<input type="hidden" name="facid" value="'.$object->id.'">';
                                                    print '<input class="button" type="submit" name="generarCFDIButton" value="Generar CFDI" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
                                                        // print '<a class="butAction" style="color:blue" href="'.$_SERVER['PHP_SELF'].'?facid='.$object->id.'&amp;tpdomi='.$tpdomic.'&amp;osd='.$osd.'&amp;tdc='.$tdc.'&amp;action=generaCFDI2">Generar CFDI </a>'."<br>".$msg_dom_receptor." ".$msg_mail;//boton generar CFDI 
                                                     } else {
