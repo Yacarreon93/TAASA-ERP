@@ -104,7 +104,6 @@ while ($row = $db->fetch_object($result))
     } else { //facturas de contado
         $totalAbonosContado[$i] += $row->importe_pago;
         if($row->tva > 0) {
-          $IVAContado[$i]+= $row->tva;
           $VendidoContadoConIVA[$i]+= $row->subtotal;
         }else {
           $VendidoContadoSinIVA[$i]+= $row->importe_pago;
@@ -116,12 +115,8 @@ $factureService = new FacturePaiementsService();
 //CREDITO
 $VendidoCreditoSinIVA = $factureService->getTotalFacturasSinIVAACredito($db, $month, $year, $account);
 $VendidoCreditoConIVA = $factureService->getTotalFacturasConIVAACredito($db, $month, $year, $account);
-$IVACredito = $factureService->getTotalIVAFacturasACredito($db, $month, $year, $account);
 
-//CONTADO
-//$VendidoContadoSinIVA = $factureService->getTotalFacturasSinIVAAContado($dateArray, $db, $month, $account);
-//$VendidoContadoConIVA = $factureService->getTotalFacturasConIVAAContado($db, $month, $account);
-//$IVAContado = $factureService->getTotalIVAFacturasContado($db, $month, $account);
+$IVACobrado = $factureService->getTotalIVACobrado($db, $month, $year, $account);
 
 $totals = array();
 
@@ -131,7 +126,11 @@ for ($i = 0; $i < $dayCounter; $i++) {
     $totals[$i]['ventasCreditoConIVA'] = formatMoney($VendidoCreditoConIVA[$i]['total']);
     $totals[$i]['ventasContadoSinIVA'] = formatMoney($VendidoContadoSinIVA[$i]);
     $totals[$i]['ventasContadoConIVA'] = formatMoney($VendidoContadoConIVA[$i]);
-    $totals[$i]['IVA']  = formatMoney($IVAContado[$i] + $IVACredito[$i]['total']);
+    if($totals[$i]['fecha'] == $totals[$i]['fecha']) {
+        $totals[$i]['IVA']  = formatMoney($IVACobrado["iva"][$i]);
+    } else {
+        $totals[$i]['IVA']  = 0;
+    }
     $totals[$i]['totalSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]);
     $totals[$i]['totalConIVA']  = formatMoney($VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]);
     $totals[$i]['importeAbonos'] = formatMoney($totalAbonosAcredito[$i]);
@@ -145,7 +144,7 @@ for ($i = 0; $i < $dayCounter; $i++) {
   $totalPerRowCreditoConIVA += $VendidoCreditoConIVA[$i]['total'];
   $totalPerRowContadoSinIVA += $VendidoContadoSinIVA[$i];
   $totalPerRowContadoConIVA += $VendidoContadoConIVA[$i];
-  $totalPerRowIVA += $IVAContado[$i] + $IVACredito[$i]['total'];
+  $totalPerRowIVA += $IVACobrado["iva"][$i];
   $totalPerRowTotalSinIVA += $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i];
   $totalPerRowTotalConIVA += $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i];
   $totalPerRowAbonado += $totalAbonosAcredito[$i];

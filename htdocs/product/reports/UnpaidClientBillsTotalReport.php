@@ -41,6 +41,8 @@ WHERE
     f.paye = 0
 AND f.fk_statut = 1
 AND f.entity = 1
+AND llx_societe != 1097
+AND llx_societe != 1
 AND DATE(datef) < "'.$dateBefore.'"
 GROUP BY nom';
 

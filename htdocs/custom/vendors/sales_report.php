@@ -108,6 +108,7 @@ else {
             $sql.= ' WHERE f.fk_soc = s.rowid';
             $sql.= ' AND ef.vendor = '.$id;
             $sql.= ' AND f.fk_statut != 3';
+            $sql.= ' AND f.fk_soc != 1097';
             $sql.= " AND f.entity = ".$conf->entity;
             if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = " .$user->id;
             if ($search_product_category > 0) $sql.=" AND cp.fk_categorie = ".$search_product_category;
@@ -257,6 +258,7 @@ else {
     }
         $sql.= ' AND label != "Retiro por corte de caja"
         AND vendor = '.$id.'
+        AND f.fk_soc != 1097 
         GROUP BY pf.rowid';
         $sql.= ' ORDER BY datec DESC,';
         $sql.= ' f.rowid DESC ';

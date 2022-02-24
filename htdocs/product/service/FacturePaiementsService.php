@@ -665,4 +665,92 @@ AND YEAR (dateo) = YEAR (CURDATE())";
         return $row->vendido;
     }
 
+	public function getTotalIVACobrado($db, $month, $year, $account) {
+		$sql = "SELECT b.dateo, pf.amount, b.fk_account, f.rowid, f.facnumber, f.total, f.total_ttc, f.tva
+			FROM
+			llx_bank AS b
+			JOIN
+			llx_paiement AS p ON p.fk_bank = b.rowid
+			JOIN
+			llx_paiement_facture as pf ON pf.fk_paiement = p.rowid
+			JOIN
+			llx_facture as f ON f.rowid = pf.fk_facture
+			WHERE
+			b.fk_account = ".$account."
+			AND MONTH(b.dateo) = ".$month."
+			AND YEAR(b.dateo) = ".$year;
+		$sql.= " AND f.tva != 0";
+		$sql.= " AND f.fk_cond_reglement != 1";
+		$result = $db->query($sql);
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		$fechaTemp = '';
+		$iva = array_fill(0,31,0);
+		$date = array();
+		$ivaArray = array();
+		$i = -1;
+
+		while ($row = $db->fetch_object($result))
+		{
+			if($fechaTemp != $row->dateo) {
+				$fechaTemp = $row->dateo;
+				$i++;
+			}
+			$percentage = (($row->amount * 100) / $row->total_ttc);
+			$ivapagado = (($percentage / 100 ) * $row->tva);
+			$date[$i] =  $fechaTemp;
+			$iva[$i] +=  $ivapagado;
+		}
+		$ivaArray["iva"] = $iva;
+		$ivaArray["fecha"] = $date;
+		return $ivaArray;
+	}
+
+	public function getTotalCobradoCreditoPerAccount($db, $month, $year, $account) {
+		$sql = "SELECT b.dateo, b.rowid AS id_pago, pf.amount, b.fk_account, f.rowid, f.facnumber, f.total, f.total_ttc, f.tva
+			FROM
+			llx_bank AS b
+			JOIN
+			llx_paiement AS p ON p.fk_bank = b.rowid
+			JOIN
+			llx_paiement_facture as pf ON pf.fk_paiement = p.rowid
+			JOIN
+			llx_facture as f ON f.rowid = pf.fk_facture
+			WHERE
+			b.fk_account = ".$account."
+			AND MONTH(b.dateo) = ".$month."
+			AND YEAR(b.dateo) = ".$year;
+		$sql.= " AND f.fk_cond_reglement != 1";
+		$result = $db->query($sql);
+
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		$fechaTemp = '';
+		$amountTotal = 0;
+		$i = -1;
+
+		while ($row = $db->fetch_object($result))
+		{
+			if($fechaTemp != $row->dateo) {
+				$fechaTemp = $row->dateo;
+				$i++;
+			}
+			$amountTotal += $row->amount;
+		}
+
+		return $amountTotal;
+	}
+
+
+	
+
 }
+
+
