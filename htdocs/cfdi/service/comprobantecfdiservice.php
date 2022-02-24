@@ -187,4 +187,41 @@ class ComprobanteCFDIService {
 		$cfdiId = $CFDIDao->CheckForDuplicate($factureId);
 		return $cfdiId;
 	}
+
+	public function UpdateTicketFields($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$cfdiId = $CFDIDao->UpdateTicketFields($factureId);
+		return $cfdiId;
+	}
+
+	public function IsForFacture($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$isforfacture = $CFDIDao->IsForFacture($factureId);
+		return $isforfacture;
+	}
+
+	public function AddBankRecord($db, $factureId) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$isforfacture = $CFDIDao->AddBankRecord($factureId);
+		return $isforfacture;
+	}
+
+	public function CopyPayments($db, $bankRecordId, $factureToCopy) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$isforfacture = $CFDIDao->CopyPayments($bankRecordId, $factureToCopy);
+		return $isforfacture;
+	}
+
+	public function CopyPaymentExtrafields($db, $paymentId, $factureToCopy) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$isforfacture = $CFDIDao->CopyPaymentExtrafields($paymentId, $factureToCopy);
+		return $isforfacture;
+	}
+
+	public function InsertPaymentFacture($db, $paymentId, $amount) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$isforfacture = $CFDIDao->InsertPaymentFacture($paymentId, $amount);
+		return $isforfacture;
+	}
+
 }

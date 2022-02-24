@@ -750,6 +750,7 @@ if ($id > 0 || ! empty($ref))
 		while ($i < $num)
 		{
 			$objp = $db->fetch_object($result);
+
 			$total = price2num($total + $objp->amount,'MT');
 			if ($i >= ($viewline * (($totalPages-$page)-1)))
 			{
@@ -1061,8 +1062,6 @@ if ($id > 0 || ! empty($ref))
 
 			$i++;
 		}
-
-		// Show total
 		if ($page == 0 && ! $mode_search)
 		{
 			//Real account situation

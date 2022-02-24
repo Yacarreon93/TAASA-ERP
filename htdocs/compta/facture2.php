@@ -2136,6 +2136,7 @@ if ($action == 'create')
 
 	}
 
+
 	print '<form name="add" action="' . $_SERVER["PHP_SELF"] . '" method="POST">';
 	if($isTicket) {
 		print '<input type="hidden" name="isTicket" value="true">';
@@ -2150,6 +2151,8 @@ if ($action == 'create')
 	print '<input type="hidden" name="origin" value="' . $origin . '">';
 	print '<input type="hidden" name="originid" value="' . $originid . '">';
 
+
+
 	dol_fiche_head('');
 
 	print '<table class="border" width="100%">';
@@ -2157,10 +2160,13 @@ if ($action == 'create')
 	// Ref
 	print '<tr><td class="fieldrequired">' . $langs->trans('Ref') . '</td><td colspan="2">' . $langs->trans('Draft') . '</td></tr>';
 
+	print('test speed 1');
+
 	// Thirdparty
 	print '<td class="fieldrequired">' . $langs->trans('Customer') . '</td>';
 	if ($soc->id > 0)
 	{
+		print('aqui no debe entrar');
 		print '<td colspan="2">';
 		print $soc->getNomUrl(1);
 		print '<input type="hidden" name="socid" value="' . $soc->id . '">';
@@ -2178,11 +2184,15 @@ if ($action == 'create')
 	}
 	else
 	{
+		print('test speed 2');
 		print '<td colspan="2">';
 		print $form->select_company('', 'socid', 's.client = 1 OR s.client = 3', 1);
 		print '</td>';
+		print('test speed 3');
 	}
 	print '</tr>' . "\n";
+
+	print('test speed 4');
 
 	// Predefined invoices
 	if (empty($origin) && empty($originid) && $socid > 0)
@@ -2219,12 +2229,20 @@ if ($action == 'create')
 		}
 	}
 
+	print('test speed 5');
+
+
 	// // Type de facture
+	// print('list replacable');
 	// $facids = $facturestatic->list_replacable_invoices($soc->id);
+	// print_r("facidds: " . $facids);
 	// if ($facids < 0) {
+	// 	print('coild ot be this thing');
 	// 	dol_print_error($db, $facturestatic);
 	// 	exit();
 	// }
+	// print('ololol');
+	// die();
 	// $options = "";
 	// foreach ($facids as $facparam)
 	// {
@@ -2240,6 +2258,7 @@ if ($action == 'create')
 	// $facids=$facturestatic->list_qualified_avoir_invoices($soc->id);
 	// if ($facids < 0)
 	// {
+	// 	print('coild ot be this thing 2');
 	// 	dol_print_error($db,$facturestatic);
 	// 	exit;
 	// }
@@ -2261,6 +2280,8 @@ if ($action == 'create')
 	// 	$optionsav .= ' (' . $newinvoice_static->getLibStatut(1, $valarray ['paymentornot']) . ')';
 	// 	$optionsav .= '</option>';
 	// }
+
+
 
 	if($isTicket != "true") {
 		print '<tr><td valign="top" class="fieldrequired">' . $langs->trans('Type') . '</td><td colspan="2">';
@@ -2548,7 +2569,7 @@ if ($action == 'create')
 			// print'<pre>';
 			// print_r($extrafields->attribute_param['vendor']['options']);
 			// print'</pre>';
-			// 
+			// die();
 			print'
 			<!-- showOptionalsInput -->
 			<tr >

@@ -877,7 +877,7 @@ class Form
         // On recherche les societes
         $sql = "SELECT DISTINCT s.rowid, s.nom as name, s.client, s.fournisseur, s.code_client, s.code_fournisseur
         FROM llx_societe as s, llx_societe_commerciaux as sc
-         WHERE nom LIKE '%VENTA%'";
+         WHERE nom LIKE '%VENTA PUBLICO%'";
         dol_syslog(get_class($this)."::select_thirdparty_list", LOG_DEBUG);
         $resql=$this->db->query($sql);
         if ($resql)

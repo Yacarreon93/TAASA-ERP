@@ -977,4 +977,55 @@ class ComprobanteCFDIDao {
 		$result = $this->ExecuteQuery($sql);
 		return $result;
 	}
+
+	public function UpdateTicketFields($factureId) {
+		$sql = "UPDATE llx_facture_extrafields AS fe
+		SET fe.isTicket = 0, fe.isforfacture = 1, fe.formpagcfdi = 'PUE', fe.usocfdi = 'G01'
+		Where fe.fk_object =".$factureId;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
+	public function IsForFacture($factureId) {
+		$sql = "SELECT isforfacture FROM llx_facture_extrafields
+		Where fk_object =".$factureId;
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->isforfacture;
+	}
+
+	public function AddBankRecord($factureId, $factureToCopy) {
+		$sql = "INSERT INTO llx_bank (datec, datev, dateo, amount, label, fk_account, fk_user_author, fk_type, num_chq, rappro, note, fk_bordereau, banque, emetteur, status)
+		SELECT NOW(), NOW(), NOW(), amount, label, 6, fk_user_author, fk_type, num_chq, rappro, note, fk_bordereau, banque, emetteur, 2
+		FROM llx_bank 
+		WHERE rowid = ".$factureToCopy;
+		$result = $this->ExecuteQuery($sql);
+		return $this->$db->last_insert_id("llx_bank");
+	}
+
+	public function CopyPayments($bankRecordId, $factureToCopy) {
+		$sql = "INSERT INTO llx_paiement(entity, datec, datep, amount, fk_paiement, note, fk_bank, fk_user_creat, statut, fk_export_compta) 
+		SELECT  entity, NOW(), NOW(), amount, fk_paiement, note, '".$bankRecordId."', fk_user_creat, statut, fk_export_compta 
+		FROM llx_paiement 
+		WHERE rowid = ".$factureToCopy;
+		$result = $this->ExecuteQuery($sql);
+		return $this->$db->last_insert_id("llx_paiement");
+	}
+
+	public function CopyPaymentExtrafields($paymentId, $factureToCopy) {
+		$sql = "INSERT INTO llx_paiement_extrafields (fk_object, currency, currency_rate)
+		SELECT '".$factureId."', currency, currency_rate
+		FROM llx_paiement_extrafields
+		WHERE rowid = ".$factureToCopy;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
+	public function InsertPaymentFacture($paymentId, $amount) {
+		$sql = "INSERT INTO llx_paiement_facture (fk_paiement, amount)
+		VALUES (".$paymentId."', '".$amount."')";
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
 }

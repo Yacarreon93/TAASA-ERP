@@ -775,7 +775,8 @@ function print_left_eldy_menu($db,$menu_array_before,$menu_array_after,&$tabMenu
 				$newmenu->add("/compta/quote.php?isTicket=1&facid=".$objp->fk_quote_facture,"Cotizar",1);
 
 				$newmenu->add("/compta/facture/list.php?leftmenu=customers_bills","Listado de Facturas",1,$user->rights->facture->lire);
-				$newmenu->add("/compta/facture/ticketList.php?leftmenu=customers_bills","Listado de Tickets",1,$user->rights->facture->lire);
+				$newmenu->add("/compta/facture/ticketList.php?leftmenu=customers_bills","Listado de Tickets(Antiguo)",1,$user->rights->facture->lire);
+				$newmenu->add("/compta/facture/ticketForFactureList.php?leftmenu=customers_bills","Tickets a facturar",1,$user->rights->facture->lire);
 
 				if (empty($leftmenu) || ($leftmenu == 'customers_bills'))
 				{
