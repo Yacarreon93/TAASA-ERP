@@ -2768,6 +2768,8 @@ class FactureCfdi extends CommonInvoice
 
 		dol_syslog(get_class($this)."::list_replacable_invoices sql=$sql");
 		$resql=$this->db->query($sql);
+		
+
 		if ($resql)
 		{
 			while ($obj=$this->db->fetch_object($resql))

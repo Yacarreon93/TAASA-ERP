@@ -1062,6 +1062,7 @@ if ($id > 0 || ! empty($ref))
 
 			$i++;
 		}
+		// Show total
 		if ($page == 0 && ! $mode_search)
 		{
 			//Real account situation

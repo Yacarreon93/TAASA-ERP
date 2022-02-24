@@ -2324,11 +2324,11 @@ if( $cfdi_tot>0 ){
                 $vendorEmail = $service->GetAuthorEmailByFactureId($db, $id);
 
                 if($cfdi_soc_data[0]['email']) {
-                    $sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
+                    $sendResponse = $service->sendCFDI($cfdiId, $cfdi_soc_data[0]['email']);
                 }
 
                 if($vendorEmail) {
-                    $service->sendCFDI($response['Id'], $vendorEmail);
+                    $service->sendCFDI($cfdiId, $vendorEmail);
                 }
 
                 echo '
@@ -2862,7 +2862,7 @@ if( $cfdi_tot>0 ){
                                         if ($user->rights->facture->supprimer) {
                                             echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de cancelar la factura?\')" name="cancelaCFDIaction" value="Cancelar CFDI" class="button">';
                                         }
-                                        echo '<input type="reenviar" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button" onClick="this.form.submit(); this.disabled=true; this.value= `Sending…`;"/>';
+                                        echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button" onClick="this.form.submit(); this.value= `Sending…`;"/>';
 										echo '</form>';
 										echo '</p>';
 										echo '</div>';
