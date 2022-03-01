@@ -725,6 +725,7 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 			AND MONTH(b.dateo) = ".$month."
 			AND YEAR(b.dateo) = ".$year;
 		$sql.= " AND f.fk_cond_reglement != 1";
+		$sql.= " AND f.fk_statut != 3";
 		$result = $db->query($sql);
 
 		if (!$result) {
@@ -748,7 +749,44 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 		return $amountTotal;
 	}
 
+	public function getTotalCobradoContadoPerAccount($db, $month, $year, $account) {
+		$sql = "SELECT b.dateo, b.rowid AS id_pago, pf.amount, b.fk_account, f.rowid, f.facnumber, f.total, f.total_ttc, f.tva
+			FROM
+			llx_bank AS b
+			JOIN
+			llx_paiement AS p ON p.fk_bank = b.rowid
+			JOIN
+			llx_paiement_facture as pf ON pf.fk_paiement = p.rowid
+			JOIN
+			llx_facture as f ON f.rowid = pf.fk_facture
+			WHERE
+			b.fk_account = ".$account."
+			AND MONTH(b.dateo) = ".$month."
+			AND YEAR(b.dateo) = ".$year;
+		$sql.= " AND f.fk_cond_reglement = 1";
+		$sql.= " AND f.fk_statut != 3";
+		$result = $db->query($sql);
 
+		if (!$result) {
+		    echo 'Error: '.$db->lasterror;
+		    die;
+		}
+
+		$fechaTemp = '';
+		$amountTotal = 0;
+		$i = -1;
+
+		while ($row = $db->fetch_object($result))
+		{
+			if($fechaTemp != $row->dateo) {
+				$fechaTemp = $row->dateo;
+				$i++;
+			}
+			$amountTotal += $row->amount;
+		}
+
+		return $amountTotal;
+	}
 	
 
 }

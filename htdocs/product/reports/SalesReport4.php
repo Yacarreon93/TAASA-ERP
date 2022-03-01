@@ -35,7 +35,6 @@ if(!$year) {
 $sql.=" AND f.fk_soc != 1097";
 $sql.=" ORDER BY
 f.datef ASC";
-
 $result = $db->query($sql);
 if (!$result) {
     echo 'Error: '.$db->lasterror;
@@ -83,7 +82,7 @@ while ($row = $db->fetch_object($result))
 $factureService = new FacturePaiementsService();
 $IVACobrado = $factureService->getTotalIVACobrado($db, $month, $year, $account);
 $totalPerRowPagosACredito = $factureService->getTotalCobradoCreditoPerAccount($db, $month, $year, $account);
-
+//$totalPerRowPagosContado = $factureService->getTotalCobradoContadoPerAccount($db, $month, $year, $account);
 $importeContado = 0;
 $importeCredito = 0;
 $importeAbonos = 0;
@@ -244,6 +243,10 @@ $pdf->ln();
 $pdf->Cell($columnWidth * 3);
 $pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Abonos a credito', 1);
 $pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalPerRowPagosACredito), 1);
+$pdf->ln();
+$pdf->Cell($columnWidth * 3);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Total Cobrado', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalContado + $totalPerRowPagosACredito), 1);
 $pdf->ln();
 $pdf->SetFillColor(...$grayRGB1);
 $pdf->Cell($columnWidth * 3);
