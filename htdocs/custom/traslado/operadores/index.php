@@ -73,28 +73,6 @@ print_fiche_titre("Operadores");
 $operadorDao = new OperadorDAO($db);
 $result = $operadorDao->GetOperadoresResult();
 
-// if(! empty($conf->multicompany->enabled) && $conf->entity == 1 && (! empty($conf->multicompany->transverse_mode) || (! empty($user->admin) && empty($user->entity))))
-// {
-//     $sql.= " WHERE u.entity IS NOT NULL";
-// }
-// else
-// {
-//     $sql.= " WHERE u.entity IN (".getEntity('user',1).")";
-// }
-// if ($socid > 0) $sql.= " AND u.fk_soc = ".$socid;
-// if ($search_user != '') $sql.=natural_search(array('u.login', 'u.lastname', 'u.firstname'), $search_user);
-// if ($search_thirdparty != '') $sql.=natural_search(array('s.nom'), $search_thirdparty);
-// if ($search_login != '') $sql.= natural_search("u.login", $search_login);
-// if ($search_lastname != '') $sql.= natural_search("u.lastname", $search_lastname);
-// if ($search_firstname != '') $sql.= natural_search("u.firstname", $search_firstname);
-// if ($search_statut != '' && $search_statut >= 0) $sql.= " AND (u.statut=".$search_statut.")";
-// if ($sall) $sql.= natural_search(array('u.login', 'u.lastname', 'u.firstname', 'u.email', 'u.note'), $sall);
-
-// $sql.= " AND ef.rol = 1";
-
-// $sql.=$db->order($sortfield,$sortorder);
-
-//$result = $db->query($sql);
 if ($result)
 {
      $num = $db->num_rows($result);
@@ -113,35 +91,11 @@ if ($result)
   
     print "</tr>\n";
 
-//     // Search bar
-//     $colspan=3;
-//     if (! empty($conf->multicompany->enabled) && empty($conf->multicompany->transverse_mode)) $colspan++;
-//     print '<tr class="liste_titre">';
-//     print '<td><input type="text" name="search_login" size="6" value="'.$search_login.'"></td>';
-//     print '<td><input type="text" name="search_lastname" size="6" value="'.$search_lastname.'"></td>';
-//     print '<td><input type="text" name="search_firstname" size="6" value="'.$search_firstname.'"></td>';
-//     print '<td><input type="text" name="search_thirdparty" size="6" value="'.$search_thirdparty.'"></td>';
-//     print '<td colspan="'.$colspan.'">&nbsp;</td>';
-
-//     // Status
-//     print '<td align="right">';
-//     print $form->selectarray('search_statut', array('-1'=>'','0'=>$langs->trans('Disabled'),'1'=>$langs->trans('Enabled')),$search_statut);
-//     print '</td>';
-
-//     print '<td class="liste_titre" align="right"><input type="image" class="liste_titre" name="button_search" src="'.img_picto($langs->trans("Search"),'search.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'">';
-//     print '<input type="image" class="liste_titre" name="button_removefilter" src="'.img_picto($langs->trans("Search"),'searchclear.png','','',1).'" value="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'" title="'.dol_escape_htmltag($langs->trans("RemoveFilter")).'">';
-//     print '</td>';
-
-//     print "</tr>\n";
-
-//     $user2=new User($db);
-
-//     $var=True;
     while ($i < $num)
     {
         $obj = $db->fetch_object($result);
         print '<tr>';
-        print '<td>'.ucfirst($obj->nombre).'</td>';
+        print '<td><a href="/custom/traslado/operadores/card.php?id='.$obj->rowid.'">'.ucfirst($obj->nombre).'</a></td>';
         print '<td>'.ucfirst($obj->RFC).'</td>';
         print '<td>'.ucfirst($obj->num_licencia).'</td>';
         print '<td>&nbsp;</td>';
