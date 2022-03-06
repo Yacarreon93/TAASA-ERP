@@ -61,7 +61,7 @@ if($socid!=''){
 if($_REQUEST['actualizar']){
 	$tpdomicilio	= GETPOST('tpdomicilio2');
 	$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor SET receptor_delompio='".$_REQUEST['delompio']."', receptor_colonia='".$_REQUEST['colonianw']."', 
-			receptor_calle='".$_REQUEST['calle']."', receptor_noext='".$_REQUEST['noext']."', receptor_noint='".$_REQUEST['noint']."', cod_municipio='".$_REQUEST['codmunicipio']."'
+			receptor_calle='".$_REQUEST['calle']."', receptor_noext='".$_REQUEST['noext']."', receptor_noint='".$_REQUEST['noint']."', cod_municipio='".$_REQUEST['codmunicipio']."', cod_colonia='".$_REQUEST['codcolonia']."', cod_localidad='".$_REQUEST['codlocalidad']."'
 			WHERE tpdomicilio='".$tpdomicilio."' AND receptor_rfc='".$rfc_receptor."' AND entity_id=".$entity_receptor;
 	$r1=$db->query($sql);
 	//echo $sql;
@@ -103,10 +103,10 @@ if($_REQUEST['tpdomicilio']!='' && $_REQUEST['guardar']){
 			$r6=$db->fetch_object($r5);
 			$sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor (receptor_rfc, tpdomicilio, receptor_delompio, receptor_colonia, 
 							receptor_calle, receptor_noext, receptor_noint, receptor_id, 
-							entity_id,determinado,cod_municipio)
+							entity_id,determinado,cod_municipio, cod_colonia, cod_localidad)
 					 VALUES ('".$rfc_receptor."','".$_REQUEST['tpdomicilio']."','".$_REQUEST['delompio']."','".$_REQUEST['colonianw']."',
 					 		'".$_REQUEST['calle']."','".$_REQUEST['noext']."','".$_REQUEST['noint']."','".$r6->receptor_id."',
-					 			'".$entity_receptor."','".$determinado."','".$_REQUEST['codmunicipio']."')";
+					 			'".$entity_receptor."','".$determinado."','".$_REQUEST['codmunicipio']."','".$_REQUEST['codcolonia']."','".$_REQUEST['codlocalidad']."')";
 			$r5=$db->query($sql);
 		}
 	}
@@ -117,10 +117,12 @@ $rcolonia='';
 $rcalle='';
 $rnoext='';
 $rnoint='';
-$rcodmunicipio='';		
+$rcodmunicipio='';	
+$rcodcolonia='';	
+$rcodlocalidad='';		
 if($action=='edit'){
 	$tpd	= GETPOST('tpd');
-	$sql='SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado, cod_municipio 
+	$sql='SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado, cod_municipio, cod_colonia, cod_localidad 
 		FROM '.MAIN_DB_PREFIX.'cfdimx_domicilios_receptor WHERE tpdomicilio="'.$tpd.'" AND receptor_rfc="'.$rfc_receptor.'"  AND entity_id='.$entity_receptor;
 	$ract=$db->query($sql);
 	$ractu=$db->fetch_object($ract);
@@ -131,6 +133,9 @@ if($action=='edit'){
 	$rnoext=$ractu->receptor_noext;
 	$rnoint=$ractu->receptor_noint;
 	$rcodmunicipio=$ractu->cod_municipio;
+	$rcodcolonia=$ractu->cod_colonia;
+	$rcodlocalidad=$ractu->cod_localidad;
+	
 }
 if($action=='delete'){
 	$tpd	= GETPOST('tpd');
@@ -207,6 +212,22 @@ print "<tr>";
 print "</tr>";
 print "<tr>";
 	print "<td>";
+		print "Codigo Colonia";
+	print "</td>";
+	print "<td>";
+		print '<input type="text" size="30" name="codcolonia" value="'.$rcodcolonia.'">';
+	print "</td>";
+print "</tr>";
+print "<tr>";
+	print "<td>";
+		print "Codigo Localidad";
+	print "</td>";
+	print "<td>";
+		print '<input type="text" size="30" name="codlocalidad" value="'.$rcodlocalidad.'">';
+	print "</td>";
+print "</tr>";
+print "<tr>";
+	print "<td>";
 		print "*Calle";
 	print "</td>";
 	print "<td>";
@@ -261,7 +282,7 @@ print "<b>DOMICILIO</b>";
 print "</td>";
 print "</tr>";
 if($_REQUEST['actualizap']){
-	$sql="SELECT receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint
+	$sql="SELECT receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, cod_municipio, cod_colonia, cod_localidad
 		FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE receptor_rfc='".$rfc_receptor."' AND tpdomicilio='".$_REQUEST['seldomicilio']."' AND entity_id=".$entity_receptor;
 	$ra1=$db->query($sql);
 	$ra2=$db->fetch_object($ra1);
@@ -271,14 +292,14 @@ if($_REQUEST['actualizap']){
 	$rs2=$db->fetch_object($rs1);
 	if($rs2->existe>0){
 		$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp SET receptor_delompio='".$ra2->receptor_delompio."', receptor_colonia='".$ra2->receptor_colonia."', 
-				receptor_calle='".$ra2->receptor_calle."', receptor_noext='".$ra2->receptor_noext."', receptor_noint='".$ra2->receptor_noint."' 
+				receptor_calle='".$ra2->receptor_calle."', receptor_noext='".$ra2->receptor_noext."', receptor_noint='".$ra2->receptor_noint."', cod_municipio='".$ra2->cod_municipio."', cod_colonia='".$ra2->cod_colonia."', cod_localidad='".$ra2->cod_localidad."'    
 				WHERE receptor_rfc='".$rfc_receptor."' AND entity_id=".$conf->entity;
 		$rs1=$db->query($sql);
 	}else{
-		$sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp (receptor_rfc,receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, 
+		$sql="INSERT INTO ".MAIN_DB_PREFIX."cfdimx_receptor_datacomp (receptor_rfc,receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, cod_municipio, cod_colonia, cod_localidad, 
 				  receptor_noint, entity_id) 
 				VALUES('".$rfc_receptor."', '".$ra2->receptor_delompio."', '".$ra2->receptor_colonia."', '".$ra2->receptor_calle."', 
-						'".$ra2->receptor_noext."', '".$ra2->receptor_noint."', '".$entity_receptor."')";
+						'".$ra2->receptor_noext."','".$ra2->cod_municipio."','".$ra2->cod_colonia."','".$ra2->cod_localidad."', '".$ra2->receptor_noint."', '".$entity_receptor."')";
 		$rs1=$db->query($sql);
 	}
 	//echo $sql;
@@ -287,7 +308,7 @@ if($_REQUEST['actualizap']){
 	$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor SET determinado=1 WHERE receptor_rfc='".$rfc_receptor."' AND tpdomicilio='".$_REQUEST['seldomicilio']."' AND entity_id=".$conf->entity;
 	$rs1=$db->query($sql);
 }
-$sql="SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado ,cod_municipio
+$sql="SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado ,cod_municipio, cod_colonia, cod_localidad
 		FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE receptor_rfc='".$rfc_receptor."' AND entity_id=".$conf->entity;
 //echo $sql;
 $rs1=$db->query($sql);
@@ -332,6 +353,22 @@ print "Colonia";
 print "</td>";
 print "<td>";
 print $rs2->receptor_colonia;
+print "</td>";
+print "</tr>";
+print "<tr>";
+print "<td>";
+print "Codigo Colonia";
+print "</td>";
+print "<td>";
+print $rs2->cod_colonia;
+print "</td>";
+print "</tr>";
+print "<tr>";
+print "<td>";
+print "Codigo Localidad";
+print "</td>";
+print "<td>";
+print $rs2->cod_localidad;
 print "</td>";
 print "</tr>";
 print "<tr>";
