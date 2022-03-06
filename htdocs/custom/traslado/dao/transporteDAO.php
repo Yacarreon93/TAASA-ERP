@@ -13,11 +13,18 @@ class TransporteDAO {
         return $resql;
     }
 
-    public function GetTransporteById($transporteId) {
-        $sql = "SELECT * FROM cfdi_transporte WHERE rowid = '".$ransporteId."'";
+    public function GetLastInsertedId() {
+        $sql = "SELECT rowid FROM cfdi_transporte ORDER BY rowid DESC LIMIT 1";
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
-        return $row->id;
+        return $row->rowid;
+    }
+
+    public function GetTransporteById($transporteId) {
+        $sql = "SELECT * FROM cfdi_transporte WHERE rowid = '".$transporteId."'";
+        $result = $this->ExecuteQuery($sql);
+        $row =  $this->db->fetch_object($result);
+        return $row;
     }
 
     public function GetTransportesResult() {
@@ -31,6 +38,24 @@ class TransporteDAO {
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
         return $row;
+    }
+
+    public function InsertTransporte($object) {
+        $sql = "INSERT INTO cfdi_transporte (nombre, config_vehicular, placas, anio, aseguradora, poliza) 
+        VALUES ('".$object["nombre"]."', '".$object["config_vehicular"]."', '".$object["placas"]."', '".$object["anio"]."', '".$object["aseguradora"]."', '".$object["poliza"]."')";
+        $result = $this->db->query($sql);
+        if($result) {
+            return $this->GetLastInsertedId();
+        }
+        
+    }
+
+    public function UpdateTransporte($id, $object) {
+        $sql = "UPDATE cfdi_transporte SET nombre = '".$object->nombre."', config_vehicular ='".$object->config_vehicular."', placas= '".$object->placas."', anio ='".$object->anio."', aseguradora ='".$object->aseguradora."', poliza ='".$object->poliza."'
+        WHERE rowid = ".$id;
+        $result = $this->db->query($sql);
+        return $result;
+        
     }
 
 }
