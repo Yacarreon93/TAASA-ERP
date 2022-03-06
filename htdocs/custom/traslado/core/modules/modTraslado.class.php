@@ -232,7 +232,7 @@ class modTraslado extends DolibarrModules
 									'titre'=>'Nuevo Traslado',
 									'mainmenu'=>'traslado',
 									'leftmenu'=>'traslado_new',
-									'url'=>'/traslado/traslado.php?action=create',
+									'url'=>'/traslado/card.php?action=create',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>102,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
