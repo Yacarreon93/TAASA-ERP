@@ -1,6 +1,6 @@
 <?php
 
-class OperadorDAO {
+class OrigenDAO {
 
     var $db;
 
@@ -14,42 +14,42 @@ class OperadorDAO {
     }
 
     public function GetLastInsertedId() {
-        $sql = "SELECT rowid FROM cfdi_operador ORDER BY rowid DESC LIMIT 1";
+        $sql = "SELECT rowid FROM cfdi_ubicaciones ORDER BY rowid DESC LIMIT 1";
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
         return $row->rowid;
     }
 
-    public function GetOperadorById($operadorId) {
-        $sql = "SELECT * FROM cfdi_operador WHERE rowid = '".$operadorId."'";
+    public function GetOrigenById($OrigenId) {
+        $sql = "SELECT * FROM cfdi_ubicaciones WHERE rowid = '".$OrigenId."'";
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
         return $row;
     }
 
-    public function GetOperadoresResult() {
-        $sql = "SELECT * FROM cfdi_operador";
+    public function GetOrigenesResult() {
+        $sql = "SELECT * FROM cfdi_ubicaciones";
         $result = $this->ExecuteQuery($sql);
         return $result;
     }
 
-    public function GetOperadores() {
-        $sql = "SELECT * FROM cfdi_operador";
+    public function GetOrigenes() {
+        $sql = "SELECT * FROM cfdi_ubicaciones";
         $result = $this->ExecuteQuery($sql);
         while ($row =  $this->db->fetch_object($result))
 		{
 				$data[] = array(
                     rowid=>$row->rowid,
-					nombre=>$row->nombre,
+					id_ubicacion=>$row->id_ubicacion,
 					RFC=>$row->RFC,
-					num_licencia=> $row->num_licencia
+					alias=> $row->alias
 			);
 		}
 		return $data;
     }
 
-    public function InsertOperador($object) {
-        $sql = "INSERT INTO cfdi_operador (nombre, rfc, num_licencia) VALUES ('".$object["nombre"]."', '".$object["rfc"]."', '".$object["num_licencia"]."')";
+    public function InsertOrigen($object) {
+        $sql = "INSERT INTO cfdi_ubicaciones (nombre, rfc, num_licencia) VALUES ('".$object["nombre"]."', '".$object["rfc"]."', '".$object["num_licencia"]."')";
         $result = $this->db->query($sql);
         if($result) {
             return $this->GetLastInsertedId();
@@ -57,8 +57,8 @@ class OperadorDAO {
         
     }
 
-    public function UpdateOperador($id, $object) {
-        $sql = "UPDATE cfdi_operador SET nombre = '".$object->nombre."', RFC ='".$object->RFC."', num_licencia= '".$object->num_licencia."'
+    public function UpdateOrigen($id, $object) {
+        $sql = "UPDATE cfdi_ubicaciones SET nombre = '".$object->nombre."', RFC ='".$object->RFC."', num_licencia= '".$object->num_licencia."'
         WHERE rowid = ".$id;
         $result = $this->db->query($sql);
         return $result;

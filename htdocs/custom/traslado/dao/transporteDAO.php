@@ -36,8 +36,19 @@ class TransporteDAO {
     public function GetTransportes() {
         $sql = "SELECT * FROM cfdi_transporte";
         $result = $this->ExecuteQuery($sql);
-        $row =  $this->db->fetch_object($result);
-        return $row;
+        while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+                    rowid=>$row->rowid,
+					nombre=>$row->nombre,
+					config_vehicular=>$row->config_vehicular,
+					placas=> $row->placas,
+					anio=>$row->anio,
+					aseguradora=>$row->aseguradora,
+					poliza=>$row->poliza
+			);
+		}
+		return $data;
     }
 
     public function InsertTransporte($object) {

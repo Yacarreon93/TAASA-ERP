@@ -228,25 +228,25 @@ class modTraslado extends DolibarrModules
 		$r++;
 
 		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+		'type'=>'left',			                // This is a Left menu entry
+		'titre'=>'Listado',
+		'mainmenu'=>'traslado',
+		'leftmenu'=>'traslado_list',
+		'url'=>'/traslado/index.php',
+		'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+		'position'=>102,
+		'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+		'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
+		'target'=>'',
+		'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>'Nuevo Traslado',
 									'mainmenu'=>'traslado',
 									'leftmenu'=>'traslado_new',
 									'url'=>'/traslado/card.php?action=create',
-									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>102,
-									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
-									'target'=>'',
-									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
-		$r++;
-
-		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-									'type'=>'left',			                // This is a Left menu entry
-									'titre'=>'Listado',
-									'mainmenu'=>'traslado',
-									'leftmenu'=>'traslado_list',
-									'url'=>'/traslado/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>103,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
@@ -255,14 +255,42 @@ class modTraslado extends DolibarrModules
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		$r++;
 
-		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_main',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
-									'titre'=>'Estadísticas',
+									'titre'=>'Carta Porte',
 									'mainmenu'=>'traslado',
-									'leftmenu'=>'traslado_stats',
-									'url'=>'/traslado/stats/index.php',
+									'leftmenu'=>'traslado_carta_porte',
+									'url'=>'/traslado/carta_porte/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>104,
+									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_carta_porte',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Listado',
+									'mainmenu'=>'traslado',
+									'leftmenu'=>'traslado_report1',
+									'url'=>'/traslado/carta_porte/index.php',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>105,
+									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
+									'target'=>'',
+									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
+		$r++;
+
+		$this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=traslado,fk_leftmenu=traslado_carta_porte',		    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+									'type'=>'left',			                // This is a Left menu entry
+									'titre'=>'Nueva Carta Porte',
+									'mainmenu'=>'traslado',
+									'leftmenu'=>'traslado_report1',
+									'url'=>'/traslado/carta_porte/card.php?action=create',
+									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+									'position'=>106,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -276,7 +304,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_operadores',
 									'url'=>'/traslado/operadores/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>105,
+									'position'=>107,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -290,7 +318,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_report1',
 									'url'=>'/traslado/operadores/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>106,
+									'position'=>108,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -304,7 +332,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_report1',
 									'url'=>'/traslado/operadores/card.php?action=create',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>107,
+									'position'=>109,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -318,7 +346,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_transportes',
 									'url'=>'/traslado/transporte/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>108,
+									'position'=>110,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -332,7 +360,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_report1',
 									'url'=>'/traslado/transporte/index.php',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>109,
+									'position'=>111,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
@@ -346,7 +374,7 @@ class modTraslado extends DolibarrModules
 									'leftmenu'=>'traslado_report1',
 									'url'=>'/traslado/transporte/card.php?action=create',
 									'langs'=>'users',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>110,
+									'position'=>112,
 									'enabled'=>'$conf->traslado->enabled',  // Define condition to show or hide menu entry. Use '$conf->traslado->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->traslado->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
