@@ -58,11 +58,112 @@ class CartaDAO {
         
     }
 
-    public function GetFactureById($operadorId) {
-        $sql = "SELECT * FROM cfdi_traslado WHERE rowid = '".$operadorId."' AND IS NOT NULL(fk_facture)";
+    public function FetchDomicilioCliente($id) {
+        $sql = "SELECT * FROM taasatsc_dolibarr.llx_cfdimx_domicilios_receptor 
+        WHERE receptor_id = ".$id; 
+        $sql.=" AND determinado = 1";
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
         return $row;
     }
+
+    public function FetchConceptosDataCFDI($id) {
+		$sql = "SELECT
+			p.rowid AS id_concepto,
+			qty AS cantidad,
+			umed AS unidad,
+			p.label AS descripcion,
+			subprice AS valor_unitario,
+			total_ht AS importe,
+			total_ttc AS total,
+			claveprodserv AS clave_prod_serv,
+			umed AS clave_unidad,
+			NULL AS descuento
+		FROM
+			llx_facturedet AS f
+		JOIN llx_facturedet_extrafields AS fe ON f.rowid = fe.fk_object
+		JOIN llx_product AS p ON fk_product = p.rowid
+		WHERE
+		fk_facture = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		if (!$result) {
+				echo 'Error: '. $this->db->lasterror;
+				die;
+		}
+
+		while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+                    Quantity=> $row->cantidad,
+					ProductCode=>$row->clave_prod_serv,
+                    UnitCode=>$row->clave_unidad,
+                    Unit=>$row->unidad,
+                    Description=> $row->descripcion,
+					IdentificationNumber=>$row->id_concepto,
+					UnitPrice=>0,
+					Subtotal=> 0,
+					Total=> 0
+			);
+		}
+		return $data;
+	}
+
+    public function FetchMercanciasData($id, $origen, $destino) {
+		$sql = "SELECT
+			qty AS cantidad,
+            pe.claveprodserv AS bienesTransp,
+			p.label AS descripcion,
+            'KGM' AS claveUnidad,
+			peso_kg AS pesoEnKg,
+			total_ttc AS valorMercancia,
+            'MXN' AS moneda
+		FROM
+			llx_facturedet AS f
+		JOIN llx_facturedet_extrafields AS fe ON f.rowid = fe.fk_object
+		JOIN llx_product AS p ON fk_product = p.rowid
+        JOIN llx_product_extrafields AS pe ON pe.fk_object = p.rowid
+		WHERE
+		fk_facture = ".$id;
+		$result = $this->ExecuteQuery($sql);
+
+		if (!$result) {
+				echo 'Error: '. $this->db->lasterror;
+				die;
+		}
+
+		while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+                    Cantidad=> $row->cantidad,
+					BienesTransp=>$row->bienesTransp,
+                    Descripcion=>$row->descripcion,
+                    ClaveUnidad=>$row->claveUnidad,
+                    PesoEnKg=> $row->pesoEnKg,
+					ValorMercancia=>$row->valorMercancia,
+					Moneda=>$row->moneda,
+                    CantidadTransporta=> array(
+                        Cantidad=> $row->cantidad,
+                        IDOrigen=> $origen,
+                        IDDestino=> $destino
+                    )
+			);
+		}
+		return $data;
+	}
+
+    public function GetSocDataByFactureId($factureId) {
+		$sql = "SELECT nom, siren, email FROM llx_facture as f JOIN llx_societe as s ON f.fk_soc = s.rowid WHERE f.rowid = '".$factureId."'";
+		$result = $this->ExecuteQuery($sql);
+		while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+					name=>$row->nom,
+					email=>$row->email,
+					rfc=> $row->siren
+			);
+		}
+		return $data;
+	}
 
 }

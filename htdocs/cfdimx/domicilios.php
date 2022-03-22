@@ -60,7 +60,7 @@ if($socid!=''){
 }
 if($_REQUEST['actualizar']){
 	$tpdomicilio	= GETPOST('tpdomicilio2');
-	$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor SET receptor_delompio='".$_REQUEST['delompio']."', receptor_colonia='".$_REQUEST['colonianw']."', 
+	$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor SET cod_estado='".$_REQUEST['codestado']."', receptor_delompio='".$_REQUEST['delompio']."', receptor_colonia='".$_REQUEST['colonianw']."', 
 			receptor_calle='".$_REQUEST['calle']."', receptor_noext='".$_REQUEST['noext']."', receptor_noint='".$_REQUEST['noint']."', cod_municipio='".$_REQUEST['codmunicipio']."', cod_colonia='".$_REQUEST['codcolonia']."', cod_localidad='".$_REQUEST['codlocalidad']."'
 			WHERE tpdomicilio='".$tpdomicilio."' AND receptor_rfc='".$rfc_receptor."' AND entity_id=".$entity_receptor;
 	$r1=$db->query($sql);
@@ -122,11 +122,12 @@ $rcodcolonia='';
 $rcodlocalidad='';		
 if($action=='edit'){
 	$tpd	= GETPOST('tpd');
-	$sql='SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado, cod_municipio, cod_colonia, cod_localidad 
+	$sql='SELECT tpdomicilio, cod_estado, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado, cod_municipio, cod_colonia, cod_localidad 
 		FROM '.MAIN_DB_PREFIX.'cfdimx_domicilios_receptor WHERE tpdomicilio="'.$tpd.'" AND receptor_rfc="'.$rfc_receptor.'"  AND entity_id='.$entity_receptor;
 	$ract=$db->query($sql);
 	$ractu=$db->fetch_object($ract);
 	$tpdom=$ractu->tpdomicilio;
+	$rcodestado=$ractu->cod_estado;
 	$rdelompio=$ractu->receptor_delompio;
 	$rcolonia=$ractu->receptor_colonia;
 	$rcalle=$ractu->receptor_calle;
@@ -184,6 +185,14 @@ print "<tr>";
 	}
 		print '<input type="text" size="30" name="tpdomicilio" value="'.$tpdom.'" '.$a.' required>';
 		print '<input type="hidden" name="tpdomicilio2" value="'.$tpdom.'">';
+	print "</td>";
+print "</tr>";
+print "<tr>";
+	print "<td>";
+		print "*Codigo Estado";
+	print "</td>";
+	print "<td>";
+		print '<input type="text" size="30" name="codestado" value="'.$rcodestado.'" required>';
 	print "</td>";
 print "</tr>";
 print "<tr>";
@@ -308,7 +317,7 @@ if($_REQUEST['actualizap']){
 	$sql="UPDATE ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor SET determinado=1 WHERE receptor_rfc='".$rfc_receptor."' AND tpdomicilio='".$_REQUEST['seldomicilio']."' AND entity_id=".$conf->entity;
 	$rs1=$db->query($sql);
 }
-$sql="SELECT tpdomicilio, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado ,cod_municipio, cod_colonia, cod_localidad
+$sql="SELECT tpdomicilio, cod_estado, receptor_delompio, receptor_colonia, receptor_calle, receptor_noext, receptor_noint, determinado ,cod_municipio, cod_colonia, cod_localidad
 		FROM ".MAIN_DB_PREFIX."cfdimx_domicilios_receptor WHERE receptor_rfc='".$rfc_receptor."' AND entity_id=".$conf->entity;
 //echo $sql;
 $rs1=$db->query($sql);
@@ -329,6 +338,14 @@ print "</b></td>";
 print "<td rowspan='6' align='center'>";
 	print "<input type='button' name='editar' value='Editar' onclick=\"window.location.href='domicilios.php?socid=".$socid."&action=edit&tpd=".$rs2->tpdomicilio."'\" style='width:60px;'><br>";
 	print "<input type='button' name='borrar' value='Eliminar' onclick=\"if (confirm('Desea eliminar el domicilio?')) window.location.href='domicilios.php?socid=".$socid."&action=delete&tpd=".$rs2->tpdomicilio."';\"  style='width:60px;'>";
+print "</td>";
+print "</tr>";
+print "<tr>";
+print "<td>";
+print "Codigo Estado";
+print "</td>";
+print "<td>";
+print $rs2->cod_estado;
 print "</td>";
 print "</tr>";
 print "<tr>";

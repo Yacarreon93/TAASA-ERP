@@ -145,6 +145,7 @@ if ($action == 'add')
 
     }
 }
+//Action Update user
 else if ($action == 'update' && $canedituser) {
 
     $date1=date("Y-m-d",strtotime(GETPOST("re",'alpha')));
@@ -514,6 +515,12 @@ else
                 print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->rowid.'&amp;action=edit">'.$langs->trans("Modify").'</a></div>';
             }
 
+            // Timbrar
+            if (true)
+            {
+                print '<div class="inline-block divButAction"><a class="butActionDelete" href="/cfdimx/traslado_cfdi.php?action=generar_cfdi&amp;id='.$object->rowid.'">Generar CFDI</a></div>';
+            }
+
             // Delete
             if ($candisableuser)
             {
@@ -523,7 +530,6 @@ else
             print "</div>\n";
             print "<br>\n";
         } 
-
 
         /*
          * Fiche en mode edition
