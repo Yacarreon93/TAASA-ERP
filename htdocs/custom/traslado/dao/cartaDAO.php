@@ -140,13 +140,16 @@ class CartaDAO {
                     Descripcion=>$row->descripcion,
                     ClaveUnidad=>$row->claveUnidad,
                     PesoEnKg=> $row->pesoEnKg,
-					ValorMercancia=>$row->valorMercancia,
+					ValorMercancia=>round($row->valorMercancia, 2),
 					Moneda=>$row->moneda,
-                    CantidadTransporta=> array(
-                        Cantidad=> $row->cantidad,
-                        IDOrigen=> $origen,
-                        IDDestino=> $destino
-                    )
+                    MaterialPeligroso=>"No"
+                    // CantidadTransporta=> array (
+                    //     array(
+                    //         Cantidad=> $row->cantidad,
+                    //         IDOrigen=> $origen,
+                    //         IDDestino=> $destino
+                    //     )
+                    // )
 			);
 		}
 		return $data;
@@ -165,5 +168,86 @@ class CartaDAO {
 		}
 		return $data;
 	}
+
+    public function UpdateControlTable($fk_traslado, $array_data)
+    {
+        $sql = 'INSERT INTO cfdi_control_table (
+			generated_id,
+			cfdi_type,
+			Folio,
+			fk_traslado,
+			date,
+			cert_number,
+			receiver_rfc,
+			uuid,
+			cfdi_sign,
+			sat_cert_number,
+			sat_sign,
+			rfc_prov_cert,
+			status,
+			original_string)
+			VALUES';
+		$sql.='(';
+		$sql.="'".$array_data['Id']."', ";
+		$sql.="'".$array_data['CfdiType']."', ";
+		$sql.="'".$array_data['Folio']."', ";
+		$sql.=$fk_traslado.', ';
+		$sql.="'".$array_data['Date']."', ";
+		$sql.="'".$array_data['CertNumber']."', ";
+		$sql.="'".$array_data['Receiver']['Rfc']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['Uuid']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['CfdiSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatCertNumber']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['SatSign']."', ";
+		$sql.="'".$array_data['Complement']['TaxStamp']['RfcProvCertif']."', ";
+		$sql.="'".$array_data['Status']."', ";
+		$sql.="'".$array_data['OriginalString']."')";
+		$this->ExecuteQuery($sql);
+    }
+    
+    public function InsertIntoCFDIComprobante($array_data) {
+		$sql = 'INSERT INTO cfdi_comprobante (
+        serie,    
+		folio,
+		tipo_comprobante,
+        fk_traslado) 
+		VALUES (';
+        $sql.="'".$array_data[0]['serie']."'".", ";
+		$sql.="'".$array_data[0]['folio']."'".", ";
+		$sql.="'".$array_data[0]['tipo_comprobante']."'".", ";
+		$sql.=$array_data[0]['fk_traslado'];
+		$sql.= ')';
+		$this->ExecuteQuery($sql);
+	}
+
+    public function GetComprobanteIdFromFactureId($trasladoId) {
+		$sql = "SELECT id FROM cfdi_comprobante WHERE fk_traslado = '".$trasladoId."'";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->id;
+	}
+
+    public function SearchForFacture($factureName) {
+		$sql = "SELECT rowid FROM llx_facture WHERE facnumber LIKE '%".$factureName."%' LIMIT 1";
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->rowid;
+	}
+
+    public function UpdateUUID($fk_traslado, $array_data)
+    {
+        $sql = "UPDATE cfdi_traslado SET status = 1, UUID = '".$array_data['Uuid']."' WHERE rowid= ".$fk_traslado;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+    }
+
+    public function CheckForDuplicate($fk_traslado) {
+		$sql = "SELECT * FROM cfdi_comprobante WHERE fk_traslado = ".$fk_traslado." LIMIT 1";
+		$result = $this->ExecuteQuery($sql);
+        $row =  $this->db->fetch_object($result);
+		return $row;
+	}
+
+	
 
 }

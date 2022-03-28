@@ -1099,6 +1099,18 @@ else
 
             $head = facture_prepare_head($object);
 
+            //Datos de la factura
+            $resql=$db->query("SELECT * FROM  cfdi_traslado WHERE fk_facture = " . $object->id);
+            if ($resql)
+            {
+                $i = 0;
+                $obj = $db->fetch_object($resql);
+                if ($obj)
+                {
+                    $uuidT = $obj->UUID;
+                }
+            }
+
            dol_fiche_head($head, "tabfactclient", 'CFDI', 0, '');
 
             $formconfirm='';
@@ -2183,6 +2195,10 @@ if( $cfdi_tot>0 ){
             print '<tr><td>'.$langs->trans('Status').'</td>';
             print '<td align="left" colspan="3">'.($object->getLibStatut(4,$totalpaye)).'</td></tr>';
 
+            //Traslado
+            print '<tr><td>Traslado</td>';
+            print '<td align="left" colspan="3">'.$uuidT.'</td></tr>';
+
             // Project
             if ($conf->projet->enabled)
             {
@@ -2865,6 +2881,10 @@ if( $cfdi_tot>0 ){
                                         echo '<input type="submit" onclick="return confirm(\'¿Esta seguro de reenviar la factura?\')" name="reenviaCFDIaction" value="Reenviar CFDI" class="button" onClick="this.form.submit(); this.value= `Sending…`;"/>';
 										echo '</form>';
 										echo '</p>';
+                                        if(!$uuidT) 
+                                        {
+                                             print '<a class="button" href="/custom/traslado/carta_porte/card.php?action=create&factureId='.$object->id.'"/>Crear Carta Porte</a>';
+                                        } 
 										echo '</div>';
 									}else{
 										print 'status comprobante: '.$status_comprobante;

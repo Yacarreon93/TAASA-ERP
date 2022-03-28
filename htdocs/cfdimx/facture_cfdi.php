@@ -22,7 +22,8 @@
     require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
 	require_once(DOL_DOCUMENT_ROOT.'/cfdi/service/comprobantecfdiservice.php');
 
-    define("API_URL", "https://api.facturama.mx/2/cfdis/");
+    //define("API_URL", "https://api.facturama.mx/2/cfdis/");
+    define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
     
     $id = $_REQUEST["facid"];
     if($id) {

@@ -55,6 +55,7 @@ $confirm	= GETPOST('confirm','alpha');
 $subaction	= GETPOST('subaction','alpha');
 $group		= GETPOST("group","int",3);
 $factureId	= GETPOST('factureId','alpha');
+$factureName	= GETPOST('factureName','alpha');
 
 //TODO security check
 $caneditfield = true;
@@ -190,11 +191,18 @@ if (($action == 'create'))
     // $cartaDAO = new CartaDAO($db);
     // $object = $cartaDAO->GetTrasladoById($id);
 
+    if($factureName)
+    {
+        $cartaDAO = new CartaDAO($db);
+        $factureId = $cartaDAO->SearchForFacture($factureName);
+    }
+
     if($factureId > 0) 
     {
         $object->fetch($factureId);
         $soc = new Societe($db);
 		$soc->fetch($object->socid);	
+        $factureName = $object->ref;
     }
 
     print_fiche_titre('Nueva Carta Porte');
@@ -210,7 +218,7 @@ if (($action == 'create'))
     // fk_facture
     print '<td width="160"><span class="fieldrequired">Factura Relacionada</span></td>';
     print '<td>';
-    print '<input size="30" style="margin-right:30px" type="text" id="fk_facture" name="factureId" value="'.GETPOST('factureId').'">';
+    print '<input size="30" style="margin-right:30px" type="text" id="fk_facture" name="factureName" value="'.$factureName.'">';
     //print $cartaDAO->select_facture_list('', 'fk_facture', '', 1);
     //print '<input size="30" type="text" id="fk_facture" name="fk_facture" value="'.GETPOST('fk_facture').'">';
     print '<input type="submit" class="button" value="Buscar" name="search_facture"></button>';
@@ -237,7 +245,8 @@ if (($action == 'create'))
     // fk_facture
     print '<td width="160"><span class="fieldrequired">Factura Relacionada</span></td>';
     print '<td>';
-    print '<input size="30" type="text" id="fk_facture" name="fk_facture" value="'.GETPOST('factureId').'">';
+    print '<input size="30" type="text" id="fk_facture" name="factureName" value="'.$factureName.'">';
+    print '<input type="hidden" name="fk_facture" value="'.$factureId.'">';
     //print $cartaDAO->select_facture_list('', 'fk_facture', '', 1);
     //print '<input size="30" type="text" id="fk_facture" name="fk_facture" value="'.GETPOST('fk_facture').'">';
     //print '<button type="button" class="button" onclick="getFacture()" value="Buscar" name="search_facture">Buscar</button>';
@@ -422,6 +431,18 @@ else
 
         if ($action != 'edit')
         {
+            //Datos de la factura
+            $resql=$db->query("SELECT * FROM  cfdi_traslado WHERE rowid = " . $id);
+            if ($resql)
+            {
+                $cfdi_tot = $db->num_rows($resql);
+                $i = 0;
+                    $obj = $db->fetch_object($resql);
+                    if ($obj)
+                    {
+                        $uuid = $obj->UUID;
+                    }
+            }
 
             $h = 0;
             $head = array();
@@ -463,12 +484,16 @@ else
             
             // Fecha Salida
             print '<tr><td>Fecha Salida</td>';
-            print '<td colspan="2">'.$object->fecha_salida.'</td>';
+            print '<td colspan="2">';
+            print dol_print_date($object->fecha_salida,'daytext');
+            print '</td>';
             print '</tr>'."\n";   
 
             // Fecha Llegada
             print '<tr><td>Fecha Llegada</td>';
-            print '<td colspan="2">'.$object->fecha_llegada.'</td>';
+            print '<td colspan="2">';
+            print dol_print_date($object->fecha_llegada,'daytext');
+            print '</td>';
             print '</tr>'."\n";   
 
             // Distancia Recorrida
@@ -510,25 +535,29 @@ else
             print '<div class="tabsAction">';
 
             //Editar
-            if ($caneditfield)
+            if (!$uuid)
             {
                 print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->rowid.'&amp;action=edit">'.$langs->trans("Modify").'</a></div>';
             }
 
             // Timbrar
-            if (true)
+            if (!$uuid)
             {
                 print '<div class="inline-block divButAction"><a class="butActionDelete" href="/cfdimx/traslado_cfdi.php?action=generar_cfdi&amp;id='.$object->rowid.'">Generar CFDI</a></div>';
             }
 
             // Delete
-            if ($candisableuser)
+            if (!$uuid)
             {
                 print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?action=delete&amp;id='.$object->rowid.'">'.$langs->trans("DeleteUser").'</a></div>';
             }
 
             print "</div>\n";
-            print "<br>\n";
+            print '<br>';
+            if( $uuid){
+                print '<strong>Traslado Timbrado - UUID: </strong>'.$uuid."&nbsp;<br>";
+                    
+            }
         } 
 
         /*

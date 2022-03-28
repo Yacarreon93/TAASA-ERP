@@ -24,7 +24,8 @@
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/origenDAO.php';
     require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
-    define("API_URL", "https://api.facturama.mx/2/cfdis/");
+    //define("API_URL", "https://api.facturama.mx/2/cfdis/");
+    define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
     
     $id = $_REQUEST["id"];
     if($id) {
@@ -46,6 +47,13 @@
             $soc = new Societe($db);
             $soc->fetch($objectFacture->socid);	
         }
+        $dataComprobante[] = array(
+            serie=>"T-".$id,
+            folio=>$id,
+            tipo_comprobante=> "T",
+            fk_traslado=>$id
+        );
+        $cartaDAO->InsertIntoCFDIComprobante($dataComprobante);
         $ubicacion_origen = $origenDAO->GetOrigenById($object->fk_ubicacion_origen);
         $transporte = $transporteDAO->GetTransporteById($object->fk_transporte);
         $operador = $operadorDAO->GetOperadorById($object->fk_operador);
@@ -58,22 +66,24 @@
         }
         $destino.= $domicilio_cliente->rowid;
         $clienteData = $cartaDAO->GetSocDataByFactureId($object->fk_facture);
+        $folio = $cartaDAO->GetComprobanteIdFromFactureId($id);
         //$cfdi_soc_data = $service->GetClientDataByFactureId($db, $id);
 
         //$duplicate_test = $service->CheckForDuplicate($db, $id);
-        $duplicate_test = true;
-        if($duplicate_test) {
+        $duplicate_test = $cartaDAO->CheckForDuplicate($id);
+        if(!$duplicate_test) {
             $new_cfdi = array( 
                 //Datos generales
                 //Receptor
                 "Receiver" => array(
                     "Name" => $soc->nom,
                     "CfdiUse" => "P01",
-                    "rfc" =>  $clienteData[0]["rfc"]
+                    "rfc" =>  $ubicacion_origen->RFC
                 ),
                 "CfdiType"=> "T",
                 "NameId"=> "33",
-                "ExpeditionPlace" => trim($ubicacion_origen->cp),
+                "Folio"=> $folio,
+                "ExpeditionPlace" => trim($ubicacion_origen->cp),       
                 "Items" => "foo",
                 "Complemento" => array(
                     "CartaPorte20" => array(
@@ -81,22 +91,22 @@
                         "Ubicaciones" => array(
                             array(    //-----Origen------
                                 "TipoUbicacion" => "Origen", 
-                                "IDUbicacion" => $ubicacion_origen->id_ubicacion,
+                                // "IDUbicacion" => $ubicacion_origen->id_ubicacion,
                                 "RFCRemitenteDestinatario" => $ubicacion_origen->RFC,
                                 "FechaHoraSalidaLlegada" => $object->fecha_salida,
                                 "Domicilio" => array(
                                     "Pais" => "MEX",
                                     "CodigoPostal" => $ubicacion_origen->cp,
                                     "Estado" => $ubicacion_origen->codigo_estado,
-                                    "Municipio" => $ubicacion_origen->codigo_municipio,
-                                    "Localidad" => $ubicacion_origen->codigo_localidad,
-                                    "Colonia" => $ubicacion_origen->codigo_colonia,
-                                    "Calle" => $ubicacion_origen->calle
+                                    // "Municipio" => $ubicacion_origen->codigo_municipio,
+                                    // "Localidad" => $ubicacion_origen->codigo_localidad,
+                                    // "Colonia" => $ubicacion_origen->codigo_colonia,
+                                    // "Calle" => $ubicacion_origen->calle
                                 )
                             ),
                             array(     //-----Destino------
                                 "TipoUbicacion" => "Destino", 
-                                "IDUbicacion" => $destino,
+                                // "IDUbicacion" => $destino,
                                 "RFCRemitenteDestinatario" => $clienteData[0]["rfc"],
                                 "FechaHoraSalidaLlegada" => $object->fecha_llegada,
                                 "DistanciaRecorrida" => $object->distancia_recorrida,
@@ -104,10 +114,10 @@
                                     "Pais" => "MEX",
                                     "CodigoPostal" => $soc->zip,
                                     "Estado" => $domicilio_cliente->cod_estado,
-                                    "Municipio" => $domicilio_cliente->cod_municipio,
-                                    "Localidad" => $domicilio_cliente->cod_localidad,
-                                    "Colonia" => $domicilio_cliente->cod_colonia,
-                                    "Calle" => $domicilio_cliente->receptor_calle
+                                    // "Municipio" => $domicilio_cliente->cod_municipio,
+                                    // "Localidad" => $domicilio_cliente->cod_localidad,
+                                    // "Colonia" => $domicilio_cliente->cod_colonia,
+                                    // "Calle" => $domicilio_cliente->receptor_calle
                                 )
                             )
                         ),
@@ -115,8 +125,8 @@
                             "UnidadPeso" => "KGM",
                             "Mercancia" => "foo",
                             "Autotransporte" => array(
-                                "PermSCT" => "PXX00",
-                                "NumPermisoSCT" => "Permiso no contemplado en el catálogo”",
+                                "PermSCT" => "TPXX00",
+                                "NumPermisoSCT" => "Permiso no contemplado en el catálogo",
                                 "IdentificacionVehicular" => array(
                                     "ConfigVehicular" => $transporte->config_vehicular,
                                     "PlacaVM" => $transporte->placas,
@@ -129,31 +139,30 @@
                             )
                         ),
                         "FiguraTransporte" => array(
+                            array(
                             "TipoFigura" => "01",
                             "RFCFigura" => $operador->RFC,
                             "NombreFigura" =>  $operador->nombre,
                             "NumLicencia" =>  $operador->num_licencia,
+                            )
                         )
                     )
                 )
             );
         
-            $cfdi_products = $cartaDAO->FetchConceptosDataCFDI($id);
-            $cfdi_mercancias = $cartaDAO->FetchMercanciasData($id, $ubicacion_origen->id_ubicacion, $destino);
+            $cfdi_products = $cartaDAO->FetchConceptosDataCFDI($object->fk_facture);
+            $cfdi_mercancias = $cartaDAO->FetchMercanciasData($object->fk_facture, $ubicacion_origen->id_ubicacion, $destino);
             $new_cfdi["Items"] = $cfdi_products;
             $new_cfdi["Complemento"]["CartaPorte20"]["Mercancias"]["Mercancia"]  = $cfdi_mercancias;
             $result = json_encode($new_cfdi);
-
-            print_r($result);
-            die();
         
-            // $make_call = callAPI(API_URL, $result);
-            // $response = json_decode($make_call, true);
-            // $errors   = $response['response']['errors'];
-            // $data     = $response['response']['data'][0];
+            $make_call = callAPI(API_URL, $result);
+            $response = json_decode($make_call, true);
+            $errors   = $response['response']['errors'];
+            $data     = $response['response']['data'][0];
         
-            // $service->UpdateControlTable($db, $id, $response);
-            // $service->UpdateUUID($db, $id, $response['Complement']['TaxStamp']);
+            $cartaDAO->UpdateControlTable($id, $response);
+            $cartaDAO->UpdateUUID($id, $response['Complement']['TaxStamp']);
         
             // if($cfdi_soc_data[0]['email']) {
             //     $sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
@@ -168,7 +177,7 @@
     }
 
 	print '<script>
-	location.href="facture.php?facid='.$_REQUEST["facid"].'&cfdi_commit=1";
+	location.href="/custom/traslado/carta_porte/card.php?id='.$id.'&cfdi_commit=1";
 	</script>';
 
 
