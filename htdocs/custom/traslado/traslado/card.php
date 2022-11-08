@@ -32,21 +32,13 @@
  */
 
 require '../../../main.inc.php';
-// require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
-// require_once DOL_DOCUMENT_ROOT.'/user/class/usergroup.class.php';
-// require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
-// require_once DOL_DOCUMENT_ROOT.'/core/lib/images.lib.php';
-// require_once DOL_DOCUMENT_ROOT.'/core/lib/usergroups.lib.php';
-// require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+require_once DOL_DOCUMENT_ROOT . '/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
-// if (! empty($conf->ldap->enabled)) require_once DOL_DOCUMENT_ROOT.'/core/class/ldap.class.php';
-// if (! empty($conf->adherent->enabled)) require_once DOL_DOCUMENT_ROOT.'/adherents/class/adherent.class.php';
-// if (! empty($conf->multicompany->enabled)) dol_include_once('/multicompany/class/actions_multicompany.class.php');
-
 require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/cartaDAO.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/transporteDAO.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/operadorDAO.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/origenDAO.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/trasladoDAO.php';
 require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
 $id			= GETPOST('id','int');
@@ -71,22 +63,16 @@ if ($action == 'add')
     $object = array();
 	$error = 0;
 
-    if (! $_POST["fk_facture"])
-    {
-	    $error++;
-        setEventMessage('Factura no definida', 'errors');
-        $action="create";       // Go back to create page
-    }
     if (! $_POST["fk_origen"])
     {
 	    $error++;
 	    setEventMessage('Origen no definido', 'errors');
         $action="create";       // Go back to create page
     }
-    if (! $_POST["fk_cliente"])
+    if (! $_POST["fk_ubicacion_destino"])
     {
 	    $error++;
-	    setEventMessage('Cliente no definido', 'errors');
+	    setEventMessage('Destino no definido', 'errors');
         $action="create";       // Go back to create page
     }
     if (! $_POST["re"])
@@ -125,17 +111,16 @@ if ($action == 'add')
         $date1=date("Y-m-d",strtotime(GETPOST("re",'alpha')));
         $date2=date("Y-m-d",strtotime(GETPOST("re2",'alpha')));
 
-        $object["fk_facture"]		= GETPOST("fk_facture",'alpha');
         $object["fk_ubicacion_origen"]	    = GETPOST("fk_origen",'alpha');
-        $object["fk_cliente"]		    = GETPOST("fk_cliente",'alpha');
+        $object["fk_ubicacion_destino"]	    = GETPOST("fk_ubicacion_destino",'alpha');
         $object["fecha_salida"]		= $date1;
         $object["fecha_llegada"]	    = $date2;
         $object["distancia_recorrida"]		    = GETPOST("distancia_recorrida",'alpha');
         $object["fk_transporte"]		    = GETPOST("fk_transporte",'alpha');
         $object["fk_operador"]		    = GETPOST("fk_operador",'alpha');
 
-        $cartaDAO = new CartaDAO($db);
-        $id = $cartaDAO->InsertTraslado($object);
+        $trasladoDAO = new trasladoDAO($db);
+        $id = $trasladoDAO->InsertTraslado($object);
 
         if($id) {
             header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
@@ -146,6 +131,57 @@ if ($action == 'add')
 
     }
 }
+
+//delete product line from traslado
+else if($action == 'deleteline')
+{
+    $lineid = GETPOST('lineid','int');
+    if($id && $lineid)
+    {
+        $trasladoDAO = new trasladoDAO($db);
+        $result = $trasladoDAO->DeleteProductLine($id, $lineid);
+        header("Location: /custom/traslado/traslado/card.php?id=".$id);
+    }
+}
+
+
+//delete traslado
+else if($action == 'confirm_delete')
+{
+    if($id)
+    {
+        $trasladoDAO = new trasladoDAO($db);
+        $result = $trasladoDAO->DeleteTraslado($id);
+        if($result)
+        {
+            $trasladoDAO->DeleteProducts($id);
+        }
+        header("Location: /custom/traslado/traslado/index.php");
+    }
+}
+
+//Action add product
+else if($action == 'addproduct') {
+    $data[] = array(
+        fk_traslado=> $id,
+        fk_product=>GETPOST('idprod'),
+        description=>GETPOST('description'),
+        qty=>GETPOST('qty'),
+        pesoenkg=> GETPOST('pesoenkg'),
+        valor_mercancia=>round(GETPOST('valor_mercancia'), 2)
+    );
+
+    $trasladoDAO = new TrasladoDAO($db);
+    $trasladoDAO->InsertProductLine($data);
+
+    if($id) {
+        header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
+    } else {
+        print_r('error');
+        //header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
+    }
+}
+
 //Action Update user
 else if ($action == 'update' && $canedituser) {
 
@@ -158,8 +194,8 @@ else if ($action == 'update' && $canedituser) {
     $object->fk_transporte		= GETPOST("fk_transporte",'alpha');
     $object->fk_operador		= GETPOST("fk_operador",'alpha');
 
-    $cartaDAO = new CartaDAO($db);
-    $cartaDAO->UpdateTraslado($id, $object);
+    $trasladoDAO = new TrasladoDAO($db);
+    $trasladoDAO->UpdateTraslado($id, $object);
 
     if($id) {
         header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
@@ -167,6 +203,14 @@ else if ($action == 'update' && $canedituser) {
         print_r('error');
         //header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
     }
+}
+
+//Action Validate
+else if ($action == 'validate') {
+    $trasladoDAO = new TrasladoDAO($db);
+    $trasladoDAO->ValidateTraslado($id);
+
+    header("Location: ".$_SERVER['PHP_SELF'].'?id='.$id);
 }
 /*
  * View
@@ -177,8 +221,9 @@ $form = new Form($db);
 $transporteDAO = new TransporteDAO($db);
 $operadorDao = new OperadorDAO($db);
 $origenDAO = new OrigenDAO($db);
+$trasladoDAO = new TrasladoDAO($db);
 
-llxHeader('','Carta Porte');
+llxHeader('','Traslado');
 
 if (($action == 'create'))
 {
@@ -188,49 +233,10 @@ if (($action == 'create'))
     /*                                                                            */
     /* ************************************************************************** */
 
-    // $cartaDAO = new CartaDAO($db);
-    // $object = $cartaDAO->GetTrasladoById($id);
 
-    if($factureName)
-    {
-        $cartaDAO = new CartaDAO($db);
-        $factureId = $cartaDAO->SearchForFacture($factureName);
-    }
-
-    if($factureId > 0) 
-    {
-        $object->fetch($factureId);
-        $soc = new Societe($db);
-		$soc->fetch($object->socid);	
-        $factureName = $object->ref;
-    }
-
-    print_fiche_titre('Nueva Carta Porte');
-
-    print '<form action="'.$_SERVER['PHP_SELF'].'?action=create" method="POST" name="searchFacture">';
+    print_fiche_titre('Nuevo Traslado');
 
     dol_fiche_head('', '', '', 0, '');
-
-    print '<table class="border" width="100%">';
-
-    print '<tr style="px solid #E0E0E0">';
-
-    // fk_facture
-    print '<td width="160"><span class="fieldrequired">Factura Relacionada</span></td>';
-    print '<td>';
-    print '<input size="30" style="margin-right:30px" type="text" id="fk_facture" name="factureName" value="'.$factureName.'">';
-    //print $cartaDAO->select_facture_list('', 'fk_facture', '', 1);
-    //print '<input size="30" type="text" id="fk_facture" name="fk_facture" value="'.GETPOST('fk_facture').'">';
-    print '<input type="submit" class="button" value="Buscar" name="search_facture"></button>';
-    //print '<a href="/custom/traslado/carta_porte/card.php?action=create&factureId="'.''.' class="button" onclick="getFacture()" value="Buscar" name="search_facture">Buscar</button>';
-
-    print '</td></tr>';
-
-    print "</table>\n";
-
-   print "</form>";
-
-    print "<br>";
 
     print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST" name="createTraslado">';
     print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
@@ -239,19 +245,6 @@ if (($action == 'create'))
     //dol_fiche_head('', '', '', 0, '');
 
     print '<table class="border" width="100%">';
-
-    print '<tr>';
-
-    // fk_facture
-    print '<td width="160"><span class="fieldrequired">Factura Relacionada</span></td>';
-    print '<td>';
-    print '<input size="30" type="text" id="fk_facture" name="factureName" value="'.$factureName.'">';
-    print '<input type="hidden" name="fk_facture" value="'.$factureId.'">';
-    //print $cartaDAO->select_facture_list('', 'fk_facture', '', 1);
-    //print '<input size="30" type="text" id="fk_facture" name="fk_facture" value="'.GETPOST('fk_facture').'">';
-    //print '<button type="button" class="button" onclick="getFacture()" value="Buscar" name="search_facture">Buscar</button>';
-
-    print '</td></tr>';
 
     // Origen
     print '<tr>';
@@ -264,15 +257,20 @@ if (($action == 'create'))
         print '<option size="30" value="'.$origenes[$i]['rowid'].'" class="select2-drop-mask">'.$origenes[$i]['alias'].'</option>';
     }
     print'</select>';
-    print '</td></tr>';
+    print '</td>';
+    print '</tr>';
 
-    // Cliente
-    print '<td width="160"><span class="fieldrequired">Cliente</span></td>';
+    // Destino
+    print '<tr>';
+    print '<td width="160"><span class="fieldrequired">Ubicacion Destino</span></td>';
     print '<td>';
-    print '<input size="30" type="text" id="nombre_cliente" name="nombre_cliente" value="'.$soc->name.'">';
-    print '<input type="hidden" id="fk_cliente" name="fk_cliente" value="'.$soc->id.'">';
-    print '<td colspan="2">';
-    //print $form->select_company('', 'fk_cliente', 's.client = 1 OR s.client = 3', 1);
+    print '<select id="fk_ubicacion_destino" name="fk_ubicacion_destino" value="'.GETPOST('fk_ubicacion_destino').'">';
+    $origenes = $origenDAO->GetOrigenes();
+
+    for($i = 0; $i < count($origenes); $i++) {
+        print '<option size="30" value="'.$origenes[$i]['rowid'].'" class="select2-drop-mask">'.$origenes[$i]['alias'].'</option>';
+    }
+    print'</select>';
     print '</td>';
     print '</tr>';
 
@@ -327,7 +325,7 @@ if (($action == 'create'))
  	dol_fiche_end();
 
     print '<div align="center">';
-    print '<input class="button" value="Crear Carta Porte" name="create" type="submit">';
+    print '<input class="button" value="Crear Traslado" name="create" type="submit">';
     print '<br><br>';
     //print '&nbsp; &nbsp; &nbsp;';
     //print '<input value="'.$langs->trans("Cancel").'" class="button" type="submit" name="cancel">';
@@ -390,13 +388,19 @@ if (($action == 'create'))
 		}
 	}
 
-	// Show object lines
-	if (! empty($object->lines))
-		$ret = $object->printObjectLines($action, $mysoc, $soc, $lineid, 1);
+    print "</table>\n";
 
-        print "</table>\n";
+    print "</form>\n";
     
 }
+// else if($action == 'delete')
+// {
+//     $form = new Form($db);
+//     $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?confirm_delete&id=' . $id, "Borrar Traslado", "olooolo", 'confirm_delete', $formquestion, "yes", 1);
+//     //$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"] . '?isTicket=1&facid=' . $object->id, $langs->trans('CloneInvoice'), $langs->trans('ConfirmCloneInvoice', $object->ref), 'confirm_clone', $formquestion, 'yes', 1);
+//     print $formconfirm;
+
+// }
 else
 {
     /* ************************************************************************** */
@@ -407,22 +411,15 @@ else
 
     if ($id > 0)
     {
-        $cartaDAO = new CartaDAO($db);
-        $object = $cartaDAO->GetTrasladoById($id);
-        $objectFacture = new Facture($db);
+        $trasladoDAO = new TrasladoDAO($db);
+        $object = $trasladoDAO->GetTrasladoById($id);
         $transporteDAO = new TransporteDAO($db);
         $operadorDAO = new OperadorDAO($db);
         $origenDAO = new OrigenDAO($db);
-        if($object->fk_facture) 
-        {
-            $objectFacture->fetch($object->fk_facture);
-            $soc = new Societe($db);
-            $soc->fetch($objectFacture->socid);	
-        }
 
         // Show tabs
         //$head = user_prepare_head($object);
-        $title = 'Carta Porte';
+        $title = 'Traslado';
 
         /*
          * Fiche en mode visu
@@ -443,17 +440,18 @@ else
                         $uuid = $obj->UUID;
                     }
             }
+            
 
             $h = 0;
             $head = array();
         
-            $head[$h][0] = DOL_URL_ROOT.'/custom/carta_porte/card.php?id='.$object->rowid;
-            $head[$h][1] = 'Ficha Carta Porte';
+            $head[$h][0] = DOL_URL_ROOT.'/custom/traslado/card.php?id='.$object->rowid;
+            $head[$h][1] = 'Ficha Traslado';
             $head[$h][2] = 'carta_porte';
             $h++;
 
 			//dol_fiche_head($head, 'user', $title, 0, 'user');
-            dol_fiche_head($head, 'carta-porte', 'Carta Porte', 0, 'carta');
+            dol_fiche_head($head, 'traslado', 'Traslado', 0, 'traslado');
 
             $rowspan=19;
 
@@ -463,24 +461,19 @@ else
             print '<tr><td width="25%">Ref</td>';
             print '<td colspan="2">'.$object->rowid.'</td>';
             //print '</tr>'."\n";         
-            print '</tr>'."\n";                 
-
-            // Factura
-            print '<tr><td>Factura Relacionada</td>';
-            print '<td colspan="2">'.$object->fk_facture.'</td>';
-            print '</tr>'."\n";         
-
+            print '</tr>'."\n";                       
             
-            // Ubicacion
+            // Ubicacion Origen
             $ubicacion = $origenDAO->GetOrigenById($object->fk_ubicacion_origen);
-            print '<tr><td>Ubicacion</td>';
+            print '<tr><td>Origen</td>';
+            print '<td colspan="2">'.$ubicacion->alias.'</td>';
+            print '</tr>'."\n";
+            
+            // Ubicacion Destino
+            $ubicacion = $origenDAO->GetOrigenById($object->fk_ubicacion_destino);
+            print '<tr><td>Destino</td>';
             print '<td colspan="2">'.$ubicacion->alias.'</td>';
             print '</tr>'."\n";   
-
-            // Cliente
-            print '<tr><td>Cliente</td>';
-            print '<td colspan="2">'.$soc->nom.'</td>';
-            print '</tr>'."\n";  
             
             // Fecha Salida
             print '<tr><td>Fecha Salida</td>';
@@ -514,7 +507,7 @@ else
             print '</tr>'."\n";   
 
             // CFDI ID
-            $cfdiId =  $cartaDAO->GetCFDIId($object->rowid);
+            $cfdiId =  $trasladoDAO->GetCFDIId($object->rowid);
             print '<tr><td>ID CFDI</td>';
             print '<td colspan="2">'.$cfdiId.'</td>';
             print '</tr>'."\n";   
@@ -524,12 +517,34 @@ else
             print '<br><br>';
 
             print '<table id="tablelines" class="noborder noshadow" width="100%">';
-        
-            // Show object lines
-            if (! empty($objectFacture->lines))
-                $ret = $objectFacture->printObjectLines($action, $mysoc, $soc, $lineid, 1);
-        
-                print "</table>\n";
+
+            print '	<form name="addproduct" id="addproduct" action="' . $_SERVER["PHP_SELF"] . '?action=addproduct&id=' . $id . '#add" method="POST">
+            <input type="hidden" name="tokentaasa" value="' . $_SESSION ['newtokentaasa'] . '">
+            <input type="hidden" name="action" value="' . (($action != 'editline') ? 'addline' : 'updateligne') . '">
+            <input type="hidden" name="mode" value="">
+            <input type="hidden" name="id" value="' . $object->id . '">
+            <input type="hidden" name="description" value="">
+            <input type="hidden" name="pesoenkg" value="">
+            <input type="hidden" name="valor_mercancia" value="">
+            ';
+
+            $objectFacture = new Facture($db);
+            $objectFacture->fetch("24311");
+            include DOL_DOCUMENT_ROOT . '/core/tpl/ajaxrow.tpl.php';
+            
+            $trasladoDAO->PrintObjectLines($langs, $object->rowid);
+
+            if ($action != 'editline' && $object->state == 0)
+            {
+                $var = true;
+                print '<table id="tablelines" class="noborder noshadow" width="100%">';
+
+                // Add free products/services
+                $objectFacture->formAddObjectLine(1, $mysoc, $soc);
+
+            }
+            print "</form>";
+            print "</table>\n";
 
             //dol_fiche_end();
 
@@ -540,22 +555,30 @@ else
 
             print '<div class="tabsAction">';
 
-            //Editar
-            if (!$uuid)
-            {
-                print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->rowid.'&amp;action=edit">'.$langs->trans("Modify").'</a></div>';
-            }
+            if($object->state == 0) {
 
-            // Timbrar
-            if (!$uuid)
-            {
-                print '<div class="inline-block divButAction"><a class="butActionDelete" href="/cfdimx/traslado_cfdi.php?action=generar_cfdi&amp;id='.$object->rowid.'">Generar CFDI</a></div>';
-            }
-
-            // Delete
-            if (!$uuid)
-            {
-                print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?action=delete&amp;id='.$object->rowid.'">'.$langs->trans("DeleteUser").'</a></div>';
+                //Editar
+                if (!$uuid)
+                {
+                    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->rowid.'&amp;action=validate">Validar</a></div>';
+                }
+                // Delete
+                if (!$uuid)
+                {
+                    print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER['PHP_SELF'].'?action=delete&amp;id='.$object->rowid.'">'.$langs->trans("DeleteUser").'</a></div>';
+                }
+            } 
+            else if($object->state == 1) {
+                // Timbrar
+                if (!$uuid)
+                {
+                    print '<div class="inline-block divButAction"><a class="butActionDelete" href="/cfdimx/traslado_cfdi2.php?action=generar_cfdi&amp;id='.$object->rowid.'">Generar CFDI</a></div>';
+                }
+                //Editar
+                if (!$uuid)
+                {
+                    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->rowid.'&amp;action=validate">Editar</a></div>';
+                }
             }
 
             print "</div>\n";
@@ -692,6 +715,12 @@ else
             print '</div>';
 
             print '</form>';
+        }
+        else if($action == 'delete')
+        {
+            $form = new Form($db);
+            $formconfirm = $form->formconfirm($_SERVER['PHP_SELF'] . '?confirm_delete&id=' . $object->rowid, "Borrar Traslado", "Eliminar traslado?", 'confirm_delete', $formquestion, "yes", 1);
+            print $formconfirm;
         } 
 
     }
@@ -701,70 +730,32 @@ llxFooter();
 $db->close();
 
 ?>
-<!-- <script type="text/javascript" language="javascript">
+<script type="text/javascript" language="javascript">
 
-    $("#socid").change(function()
+    $("#search_idprod").change(function()
     {
-        console.log('olololololo1');
-		var fk_facture = document.getElementById("fk_facture").value;
-
-	    var params = {  "factureId" : fk_facture };
+		var fk_prod = document.getElementById("idprod").value;
+        console.log(fk_prod);
+	    var params = {  "productId" : fk_prod };
 
 	    /*Autofill fields when client is selected. If the client debt exceeds the limit, the facture can only have cond reglement 1.*/
 	    $.ajax(
 	    {
 	        data: params,
-	        url: "/scripts/commande/getFactureData.php",
+	        url: "/scripts/commande/getProductData.php",
 	        type: "post",
 	        dataType: "json",
 	        success:  function (data)
 	        {
                 console.log('sucess');
                 console.log(data);
-	            document.getElementById("fk_cliente").value = data.nom;
-	            document.getElementById("options_vendor").value = data.fk_soc;
-	            document.getElementsByName("options_currency")[0].value = data.nom;
-	            // document.getElementsByName("fk_account")[0].value = data.cash_desk;
-	            // //Make them disable
-	            // document.getElementById("selectmode_reglement_id").disabled = true;
-	            // document.getElementById("options_vendor").disabled = true;
-	            // document.getElementsByName("cond_reglement_id").disabled = true;
-	            // document.getElementsByName("options_isticket").disabled = true;
-	            // document.getElementsByName("fk_account")[0].disabled = true;
-	            // if(data.debt) {
-	            // 	$debt = Number.parseFloat(data.debt);
-		        //     $credit_limit = Number.parseFloat(data.credit_limit);
-		        //     if($debt > $credit_limit) {
-		        //     	document.getElementsByName("cond_reglement_id")[0].value = 1;
-		        //     	document.getElementsByName("cond_reglement_id")[0].disabled = true;
-		        //     	document.getElementById("cond_reglement_id").disabled = false;
-		        //     	document.getElementById("cond_reglement_id").value = 1;
-		        //     	document.getElementById("cond_reglement_id").setAttribute("name", "cond_reglement_id");
-		        //     	//document.getElementById("createButton").disabled = true;
-		        //     	document.getElementById("messageDebt").style.color = "red";
-		        //     	document.getElementById("messageDebt").innerHTML = "Limite de credito Excedido. Solo ventas de contado";
-		        //     } else {
-		        //     	//document.getElementById("cond_reglement_id").value = 1;
-		        //     	document.getElementById("cond_reglement_id").removeAttribute("name");
-		        //     	document.getElementsByName("cond_reglement_id")[0].disabled = false;
-		        //     	document.getElementById("messageDebt").innerHTML = "";
-		        //     	if(data.cond) {
-		        //     	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
-			    //         } else {
-			    //         	document.getElementsByName("cond_reglement_id")[0].value = 1;
-			    //         }
-		        //     }
-	            // } else {
-	            // 	document.getElementById("cond_reglement_id").removeAttribute("name");
-		        //     document.getElementsByName("cond_reglement_id")[0].disabled = false;
-		        //    if(data.cond) {
-		        //     	document.getElementsByName("cond_reglement_id")[0].value = data.cond;
-			    //         } else {
-			    //         	document.getElementsByName("cond_reglement_id")[0].value = 1;
-			    //         }
-		        //     document.getElementById("messageDebt").innerHTML = "";
-	            // }
+	            document.getElementsByName("options_claveprodserv")[0].value = data.bienesTransp;
+	            document.getElementsByName("options_umed")[0].value = data.umed;
+	            document.getElementsByName("description")[0].value = data.descripcion;
+                document.getElementsByName("valor_mercancia")[0].value = data.valor_mercancia;
+                document.getElementsByName("pesoenkg")[0].value = data.peso_kg;
+                console.log(data);
 	        }
 	    });
 	});
-</script> -->
+</script>

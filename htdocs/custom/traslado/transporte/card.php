@@ -162,7 +162,12 @@ if (($action == 'create'))
     // Configuracion Vehicular
     print '<td width="160"><span class="fieldrequired">Configuracion Vehicular</span></td>';
     print '<td>';
-    print '<input size="30" type="text" id="config_vehicular" name="config_vehicular" value="'.GETPOST('config_vehicular').'">';
+    print '<select name="config_vehicular" >';
+    print '<option value="VL">VL</option>';
+    print '<option value="C2">C2</option>';
+    print '<option value="C3">C3</option>';
+    print '</select>';
+    //print '<input size="30" type="text" id="config_vehicular" name="config_vehicular" value="'.GETPOST('config_vehicular').'">';
     print '</td></tr>';
 
     // Placas

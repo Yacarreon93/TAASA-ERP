@@ -9,6 +9,9 @@ $account = GETPOST('account');
 $month = GETPOST('month');
 $year = GETPOST('year');
 
+if(!$account) {
+    $account = 1;
+}
 if(!$month) {
     $month = 1;
 }
@@ -16,73 +19,37 @@ if(!$year) {
     $year = date("Y");
 }
 
-$sql = "SELECT
- datep AS fecha_pago, p.rowid AS id_pago, p.amount AS total_pago, pf.amount AS importe_pago,
- f.rowid AS facid, f.facnumber, f.fk_cond_reglement, total_ttc, total AS subtotal, tva, t1.abonado
-FROM
- llx_paiement_facture AS pf
-JOIN llx_paiement AS p ON pf.fk_paiement = p.rowid
-JOIN llx_bank AS b ON p.fk_bank = b.rowid
-LEFT JOIN llx_facture AS f ON pf.fk_facture = f.rowid
-JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
-JOIN (SELECT
-f.rowid,
-    f.facnumber,
-    SUM(pf.amount) AS abonado
-FROM
-    llx_societe AS s,
-    llx_facture AS f
-LEFT JOIN llx_paiement_facture AS pf ON pf.fk_facture = f.rowid
-JOIN llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
-WHERE
-    f.fk_soc = s.rowid
-AND f.entity = 1
-AND fe.isticket = 1
-GROUP BY
-    f.rowid,
-    f.facnumber,
-    ref_client,
-    f.type,
-    f.note_private,
-    f.increment,
-    f.total,
-    f.tva,
-    f.total_ttc,
-    f.datef,
-    f.date_lim_reglement,
-    f.paye,
-    f.fk_statut,
-    s.nom,
-    s.rowid,
-    s.code_client,
-    s.client
-ORDER BY
-    datef ASC,
-    f.rowid DESC
-	 ) t1 ON t1.rowid = f.rowid
-WHERE MONTH(p.datep) = ".$month;
-if(!$year) {
-  $sql.=" AND YEAR(p.datep) = YEAR(CURDATE()) AND fk_statut != 3 AND (b.fk_account =".$account.")";
-} else {
-  $sql.=" AND YEAR(p.datep) = ".$year." AND fk_statut != 3 AND (b.fk_account =".$account.")";
-}
-$sql.=" ORDER BY
-p.datep ASC,
-p.amount DESC";
+//Primero se obtienen todos los productos de cada factura y separamos ventas a credito y de contado, con IVA y sin IVA
 
+$sql = "SELECT f.rowid,facnumber, fk_cond_reglement, f.total_ttc, datef, description, subprice, fd.total_ht, fd.total_tva, fd.total_ht as product_price
+FROM
+    llx_facture as f
+    JOIN
+    llx_facturedet as fd ON f.rowid = fd.fk_facture
+    JOIN
+    llx_facture_extrafields AS fe ON f.rowid = fe.fk_object
+WHERE MONTH(f.datef) = ".$month;
+if(!$year) {
+  $sql.=" AND YEAR(f.datef) = YEAR(CURDATE()) AND fk_statut != 3 AND (f.fk_account =".$account.")";
+} else {
+  $sql.=" AND YEAR(f.datef) = ".$year." AND fk_statut != 3 AND (f.fk_account =".$account.")";
+}
+$sql.=" AND fe.isticket = 1";
+$sql.=" AND f.fk_soc != 1097";
+$sql.=" ORDER BY
+f.datef ASC";
 $result = $db->query($sql);
 if (!$result) {
     echo 'Error: '.$db->lasterror;
     die;
 }
 
-$totalAbonosAcredito = array_fill(0,31,0);
-$totalAbonosContado = array_fill(0,31,0);
 $VendidoContadoConIVA = array_fill(0,31,0);
 $VendidoContadoSinIVA = array_fill(0,31,0);
-$importeContado = 0;
-$importeCredito = 0;
-$importeAbonos = 0;
+$VendidoCreditoConIVA = array_fill(0,31,0);
+$VendidoCreditoSinIVA = array_fill(0,31,0);
+$IVAContado = array_fill(0,31,0);
+$IVACredito = array_fill(0,31,0);
 
 $dateArray = array();
 $fechaTemp = '';
@@ -90,59 +57,78 @@ $i  = -1;
 $dayCounter = 0;
 $j = 0;
 while ($row = $db->fetch_object($result))
-{   if($fechaTemp != $row->fecha_pago) {
-      $fechaTemp = $row->fecha_pago;
+{   if($fechaTemp != $row->datef) {
+      $fechaTemp = $row->datef;
       $i++;
       $dayCounter++;
-      $dateArray[$i] = $row->fecha_pago;
+      $dateArray[$i] = $row->datef;
     }
-    if($row->fk_cond_reglement == 2) { //facturas a credito
-      $totalAbonosAcredito[$i] += $row->importe_pago;
+    if($row->fk_cond_reglement != 1) { //facturas a credito
+      if($row->total_tva > 0) { //con IVA
+        $IVACredito[$i]+= $row->total_tva;
+        $VendidoCreditoConIVA[$i] += ($row->product_price * 1.16);
+      } else {
+        $VendidoCreditoSinIVA[$i] += $row->product_price;
+      }
     } else { //facturas de contado
-        $totalAbonosContado[$i] += $row->importe_pago;
-        if($row->tva > 0) {
-          $IVAContado[$i]+= $row->tva;
-          $VendidoContadoConIVA[$i]+= $row->subtotal;
+        if($row->total_tva > 0) { //con IVA
+          $IVAContado[$i]+= $row->total_tva;
+          $VendidoContadoConIVA[$i]+= ($row->product_price * 1.16);
         }else {
-          $VendidoContadoSinIVA[$i]+= $row->importe_pago;
+          $VendidoContadoSinIVA[$i]+= $row->product_price;
         }
     }
 }
 
+//Obtenemos pagos de facturas y calculamos IVA Cobrado e IVA por cobrar
+
 $factureService = new FacturePaiementsService();
-//CREDITO
-$VendidoCreditoSinIVA = $factureService->getTotalSoloTicketsSinIVAACredito($db, $month, $year, $account);
-$VendidoCreditoConIVA = $factureService->getTotalSoloTicketsConIVAACredito($db, $month, $year, $account);
-$IVACredito = $factureService->getTotalIVASoloTicketsACredito($db, $month, $year, $account);
+$IVACobrado = $factureService->getTotalIVACobrado($db, $month, $year, $account);
+$totalPerRowPagosACredito = $factureService->getTotalCobradoCreditoPerAccount($db, $month, $year, $account);
+//$totalPerRowPagosContado = $factureService->getTotalCobradoContadoPerAccount($db, $month, $year, $account);
+$importeContado = 0;
+$importeCredito = 0;
+$importeAbonos = 0;
+$totalPerRowIVA = array_fill(0,31,0);
+$totalPerRowAbonado = array_fill(0,31,0);
+
+
+
+
 
 $totals = array();
 
 for ($i = 0; $i < $dayCounter; $i++) {
     $totals[$i]['fecha'] = date('d/m/Y', strtotime($dateArray[$i]));;
-    $totals[$i]['ventasCreditoSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]['total']);
-    $totals[$i]['ventasCreditoConIVA'] = formatMoney($VendidoCreditoConIVA[$i]['total']);
+    $totals[$i]['ventasCreditoSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]);
+    $totals[$i]['ventasCreditoConIVA'] = formatMoney($VendidoCreditoConIVA[$i]);
     $totals[$i]['ventasContadoSinIVA'] = formatMoney($VendidoContadoSinIVA[$i]);
     $totals[$i]['ventasContadoConIVA'] = formatMoney($VendidoContadoConIVA[$i]);
-    $totals[$i]['IVA']  = formatMoney($IVAContado[$i] + $IVACredito[$i]['total']);
-    $totals[$i]['totalSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i]);
-    $totals[$i]['totalConIVA']  = formatMoney($VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i]);
-    $totals[$i]['importeAbonos'] = formatMoney($totalAbonosAcredito[$i]);
+    //$totals[$i]['IVA']  = formatMoney($IVAContado[$i] + $IVACredito[$i]);
+
+    //$totals[$i]['totalSinIVA'] = formatMoney($VendidoCreditoSinIVA[$i] + $VendidoContadoSinIVA[$i]);
+    //$totals[$i]['totalConIVA']  = formatMoney($VendidoCreditoConIVA[$i] + $VendidoContadoConIVA[$i]);
+
+    if($totals[$i]['fecha'] == $totals[$i]['fecha']) {
+      $totals[$i]['IVACobrado']  = formatMoney($IVACobrado["iva"][$i]);
+  } else {
+      $totals[$i]['IVACobrado']  = 0;
+  }
 
   $importeContado += $VendidoContadoSinIVA[$i] + $VendidoContadoConIVA[$i];
-  $importeCredito += $VendidoCreditoSinIVA[$i]['total'] + $VendidoCreditoConIVA[$i]['total'];
-  $importeAbonos += $totalAbonosAcredito[$i];
+  $importeCredito += $VendidoCreditoSinIVA[$i] + $VendidoCreditoConIVA[$i];
 
   //totals per row
-  $totalPerRowCreditoSinIVA += $VendidoCreditoSinIVA[$i]['total'];
-  $totalPerRowCreditoConIVA += $VendidoCreditoConIVA[$i]['total'];
+  $totalPerRowCreditoSinIVA += $VendidoCreditoSinIVA[$i];
+  $totalPerRowCreditoConIVA += $VendidoCreditoConIVA[$i];
   $totalPerRowContadoSinIVA += $VendidoContadoSinIVA[$i];
   $totalPerRowContadoConIVA += $VendidoContadoConIVA[$i];
-  $totalPerRowIVA += $IVAContado[$i] + $IVACredito[$i]['total'];
-  $totalPerRowTotalSinIVA += $VendidoCreditoSinIVA[$i]['total'] + $VendidoContadoSinIVA[$i];
-  $totalPerRowTotalConIVA += $VendidoCreditoConIVA[$i]['total'] + $VendidoContadoConIVA[$i];
-  $totalPerRowAbonado += $totalAbonosAcredito[$i];
-
+  $totalPerRowIVACobrado += $IVACobrado["iva"][$i];
 }
+
+$totalContado = $totalPerRowContadoSinIVA + $totalPerRowContadoConIVA;
+$totalCredito = $totalPerRowCreditoConIVA + $totalPerRowCreditoSinIVA;
+//$totalIVA = (($totalPerRowContadoConIVA * 0.16) + ($totalPerRowCreditoConIVA * 0.16));
 
 
 // Crear una instancia del pdf con una función para generar los datos
@@ -155,10 +141,7 @@ $header = array(
     'Con IVA', //ventas credito con iva
     'Sin IVA', //contado sin iva
     'Con IVA', //subtotal contado con iva
-    'IVA', //total de IVA contado + credito
-    'Sin IVA', //credito + contado sin iva
-    'Con IVA', //subtotal credito + contado con iva
-    'Abonado', //total de abonos a credito
+    'Ventas a credito', //iva cobrado de pagas a facturas a credito
 );
 
 if($account == 1)
@@ -204,9 +187,9 @@ $pdf->SetFont('', 'B');
 $pdf->Cell($columnWidth * 2, 10, 'VENTAS CREDITO', 1, 0, 'C', 1);
 $pdf->SetFillColor(...$grayRGB2);
 $pdf->Cell($columnWidth * 2, 10, 'VENTAS CONTADO', 1, 0, 'C', 1);
-$pdf->Cell($columnWidth, 10, ' ', 0, 0, 'L');
+//$pdf->Cell($columnWidth, 10, ' ', 0, 0, 'L');
 $pdf->SetFillColor(...$grayRGB1);
-$pdf->Cell($columnWidth * 2, 10, 'TOTAL DE VENTAS', 1, 0, 'C', 1);
+$pdf->Cell($columnWidth * 1, 10, 'IVA COBRADO ', 1, 0, 'C', 1);
 $pdf->SetFont('', '');
 $pdf->ln();
 
@@ -221,18 +204,6 @@ $pdf->createDynamicHeader($header, array(
         '8' => $grayRGB1,
     ),
 ));
-
-// for($i = 0; $i < 10; $i++) {
-//     $totals[$i][] = date('d/m/Y', strtotime('2019-12-26 12:00:00'));
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-//     $totals[$i][] = 'qwe';
-// } 
 
 $pdf->createDynamicRows($totals, array(
     'bold' => false,
@@ -256,34 +227,36 @@ $pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowCreditoConIV
 $pdf->SetFillColor(...$grayRGB2);
 $pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowContadoSinIVA), 1, 0, 'L', 1);
 $pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowContadoConIVA), 1, 0, 'L', 1);
-$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowIVA), 1, 0, 'L');
 $pdf->SetFillColor(...$grayRGB1);
-$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowTotalSinIVA), 1, 0, 'L', 1);
-$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowTotalConIVA), 1, 0, 'L', 1);
-$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowAbonado), 1, 0, 'L');
+$pdf->Cell(($columnWidth), $pdf->rowHeight, formatMoney($totalPerRowIVACobrado), 1, 0, 'L', 1);
 
-//Totals
+
+// //Totals
 $pdf->ln();
 $pdf->ln();
 $pdf->SetFont('Arial', 'B', $pdf->fontSizeHeader);
-$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 3);
 $pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Importe Contado', 1);
-$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeContado), 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalContado), 1);
 $pdf->ln();
-$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 3);
 $pdf->Cell($columnWidth * 2, $pdf->rowHeight, utf8_decode('Importe Crédito'), 1);
-$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeCredito), 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalCredito), 1);
 $pdf->ln();
-$pdf->Cell($columnWidth * 5);
-$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Importe de Abonos', 1);
-$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeAbonos), 1);
+$pdf->Cell($columnWidth * 3);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Abonos a credito', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalPerRowPagosACredito), 1);
+$pdf->ln();
+$pdf->Cell($columnWidth * 3);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'Total Cobrado', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalContado + $totalPerRowPagosACredito), 1);
 $pdf->ln();
 $pdf->SetFillColor(...$grayRGB1);
-$pdf->Cell($columnWidth * 5);
+$pdf->Cell($columnWidth * 3);
 $pdf->Cell($columnWidth * 2, $pdf->rowHeight, 'TOTAL DEL CORTE', 1, 0, 'L', 1);
-$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($importeContado + $importeAbonos), 1, 0, 'L', 1);
+$pdf->Cell($columnWidth * 2, $pdf->rowHeight, formatMoney($totalContado + $totalCredito), 1, 0, 'L', 1);
 
- //$pdf->BasicTable($header,$data);
+// $pdf->BasicTable($header,$data);
 // $pdf->AddPage();
 // $pdf->ImprovedTable($header,$data);
 // $pdf->AddPage();

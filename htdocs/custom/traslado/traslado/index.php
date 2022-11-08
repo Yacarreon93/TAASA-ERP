@@ -6,11 +6,11 @@
  *      \brief      Page of users
  */
 
-require '../../main.inc.php';
+require '../../../main.inc.php';
 if (! empty($conf->multicompany->enabled))
     dol_include_once('/multicompany/class/actions_multicompany.class.php', 'ActionsMulticompany');
 
-    require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/cartaDAO.php';
+    require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/trasladoDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/transporteDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/operadorDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/origenDAO.php';
@@ -68,15 +68,14 @@ if (GETPOST("button_removefilter_x") || GETPOST("button_removefilter")) // Both 
  * View
  */
 
-llxHeader('','Listado de Carta Porte');
+llxHeader('','Listado de Traslados');
 
 $buttonviewhierarchy='<form action="'.DOL_URL_ROOT.'/user/hierarchy.php'.(($search_statut != '' && $search_statut >= 0) ? '?search_statut='.$search_statut : '').'" method="POST"><input type="submit" class="button" style="width:120px" name="viewcal" value="'.dol_escape_htmltag($langs->trans("HierarchicView")).'"></form>';
 
-print_fiche_titre("Carta Porte");
+print_fiche_titre("Traslado");
 
-$cartaDAO = new CartaDAO($db);
-$result = $cartaDAO->GetTrasladosResult();
-$objectFacture = new Facture($db);
+$trasladoDAO = new TrasladoDAO($db);
+$result = $trasladoDAO->GetTrasladosResult();
 $transporteDAO = new TransporteDAO($db);
 $operadorDAO = new OperadorDAO($db);
 $origenDAO = new OrigenDAO($db);
@@ -95,9 +94,8 @@ if ($result)
     print '<table class="noborder" width="100%">';
     print '<tr class="liste_titre">';
     print_liste_field_titre($langs->trans("Ref"),$_SERVER['PHP_SELF'],"u.login",$param,"","",$sortfield,$sortorder);
-    print_liste_field_titre($langs->trans("Factura Relacionada"),$_SERVER['PHP_SELF'],"u.login",$param,"","",$sortfield,$sortorder);
     print_liste_field_titre($langs->trans("Ubicacion Origen"),$_SERVER['PHP_SELF'],"u.lastname",$param,"","",$sortfield,$sortorder);
-    print_liste_field_titre($langs->trans("Cliente"),$_SERVER['PHP_SELF'],"u.firstname",$param,"","",$sortfield,$sortorder);
+    print_liste_field_titre($langs->trans("Ubicacion Destino"),$_SERVER['PHP_SELF'],"u.lastname",$param,"","",$sortfield,$sortorder);
     print_liste_field_titre($langs->trans("Transporte"),$_SERVER['PHP_SELF'],"u.firstname",$param,"","",$sortfield,$sortorder);
     print_liste_field_titre($langs->trans("Operador"),$_SERVER['PHP_SELF'],"u.firstname",$param,"","",$sortfield,$sortorder);
     print_liste_field_titre($langs->trans("Timbre"),$_SERVER['PHP_SELF'],"u.firstname",$param,"","",$sortfield,$sortorder);
@@ -107,25 +105,16 @@ if ($result)
     while ($i < $num)
     {
         $obj = $db->fetch_object($result);
-        if($obj->fk_facture) 
-        {
-            $objectFacture->fetch($obj->fk_facture);
-            $soc = new Societe($db);
-            $soc->fetch($objectFacture->socid);	
-        }
-        $ubicacion = $origenDAO->GetOrigenById($obj->fk_ubicacion_origen);
+        $ubicacion_origen = $origenDAO->GetOrigenById($obj->fk_ubicacion_origen);
+        $ubicacion_destino = $origenDAO->GetOrigenById($obj->fk_ubicacion_destino);
         $transporte = $transporteDAO->GetTransporteById($obj->fk_transporte);
         $operador =  $operadorDAO->GetOperadorById($obj->fk_operador);
 
 
         print '<tr>';
-        print '<td><a href="/custom/traslado/carta_porte/card.php?id='.$obj->rowid.'">'.ucfirst($obj->rowid).'</a></td>';
-        print '<td>'.ucfirst($obj->fk_facture).'</td>';
-        print '<td>'.ucfirst($ubicacion->alias).'</td>';
-        //print '<td>'.ucfirst($obj->fk_ubicacion_origen).'</td>';        
-        print '<td>'.ucfirst($soc->nom).'</td>';
-        // print '<td>'.ucfirst($obj->fk_transporte).'</td>';
-        // print '<td>'.ucfirst($obj->fk_operador).'</td>';
+        print '<td><a href="/custom/traslado/traslado/card.php?id='.$obj->rowid.'">'.ucfirst($obj->rowid).'</a></td>';
+        print '<td>'.ucfirst($ubicacion_origen->alias).'</td>';
+        print '<td>'.ucfirst($ubicacion_destino->alias).'</td>';
         print '<td>'.ucfirst($transporte->nombre).'</td>';
         print '<td>'.ucfirst($operador->nombre).'</td>';
         print '<td>'.ucfirst($obj->UUID).'</td>';

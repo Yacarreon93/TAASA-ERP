@@ -665,7 +665,7 @@ AND YEAR (dateo) = YEAR (CURDATE())";
         return $row->vendido;
     }
 
-	public function getTotalIVACobrado($db, $month, $year, $account) {
+	public function getTotalIVACobrado($db, $month, $year, $day=null, $account ) {
 		$sql = "SELECT b.dateo, pf.amount, b.fk_account, f.rowid, f.facnumber, f.total, f.total_ttc, f.tva
 			FROM
 			llx_bank AS b
@@ -679,6 +679,9 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 			b.fk_account = ".$account."
 			AND MONTH(b.dateo) = ".$month."
 			AND YEAR(b.dateo) = ".$year;
+			if($day) {
+				$sql.= " AND DAY(b.dateo) <= ".$day;
+			}
 		$sql.= " AND f.tva != 0";
 		$sql.= " AND f.fk_cond_reglement != 1";
 		$result = $db->query($sql);
@@ -710,7 +713,7 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 		return $ivaArray;
 	}
 
-	public function getTotalCobradoCreditoPerAccount($db, $month, $year, $account) {
+	public function getTotalCobradoCreditoPerAccount($db, $month, $year, $day=null, $account) {
 		$sql = "SELECT b.dateo, b.rowid AS id_pago, pf.amount, b.fk_account, f.rowid, f.facnumber, f.total, f.total_ttc, f.tva
 			FROM
 			llx_bank AS b
@@ -724,6 +727,9 @@ AND YEAR (dateo) = YEAR (CURDATE())";
 			b.fk_account = ".$account."
 			AND MONTH(b.dateo) = ".$month."
 			AND YEAR(b.dateo) = ".$year;
+			if($day) {
+				$sql.= " AND DAY(b.dateo) <= ".$day;
+			}
 		$sql.= " AND f.fk_cond_reglement != 1";
 		$sql.= " AND f.fk_statut != 3";
 		$result = $db->query($sql);

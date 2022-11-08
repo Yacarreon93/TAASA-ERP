@@ -137,7 +137,7 @@ class ComprobanteCFDIDao {
 		return $row->email;
 	}
 
-	public function FetchConceptosDataCFDI($id) {
+	public function FetchConceptosDataCFDI ($id) {
 		$sql = "SELECT
 			p.rowid AS id_concepto,
 			qty AS cantidad,
@@ -165,7 +165,7 @@ class ComprobanteCFDIDao {
 		while ($row =  $this->db->fetch_object($result))
 		{
 				$data[] = array(
-					ProductCode=>$row->clave_prod_serv,
+					ProductCode=>trim($row->clave_prod_serv),
 					IdentificationNumber=>$row->id_concepto,
 					Description=> $row->descripcion,
 					Unit=>$row->unidad,
@@ -964,6 +964,14 @@ class ComprobanteCFDIDao {
 		$result = $this->ExecuteQuery($sql);
 		$row =  $this->db->fetch_object($result);
 		return $row->generated_id;
+	}
+
+	public function AdjustFactureDetails($fk_facture) {
+		$sql = "UPDATE taasatsc_dolibarr.llx_facturedet SET total_ttc = total_ht + total_tva WHERE fk_facture =".$fk_facture;
+		$result = $this->ExecuteQuery($sql);
+		$sql = "UPDATE llx_facture SET total_ttc = total + tva WHERE rowid =".$fk_facture;
+		$result = $this->ExecuteQuery($sql);
+		return $result;
 	}
 
 	public function CheckIfExists($fk_comprobante) {

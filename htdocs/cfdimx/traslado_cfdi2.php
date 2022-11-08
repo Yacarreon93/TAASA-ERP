@@ -5,69 +5,62 @@
     require('conf.php');
     session_start();
     require_once(DOL_DOCUMENT_ROOT."/core/lib/date.lib.php");
-    require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/cartaDAO.php';
+    require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/trasladoDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/transporteDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/operadorDAO.php';
     require_once DOL_DOCUMENT_ROOT.'/custom/traslado/dao/origenDAO.php';
     require_once DOL_DOCUMENT_ROOT . '/compta/facture/class/facture.class.php';
 
-    define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
+    define("API_URL", "https://api.facturama.mx/2/cfdis/");
+    //define("API_URL", "https://apisandbox.facturama.mx/2/cfdis/");
     
     $id = $_REQUEST["id"];
     if($id) {
-        $cartaDAO = new CartaDAO($db);
-        
+        $trasladoDAO = new TrasladoDAO($db);
+
         print('Creating document...');
     
         //Include call to API
     
-        $object = $cartaDAO->GetTrasladoById($id);
-        $objectFacture = new Facture($db);
+        $object = $trasladoDAO->GetTrasladoById($id);
         $transporteDAO = new TransporteDAO($db);
         $operadorDAO = new OperadorDAO($db);
         $origenDAO = new OrigenDAO($db);
 
-        if($object->fk_facture) 
-        {
-            $objectFacture->fetch($object->fk_facture);
-            $soc = new Societe($db);
-            $soc->fetch($objectFacture->socid);	
-        }
         $dataComprobante[] = array(
             serie=>"T-".$id,
             folio=>$id,
             tipo_comprobante=> "T",
             fk_traslado=>$id
         );
-        $cartaDAO->InsertIntoCFDIComprobante($dataComprobante);
+        $trasladoDAO->InsertIntoCFDIComprobante($dataComprobante);
         $ubicacion_origen = $origenDAO->GetOrigenById($object->fk_ubicacion_origen);
         $transporte = $transporteDAO->GetTransporteById($object->fk_transporte);
         $operador = $operadorDAO->GetOperadorById($object->fk_operador);
-        $domicilio_cliente = $cartaDAO->FetchDomicilioCliente($object->fk_cliente);
-        $estadoCliente = $cartaDAO->FetchEstadoById($domicilio_cliente->rowid);
-        $num = strlen($domicilio_cliente->rowid);
-        $destino = "DE";
-        for($i = 0; $i < (6 - $num); $i ++) 
-        {
-            $destino.= "0";
-        }
-        $destino.= $domicilio_cliente->rowid;
-        $clienteData = $cartaDAO->GetSocDataByFactureId($object->fk_facture);
-        $folio = $cartaDAO->GetComprobanteIdFromFactureId($id);
-        print "duplicate test";
+        //$domicilio_cliente = $trasladoDAO->FetchDomicilioCliente($object->fk_cliente);
+        $ubicacion_destino = $origenDAO->GetOrigenById($object->fk_ubicacion_destino);
+
+        // $num = strlen($domicilio_cliente->rowid);
+        // $destino = "DE";
+        // for($i = 0; $i < (6 - $num); $i ++) 
+        // {
+        //     $destino.= "0";
+        // }
+        // $destino.= $domicilio_cliente->rowid;
+        //$clienteData = $trasladoDAO->GetSocDataByFactureId($object->fk_facture);
+        $folio = $trasladoDAO->GetComprobanteIdFromFactureId($id);
         //$cfdi_soc_data = $service->GetClientDataByFactureId($db, $id);
 
         //$duplicate_test = $service->CheckForDuplicate($db, $id);
-        $duplicate_test = $cartaDAO->CheckForDuplicate($id);
-        if(true) {
-            print "duplicate test";
+        $duplicate_test = $trasladoDAO->CheckForDuplicate($id);
+        if($duplicate_test) {
             $new_cfdi = array( 
                 //Datos generales
                 //Receptor
                 "Receiver" => array(
-                    "Name" => $soc->nom,
+                    "Name" => "Tecnologia y Aplicaciones Almentarias SA de CV",
                     "CfdiUse" => "P01",
-                    "rfc" =>  $ubicacion_origen->RFC
+                    "rfc" =>  $ubicacion_destino->RFC
                 ),
                 "CfdiType"=> "T",
                 "NameId"=> "33",
@@ -96,13 +89,13 @@
                             array(     //-----Destino------
                                 "TipoUbicacion" => "Destino", 
                                 // "IDUbicacion" => $destino,
-                                "RFCRemitenteDestinatario" => $clienteData[0]["rfc"],
+                                "RFCRemitenteDestinatario" => $ubicacion_destino->RFC,
                                 "FechaHoraSalidaLlegada" => $object->fecha_llegada,
                                 "DistanciaRecorrida" => $object->distancia_recorrida,
                                 "Domicilio" => array(
                                     "Pais" => "MEX",
-                                    "CodigoPostal" => $soc->zip,
-                                    "Estado" => $estadoCliente,
+                                    "CodigoPostal" => $ubicacion_destino->cp,
+                                    "Estado" => $ubicacion_destino->codigo_estado,
                                     // "Municipio" => $domicilio_cliente->cod_municipio,
                                     // "Localidad" => $domicilio_cliente->cod_localidad,
                                     // "Colonia" => $domicilio_cliente->cod_colonia,
@@ -139,8 +132,8 @@
                 )
             );
         
-            $cfdi_products = $cartaDAO->FetchConceptosDataCFDI($object->fk_facture);
-            $cfdi_mercancias = $cartaDAO->FetchMercanciasData($object->fk_facture, $ubicacion_origen->id_ubicacion, $destino);
+            $cfdi_products = $trasladoDAO->FetchConceptosDataCFDI($id);
+            $cfdi_mercancias = $trasladoDAO->FetchMercanciasData($id);
             $new_cfdi["Items"] = $cfdi_products;
             $new_cfdi["Complemento"]["CartaPorte20"]["Mercancias"]["Mercancia"]  = $cfdi_mercancias;
             $result = json_encode($new_cfdi);
@@ -150,13 +143,14 @@
             $errors   = $response['response']['errors'];
             $data     = $response['response']['data'][0];
         
-            $cartaDAO->UpdateControlTable($id, $response);
-            $cartaDAO->UpdateUUID($id, $response['Complement']['TaxStamp']);
+            $trasladoDAO->UpdateControlTable($id, $response);
+            $trasladoDAO->UpdateUUID($id, $response['Complement']['TaxStamp']);
         
             // if($cfdi_soc_data[0]['email']) {
             //     $sendResponse = $service->sendCFDI($response['Id'], $cfdi_soc_data[0]['email']);
             // }
         
+            //$authorEmail = $trasladoDAO->GetAuthorEmailByFactureId($db, $user->id);
             $authorEmail = $user->email;
         
             if($authorEmail) {
@@ -166,7 +160,7 @@
     }
 
 	print '<script>
-	location.href="/custom/traslado/carta_porte/card.php?id='.$id.'&cfdi_commit=1";
+	location.href="/custom/traslado/traslado/card.php?id='.$id.'&cfdi_commit=1";
 	</script>';
 
 

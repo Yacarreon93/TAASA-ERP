@@ -7,6 +7,7 @@ require_once DOL_DOCUMENT_ROOT.'/product/service/FacturePaiementsService.php';
 
 $account = GETPOST('account');
 $month = GETPOST('month');
+$day = GETPOST('day');
 $year = GETPOST('year');
 
 if(!$account) {
@@ -31,6 +32,9 @@ if(!$year) {
   $sql.=" AND YEAR(f.datef) = YEAR(CURDATE()) AND fk_statut != 3 AND (f.fk_account =".$account.")";
 } else {
   $sql.=" AND YEAR(f.datef) = ".$year." AND fk_statut != 3 AND (f.fk_account =".$account.")";
+}
+if($day) {
+  $sql.=" AND DAY(f.datef) <= ".$day;
 }
 $sql.=" AND f.fk_soc != 1097";
 $sql.=" ORDER BY
@@ -80,8 +84,8 @@ while ($row = $db->fetch_object($result))
 //Obtenemos pagos de facturas y calculamos IVA Cobrado e IVA por cobrar
 
 $factureService = new FacturePaiementsService();
-$IVACobrado = $factureService->getTotalIVACobrado($db, $month, $year, $account);
-$totalPerRowPagosACredito = $factureService->getTotalCobradoCreditoPerAccount($db, $month, $year, $account);
+$IVACobrado = $factureService->getTotalIVACobrado($db, $month, $year, $day, $account);
+$totalPerRowPagosACredito = $factureService->getTotalCobradoCreditoPerAccount($db, $month, $year, $day, $account);
 //$totalPerRowPagosContado = $factureService->getTotalCobradoContadoPerAccount($db, $month, $year, $account);
 $importeContado = 0;
 $importeCredito = 0;
@@ -155,12 +159,18 @@ if($account == 1)
 $dateObj   = DateTime::createFromFormat('!m', $month);
 $month_name = strftime('%B', $dateObj->getTimestamp());
 
-$yearTemp = 
-
-$report_title = strtr('REPORTE DE IVA DEL MES - $M $Y', array(
+if($day) {
+  $report_title = strtr('REPORTE DE IVA AL DIA - $D $M $Y', array(
+    '$D' =>  $day,
     '$M' => $month_name,
     '$Y' =>  $year,
-));
+  ));
+} else {
+  $report_title = strtr('REPORTE DE IVA DEL MES - $M $Y', array(
+    '$M' => $month_name,
+    '$Y' =>  $year,
+  ));
+}
 
 $report_subtitle = "CUENTA: $accountName";
 

@@ -28,7 +28,7 @@ class CartaDAO {
     }
 
     public function GetTrasladosResult() {
-        $sql = "SELECT * FROM cfdi_traslado";
+        $sql = "SELECT * FROM cfdi_traslado WHERE fk_facture IS NOT NULL";
         $result = $this->ExecuteQuery($sql);
         return $result;
     }
@@ -65,6 +65,14 @@ class CartaDAO {
         $result = $this->ExecuteQuery($sql);
         $row =  $this->db->fetch_object($result);
         return $row;
+    }
+
+	public function FetchEstadoById($id) {
+        $sql = "SELECT * FROM taasatsc_dolibarr.cfdi_cod_estados 
+        WHERE rowid = ".$id; 
+        $result = $this->ExecuteQuery($sql);
+        $row =  $this->db->fetch_object($result);
+        return $row->name;
     }
 
     public function FetchConceptosDataCFDI($id) {
@@ -143,13 +151,6 @@ class CartaDAO {
 					ValorMercancia=>round($row->valorMercancia, 2),
 					Moneda=>$row->moneda,
                     MaterialPeligroso=>"No"
-                    // CantidadTransporta=> array (
-                    //     array(
-                    //         Cantidad=> $row->cantidad,
-                    //         IDOrigen=> $origen,
-                    //         IDDestino=> $destino
-                    //     )
-                    // )
 			);
 		}
 		return $data;
@@ -248,6 +249,57 @@ class CartaDAO {
 		return $row;
 	}
 
-	
+	public function GetEstados() {
+		$sql = "SELECT * FROM cfdi_cod_estados";
+		$result = $this->ExecuteQuery($sql);
+        while ($row =  $this->db->fetch_object($result))
+		{
+				$data[] = array(
+                    rowid=>$row->rowid,
+					name=>$row->name
+			);
+		}
+		return $data;
+	}
 
+	public function GetEstadoById($estadoId) {
+		$sql = "SELECT name FROM cfdi_cod_estados WHERE rowid =".$estadoId;
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row;
+	}
+	
+	public function GetCFDIId($fk_traslado) {
+		$sql = "SELECT Folio FROM cfdi_control_table WHERE fk_traslado =".$fk_traslado;
+		$result = $this->ExecuteQuery($sql);
+		$row =  $this->db->fetch_object($result);
+		return $row->Folio;
+	}
+
+	public function CheckForDuplicate($fk_traslado) {
+		$sql = "INSERT INTO duplicate_avoid2 (fk_traslado) VALUES ('".$fk_traslado."')";
+		$result = $this->ExecuteQuery($sql);
+		return $result;
+	}
+
+	public function SendCFDI($cfdiId, $email) {
+		//$sendUrl = 'https://api.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
+		$sendUrl = 'https://apisandbox.facturama.mx/cfdi?cfdiType=issued&cfdiId='.$cfdiId.'&email='.$email;
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_POST, 1);
+        // OPTIONS:
+        curl_setopt($curl, CURLOPT_URL, $sendUrl);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        'Authorization: Basic bG1pcmExOTpMdWlzYXp1bF8xOQ==',
+		'Content-Type: application/json',
+		'Content-Length: 0'
+        ));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        // EXECUTE:
+        $result = curl_exec($curl);
+        if(!$result){die("Connection Failure");}
+		curl_close($curl);
+        return $result;
+	}
 }

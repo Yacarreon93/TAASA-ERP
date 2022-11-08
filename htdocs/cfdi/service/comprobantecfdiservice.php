@@ -182,6 +182,12 @@ class ComprobanteCFDIService {
         return $result;
 	}
 
+	public function AdjustFactureDetails($db, $fk_facture) {
+		$CFDIDao = new ComprobanteCFDIDao($db);
+		$result = $CFDIDao->AdjustFactureDetails($fk_facture);
+		return $result;
+	}
+
 	public function CheckForDuplicate($db, $factureId) {
 		$CFDIDao = new ComprobanteCFDIDao($db);
 		$cfdiId = $CFDIDao->CheckForDuplicate($factureId);
